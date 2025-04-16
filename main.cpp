@@ -2,6 +2,12 @@
 #include <cstdint>
 #include <string>
 #include <format>
+// ファイルやディレクトリに関する捜査を行うライブラリ
+#include <filesystem>
+// ファイルに書き込んだり読んだりするライブラリ
+#include <fstream>
+// 時間を扱うライブラリ
+#include <chrono>
 
 std::wstring ConvertString(const std::string& str) {
 	if (str.empty()) {
@@ -31,11 +37,13 @@ std::string ConvertString(const std::wstring& str) {
 	return result;
 }
 
-void Log(const std::string& message)
+void Log(std::ostream& os, const std::string& message)
 {
+	os << message << std::endl;
 	OutputDebugStringA(message.c_str());
 }
 
+// ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
 	WPARAM wparam, LPARAM lparam)
 {
@@ -55,6 +63,24 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+	// log出力用のフォルダ「logs」を作成
+	std::filesystem::create_directory("logs");
+
+	// ここからファイルを作成しofstreamを取得する
+	// 現在時刻の取得
+	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+	// 秒まで切り捨て
+	std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>
+	nowSeconds = std::chrono::time_point_cast<std::chrono::seconds>(now);
+	// 日本時間に変換
+	std::chrono::zoned_time localTime{ std::chrono::current_zone(), nowSeconds };
+	// 毎月日時分秒の文字列の取得
+	std::string dateString = std::format("{:%Y%m%d_%H%M%S}", localTime);
+	// 時刻を使ってファイル名を決定
+	std::string logFilePath = std::string("logs/") + dateString + ".log";
+	// ファイルを作って書き込み準備
+	std::ofstream logStream(logFilePath);
+
 	WNDCLASS wc{};
 	// ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;
@@ -94,8 +120,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// ウィンドウを表示する
 	ShowWindow(hwnd, SW_SHOW);
 	// 出力ウィンドウへの文字出力
-	Log("Hello,DirectX!\n");
-	Log(
+	Log(logStream, "Hello,DirectX!\n");
+	Log(logStream,
 		ConvertString(
 			std::format(
 				L"clientSize:{},{}\n",
