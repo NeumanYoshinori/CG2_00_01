@@ -150,6 +150,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		wc.hInstance,			// インスタントハンドル
 		nullptr);				// オプション
 
+	#ifdef _DEBUG
+	ID3D12Debug1* debugController = nullptr;
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+		// デバッグレイヤーを有効化する
+		debugController->EnableDebugLayer();
+		// さらにGPU側でもチェックを行うようにする
+		debugController->SetEnableGPUBasedValidation(TRUE);
+	}
+	#endif
+
 	// ウィンドウを表示する
 	ShowWindow(hwnd, SW_SHOW);
 	// 出力ウィンドウへの文字出力
@@ -212,7 +222,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 	}
 
-	// デバイスの生成がうまくいかなかったので機動できない
+	// デバイスの生成がうまくいかなかったので起動できない
 	assert(device != nullptr);
 	Log(logStream, "Complete create D3D12Device!!!\n"); // 初期化完了のログをだす
 
