@@ -648,7 +648,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexResource->Release();
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
-	if (errorBlob->Release()) {
+	if (errorBlob) {
 		errorBlob->Release();
 	}
 	rootSignature->Release();
