@@ -648,7 +648,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 開発用UIの処理
 			ImGui::ShowDemoWindow();
 
-			ImGui::Begin("Material");
+			ImGui::Begin("Window");
 			ImGui::ColorEdit3("Color", &(*materialData).x);
 			ImGui::End();
 
@@ -761,9 +761,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->Release();
 	useAdapter->Release();
 	dxgiFactory->Release();
-	#ifdef _DEBUG
-		debugController->Release();
-	#endif
+#ifdef _DEBUG
+	debugController->Release();
+#endif
 	vertexResource->Release();
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
