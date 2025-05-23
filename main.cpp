@@ -649,7 +649,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::ShowDemoWindow();
 
 			ImGui::Begin("Material");
-			ImGui::ColorEdit4("Color", &(*materialData).x);
+			ImGui::ColorEdit3("Color", &(*materialData).x);
 			ImGui::End();
 
 			// これから書き込むバックバッファのインデックスを取得
