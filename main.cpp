@@ -775,12 +775,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// WVP用のリソースを作る
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
-	// データを書き込む
-	//Matrix4x4* wvpData = nullptr;
-	//// 書き込むためのアドレスを取得
-	//wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
-	//// 単位行列を書き込んでおく
-	//*wvpData = matrix->MakeIdentity4x4();
 
 	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -5.0f} };
@@ -934,8 +928,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			assert(SUCCEEDED(hr));
 
 			transform.rotate.y += 0.03f;
-			/*Matrix4x4 worldMatrix = matrix->MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-			*wvpData = worldMatrix;*/
 
 			Matrix4x4 worldMatrix = matrix->MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = matrix->MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -982,6 +974,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	includeHandler->Release();
 	CloseWindow(hwnd);
 
+	delete matrix;
+
+	// ImGuiの終了処理
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
 	IDXGIDebug1* debug;
 	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
 		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
@@ -989,11 +988,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
 		debug->Release();
 	}
-
-	// ImGuiの終了処理
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
 
 	CoUninitialize();
 
