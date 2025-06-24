@@ -20,6 +20,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HwND, UINT msg
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
 #include <vector>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -756,6 +758,92 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
 	vertexData[5].texcoord = { 1.0f, 1.0f };
 
+	const uint32_t kSubdivision = 16; // 分割数
+	const float kLonEvery = float(M_PI) * 2.0f / float(kSubdivision); // 経度分割1つ分の角度
+	const float kLatEvery = float(M_PI) / float(kSubdivision); // 緯度分割1つ分の角度
+
+	// 球用の頂点リソース
+	ID3D12Resource* vertexResourceSphere = CreateBufferResource(device, sizeof(VertexData) * (kSubdivision * kSubdivision) * 6);
+
+	// 頂点バッファビュー
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSphere{};
+	vertexBufferViewSphere.BufferLocation = vertexResourceSphere->GetGPUVirtualAddress();
+	vertexBufferViewSphere.SizeInBytes = sizeof(VertexData) * (kSubdivision * kSubdivision) * 6;
+	vertexBufferViewSphere.StrideInBytes = sizeof(VertexData);
+
+	VertexData* vertexDataSphere = nullptr;
+	vertexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
+
+	// 緯度の方向に分割
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+		float lat = float(-M_PI) / 2.0f + kLatEvery * latIndex; // 現在の緯度
+		// 経度の方向に分割
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+			float lon = lonIndex * kLonEvery; // 現在の経度
+			VertexData vertA = {
+				{
+					cos(lat) * cos(lon),
+					sin(lat),
+					cos(lat) * sin(lon),
+					1.0f
+				},
+				{
+					float(lonIndex) / float(kSubdivision),
+					float(latIndex) / float(kSubdivision)
+				}
+			};
+
+			VertexData vertB = {
+				{
+					cos(lat + kLatEvery) * cos(lon),
+					sin(lat + kLatEvery),
+					cos(lat + kLatEvery) * sin(lon),
+					1.0f
+				},
+				{
+					float(lonIndex) / float(kSubdivision),
+					float(latIndex + 1) / float(kSubdivision)
+				}
+			};
+
+			VertexData vertC = {
+				{
+					cos(lat) * cos(lon + kLonEvery),
+					sin(lat),
+					cos(lat) * sin(lon + kLonEvery),
+					1.0f
+				},
+				{
+					float(lonIndex + 1) / float(kSubdivision),
+					float(latIndex) / float(kSubdivision)
+				}
+			};
+
+			VertexData vertD = {
+				{
+					cos(lat + kLatEvery) * cos(lon + kLonEvery),
+					sin(lat + kLatEvery),
+					cos(lat + kLatEvery) * sin(lon + kLonEvery),
+					1.0f
+				},
+				{
+					float(lonIndex + 1) / float(kSubdivision),
+					float(latIndex + 1) / float(kSubdivision)
+				}
+			};
+
+			// 頂点にデータを入力する。基準点a
+			vertexDataSphere[start] = vertA;
+			vertexDataSphere[start + 1] = vertC;
+			vertexDataSphere[start + 2] = vertB;
+			// 残りの頂点も計算
+			vertexDataSphere[start + 3] = vertB;
+			vertexDataSphere[start + 4] = vertC;
+			vertexDataSphere[start + 5] = vertD;
+		}
+	}
+
 	VertexData* vertexDataSprite = nullptr;
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 	// 1枚目の三角形
@@ -806,7 +894,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
 
 	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -5.0f} };
+	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
 
 	// データを書き込む
 	Matrix4x4* transformationMatrixData = nullptr;
@@ -816,6 +904,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	*transformationMatrixData = matrix->MakeIdentity4x4();
 
 	Transform transformSprite{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+	Transform transformSphere{ {300.0f, 300.0f, 300.0f}, {0.0f, 0.0f, 0.0f}, {640.0f, 360.0f, 0.0f} };
 
 	// Sprite用のTransformationMatrix用のリソースを作る。
 	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
@@ -826,12 +915,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 単位行列を書き込んでおく
 	*transformationMatrixDataSprite = matrix->MakeIdentity4x4();
 
+	// Sphere用のTransformationMatrix用のリソースを作る。
+	ID3D12Resource* transformationMatrixResourceSphere = CreateBufferResource(device, sizeof(Matrix4x4));
+	// データを書き込む
+	Matrix4x4* transformationMatrixDataSphere = nullptr;
+	// 書き込むためのアドレスを取得
+	transformationMatrixResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSphere));
+	// 単位行列を書き込んでおく
+	*transformationMatrixDataSphere = matrix->MakeIdentity4x4();
+
 	// Sprite用のWorldViewProjectionMatrixを作る
 	Matrix4x4 worldMatrixSprite = matrix->MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 	Matrix4x4 viewMatrixSprite = matrix->MakeIdentity4x4();
 	Matrix4x4 projectionMatrixSprite = matrix->MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
 	Matrix4x4 worldViewProjectionMatrixSprite = matrix->Multiply(worldMatrixSprite, matrix->Multiply(viewMatrixSprite, projectionMatrixSprite));
 	*transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
+
+	// Sphere用のWorldViewProjectionMatrixを作る
+	Matrix4x4 worldMatrixSphere = matrix->MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
+	Matrix4x4 viewMatrixSphere = matrix->MakeIdentity4x4();
+	Matrix4x4 projectionMatrixSphere = matrix->MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
+	Matrix4x4 worldViewProjectionMatrixSphere = matrix->Multiply(worldMatrixSphere, matrix->Multiply(viewMatrixSphere, projectionMatrixSphere));
+	*transformationMatrixDataSphere = worldViewProjectionMatrixSphere;
 
 	// ImGuiの初期化
 	IMGUI_CHECKVERSION();
@@ -913,6 +1018,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
 			commandList->SetDescriptorHeaps(1, descriptorHeaps);
 
+			ImGui::Begin("Setting");
+			ImGui::DragFloat3("material", &materialData->x, 0.01f);
+			ImGui::DragFloat3("translateSprite", &transformSprite.translate.x, 0.01f);
+			ImGui::End();
+
 			// ImGuiの内部コマンドを生成する
 			ImGui::Render();
 
@@ -931,13 +1041,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// SRVのDescriptorTableの戦闘を設定。2はrootParameter[2]である。
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			// 描画
-			commandList->DrawInstanced(6, 1, 0, 0);
+			//commandList->DrawInstanced(6, 1, 0, 0);
+
+			// 球の描画
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere); // VBVを設定
+			// TransformationMatrixCBufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSphere->GetGPUVirtualAddress());
+			// 描画
+			commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
+
 			// Spriteの描画
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite); // VBVを設定
 			// TransformationMatrixCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 			// 描画！（DrawCall/ドローコール）
 			commandList->DrawInstanced(6, 1, 0, 0);
+
+			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
@@ -1027,6 +1147,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	includeHandler->Release();
 	vertexResourceSprite->Release();
 	transformationMatrixResourceSprite->Release();
+	vertexResourceSphere->Release();
+	transformationMatrixResourceSphere->Release();
 	CloseWindow(hwnd);
 
 	delete matrix;
