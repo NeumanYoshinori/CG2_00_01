@@ -50,6 +50,7 @@ struct Transform {
 struct VertexData {
 	Vector4 position;
 	Vector2 texcoord;
+	Vector3 normal;
 };
 
 static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
@@ -669,7 +670,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(hr));
 
 	// InputLayout
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
 	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -678,6 +679,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	inputElementDescs[1].SemanticIndex = 0;
 	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	inputElementDescs[2].SemanticName = "NORMAL";
+	inputElementDescs[2].SemanticIndex = 0;
+	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
 	inputLayoutDesc.NumElements = _countof(inputElementDescs);
@@ -796,6 +801,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				{
 					float(lonIndex) / float(kSubdivision),
 					1.0f - float(latIndex) / float(kSubdivision)
+				},
+				{
+					vertA.position.x,
+					vertA.position.y,
+					vertA.position.z
 				}
 			};
 
@@ -809,6 +819,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				{
 					float(lonIndex) / float(kSubdivision),
 					1.0f - float(latIndex + 1) / float(kSubdivision)
+				},
+				{
+					vertB.position.x,
+					vertB.position.y,
+					vertB.position.z
 				}
 			};
 
@@ -822,6 +837,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				{
 					float(lonIndex + 1) / float(kSubdivision),
 					1.0f - float(latIndex) / float(kSubdivision)
+				},
+				{
+					vertC.position.x,
+					vertC.position.y,
+					vertC.position.z
 				}
 			};
 
@@ -835,16 +855,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				{
 					float(lonIndex + 1) / float(kSubdivision),
 					1.0f - float(latIndex + 1) / float(kSubdivision)
+				},
+				{
+					vertD.position.x,
+					vertD.position.y,
+					vertD.position.z
 				}
 			};
 
 			// 頂点にデータを入力する。基準点a
 			vertexData[start] = vertA;
-			vertexData[start + 1] = vertC;
-			vertexData[start + 2] = vertB;
+			vertexData[start + 1] = vertB;
+			vertexData[start + 2] = vertC;
 			// 残りの頂点も計算
-			vertexData[start + 3] = vertB;
-			vertexData[start + 4] = vertC;
+			vertexData[start + 3] = vertC;
+			vertexData[start + 4] = vertB;
 			vertexData[start + 5] = vertD;
 		}
 	}
@@ -854,17 +879,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 1枚目の三角形
 	vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f }; // 左下
 	vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
+	vertexDataSprite[0].normal = { 0.0f, 0.0f, -1.0f };
 	vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f }; // 左上
 	vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
+	vertexDataSprite[1].normal = { 0.0f, 0.0f, -1.0f };
 	vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f }; // 右下
 	vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
+	vertexDataSprite[2].normal = { 0.0f, 0.0f, -1.0f };
 	// 2枚目の三角形
 	vertexDataSprite[3].position = { 0.0f, 0.0f, 0.0f, 1.0f }; // 左上
 	vertexDataSprite[3].texcoord = { 0.0f, 0.0f };
+	vertexDataSprite[3].normal = { 0.0f, 0.0f, -1.0f };
 	vertexDataSprite[4].position = { 640.0f, 0.0f, 0.0f, 1.0f }; // 右上
 	vertexDataSprite[4].texcoord = { 1.0f, 0.0f };
+	vertexDataSprite[4].normal = { 0.0f, 0.0f, -1.0f };
 	vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f }; // 右下
 	vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
+	vertexDataSprite[5].normal = { 0.0f, 0.0f, -1.0f };
 
 	// ビューポート
 	D3D12_VIEWPORT viewport{};
