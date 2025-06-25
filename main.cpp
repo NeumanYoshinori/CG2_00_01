@@ -1057,7 +1057,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetDescriptorHeaps(1, descriptorHeaps);
 
 			ImGui::Begin("Setting");
-			ImGui::DragFloat3("material", &materialData->x, 0.01f);
+			ImGui::ColorEdit4("material", &materialData->x);
 			ImGui::DragFloat3("translateSprite", &transformSprite.translate.x, 0.01f);
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 			ImGui::End();
