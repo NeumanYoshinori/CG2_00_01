@@ -72,8 +72,13 @@ struct DirectionalLight {
 	float intensity;
 };
 
+struct MaterialData {
+	std::string textureFilePath;
+};
+
 struct ModelData {
 	std::vector<VertexData> verticles;
+	MaterialData material;
 };
 
 static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
@@ -366,6 +371,32 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrip
 	return handleGPU;
 }
 
+MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
+	// 中で必要となる変数の宣言
+	MaterialData materialData; // 構築するMaterialData
+	std::string line; // ファイルから読んだ1行を格納するもの
+	std::ifstream file(directoryPath + "/" + filename); // ファイルを開く
+	assert(file.is_open()); // とりあえず開けなかったら止める
+
+	// 実際にファイルを読み、MaterialDataを構築していく
+	while (std::getline(file, line)) {
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;
+
+		// identifierに応じた処理
+		if (identifier == "map_Kd") {
+			std::string textureFilename;
+			s >> textureFilename;
+			// 連結してファイルパスにする
+			materialData.textureFilePath = directoryPath + "/" + textureFilename;
+		}
+	}
+
+	// MaterialDataを返す
+	return materialData;
+}
+
 ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename) {
 	// 中で必要となる変数の宣言
 	ModelData modelData; // 構築するModelData
@@ -388,17 +419,21 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 		if (identifier == "v") {
 			Vector4 position;
 			s >> position.x >> position.y >> position.z;
+			position.x *= -1.0f;
 			position.w = 1.0f;
 			positions.push_back(position);
 		} else if (identifier == "vt") {
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
+			texcoord.y = 1.0f - texcoord.y;
 			texcoords.push_back(texcoord);
 		} else if (identifier == "vn") {
 			Vector3 normal;
 			s >> normal.x >> normal.y >> normal.z;
+			normal.x *= -1.0f;
 			normals.push_back(normal);
 		} else if (identifier == "f") {
+			VertexData triangle[3];
 			// 面は三角形限定。その他は未対応
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
 				std::string vertexDefinition;
@@ -415,9 +450,20 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 				Vector4 position = positions[elementIndices[0] - 1];
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
 				Vector3 normal = normals[elementIndices[2] - 1];
-				VertexData vertex = { position, texcoord, normal };
-				modelData.verticles.push_back(vertex);
+				// VertexData vertex = { position, texcoord, normal };
+				// modelData.verticles.push_back(vertex);
+				triangle[faceVertex] = { position, texcoord, normal };
 			}
+			// 頂点を逆順で登録することで、周り順を逆にする
+			modelData.verticles.push_back(triangle[2]);
+			modelData.verticles.push_back(triangle[1]);
+			modelData.verticles.push_back(triangle[0]);
+		} else if (identifier == "mtllib") {
+			// materialTemplateLibraryファイルの名前を取得する
+			std::string materialFilename;
+			s >> materialFilename;
+			// 基本的にobjファイルと同一改装にmtlは存在させるので、ディレクトリ名とファイル名を渡す
+			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
 		}
 	}
 
@@ -1031,7 +1077,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
 
 	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
+	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
 
 	// データを書き込む
 	TransformationMatrix* wvpData = nullptr;
@@ -1073,7 +1119,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ID3D12Resource* intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
 
 	// 2枚目のTextureを読んで転送する
-	DirectX::ScratchImage mipImages2 = LoadTexture("resources/monsterBall.png");
+	DirectX::ScratchImage mipImages2 = LoadTexture(modelData.material.textureFilePath);
 	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
 	ID3D12Resource* textureResource2 = CreateTextureResource(device, metadata2);
 	ID3D12Resource* intermediateResource2 = UploadTextureData(textureResource2, mipImages2, device, commandList);
@@ -1156,12 +1202,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Begin("Setting");
 			ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f);
-			ImGui::DragFloat("CameraRotateX", &cameraTransform.rotate.x, 0.01f);
-			ImGui::DragFloat("CameraRotateY", &cameraTransform.rotate.y, 0.01f);
-			ImGui::DragFloat("CameraRotateZ", &cameraTransform.rotate.z, 0.01f);
-			ImGui::DragFloat("SphereRotateX", &transform.rotate.x, 0.01f);
-			ImGui::DragFloat("SphereRotateY", &transform.rotate.y, 0.01f);
-			ImGui::DragFloat("SphereRotateZ", &transform.rotate.z, 0.01f);
+			ImGui::SliderAngle("CameraRotateX", &cameraTransform.rotate.x, 0.01f);
+			ImGui::SliderAngle("CameraRotateY", &cameraTransform.rotate.y, 0.01f);
+			ImGui::SliderAngle("CameraRotateZ", &cameraTransform.rotate.z, 0.01f);
+			ImGui::SliderAngle("SphereRotateX", &transform.rotate.x, 0.01f);
+			ImGui::SliderAngle("SphereRotateY", &transform.rotate.y, 0.01f);
+			ImGui::SliderAngle("SphereRotateZ", &transform.rotate.z, 0.01f);
 			ImGui::ColorEdit4("color", &materialData->color.x);
 			ImGui::CheckboxFlags("enableLighting", &materialData->enableLighting, 1);
 			ImGui::ColorEdit4("colorSprite", &materialDataSprite->color.x);
