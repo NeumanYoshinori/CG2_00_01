@@ -98,6 +98,11 @@ struct D3DResourceLeakChecker {
 	}
 };
 
+enum Model {
+	SPRITE,
+	SPHERE
+};
+
 static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
 	// 時刻を取得して、時刻を名前に入れたファイルを作成。Dumpsディレクトリ以下に出力
 	SYSTEMTIME time;
@@ -893,16 +898,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const float kLonEvery = pi * 2.0f / float(kSubdivision); // 経度分割1つ分の角度
 	const float kLatEvery = pi / float(kSubdivision); // 緯度分割1つ分の角度
 
+	static int model = SPRITE;
 	// モデル読み込み
 	ModelData modelData = LoadObjFile("resources", "plane.obj");
 	// 頂点リソースを作る
-	ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.verticles.size());
+	ComPtr<ID3D12Resource> vertexResource;
 	// 頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	// リソースの先頭のアドレスから使う
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点のサイズ
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.verticles.size());
+	switch (model) {
+	case SPRITE:
+		// 頂点リソースを作る
+		vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.verticles.size());
+		// リソースの先頭のアドレスから使う
+		vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+		// 使用するリソースのサイズは頂点のサイズ
+		vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.verticles.size());
+
+		break;
+	case SPHERE:
+		// 頂点リソースを作る
+		vertexResource = CreateBufferResource(device, sizeof(VertexData) * (kSubdivision + 1) * (kSubdivision + 1));
+		// リソースの先頭のアドレスから使う
+		vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+		// 使用するリソースのサイズは頂点のサイズ
+		vertexBufferView.SizeInBytes = sizeof(VertexData) * (kSubdivision + 1) * (kSubdivision + 1);
+
+		break;
+	}
 	// 1頂点あたりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -910,7 +932,70 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	memcpy(vertexData, modelData.verticles.data(), sizeof(VertexData) * modelData.verticles.size());
+
+	switch (model) {
+	case SPRITE:
+		std::memcpy(vertexData, modelData.verticles.data(), sizeof(VertexData) * modelData.verticles.size());
+
+		break;
+
+	case SPHERE:
+		int vertexIndex = 0;
+		for (int latIndex = 0; latIndex <= kSubdivision; ++latIndex) {
+			float lat = -pi / 2.0f + kLatEvery * latIndex;
+			for (int lonIndex = 0; lonIndex <= kSubdivision; ++lonIndex) {
+				float lon = kLonEvery * lonIndex;
+
+				VertexData vert{
+					{
+						1.0f * cos(lat) * cos(lon),
+						1.0f * sin(lat),
+						1.0f * cos(lat) * sin(lon),
+						1.0f
+					},
+					{
+						float(lonIndex) / kSubdivision,
+						1.0f - float(latIndex) / kSubdivision
+					},
+					{
+						cos(lat) * cos(lon),
+						sin(lat),
+						cos(lat) * sin(lon)
+					}
+				};
+
+				vertexData[vertexIndex++] = vert;
+			}
+		}
+
+		break;
+	}
+
+	ComPtr<ID3D12Resource> indexResource = CreateBufferResource(device, sizeof(uint32_t) * kSubdivision * kSubdivision * 6);
+	uint32_t* indexData = nullptr;
+	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+			uint32_t lD = lonIndex + latIndex * (kSubdivision + 1);
+			uint32_t lt = lonIndex + (latIndex + 1) * (kSubdivision + 1);
+			uint32_t rD = (lonIndex + 1) + latIndex * (kSubdivision + 1);
+			uint32_t rt = (lonIndex + 1) + (latIndex + 1) * (kSubdivision + 1);
+
+			uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
+			indexData[startIndex + 0] = lD;
+			indexData[startIndex + 1] = lt;
+			indexData[startIndex + 2] = rD;
+			indexData[startIndex + 3] = lt;
+			indexData[startIndex + 4] = rt;
+			indexData[startIndex + 5] = rD;
+		}
+	}
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
+	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * kSubdivision * kSubdivision * 6;
+	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 
 	// Sprite用の頂点リソースを作る
 	ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
@@ -993,6 +1078,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialDataSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialDataSprite->enableLighting = false;
 	materialDataSprite->uvTransform = matrix->MakeIdentity4x4();
+
+	Transform uvTransform{
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f },
+		{ 1.0f, 1.0f, 1.0f },
+	};
 
 	Transform uvTransformSprite{
 		{ 1.0f, 1.0f, 1.0f },
@@ -1135,25 +1226,48 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap };
 			commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
-			ImGui::Begin("Setting");
-			ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f);
-			ImGui::SliderAngle("CameraRotateX", &cameraTransform.rotate.x, 0.01f);
-			ImGui::SliderAngle("CameraRotateY", &cameraTransform.rotate.y, 0.01f);
-			ImGui::SliderAngle("CameraRotateZ", &cameraTransform.rotate.z, 0.01f);
-			ImGui::SliderAngle("SphereRotateX", &transform.rotate.x, 0.01f);
-			ImGui::SliderAngle("SphereRotateY", &transform.rotate.y, 0.01f);
-			ImGui::SliderAngle("SphereRotateZ", &transform.rotate.z, 0.01f);
-			ImGui::ColorEdit4("color", &materialData->color.x);
-			ImGui::CheckboxFlags("enableLighting", &materialData->enableLighting, 1);
-			ImGui::ColorEdit4("colorSprite", &materialDataSprite->color.x);
-			ImGui::DragFloat3("translateSprite", &transformSprite.translate.x, 0.1f);
-			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-			ImGui::ColorEdit3("LightColor", &directionalLightData->color.x);
-			ImGui::DragFloat3("LightDIrection", &directionalLightData->direction.x, 0.01f);
-			ImGui::DragFloat("Intensity", &directionalLightData->intensity, 0.01f);
-			ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
+			const char* modelNames[] = { "Sprite", "Sphere", "TeaPot", "StanfordBunny", "MultiMesh", "MultiMaterial", "Suzanne" };
+
+			ImGui::Begin("Settings");
+			ImGui::Combo("##Combo", &model, modelNames, IM_ARRAYSIZE(modelNames));
+			ImGui::SameLine();
+			ImGui::Text("Model");
+			ImGui::DragFloat3("CameraTranslate", &cameraTransform.translate.x, 0.1f);
+			ImGui::SliderAngle("cameraRotateX", &cameraTransform.rotate.x);
+			if (ImGui::CollapsingHeader("Object")) {
+				ImGui::DragFloat3("Translate", &transform.translate.x, 0.1f);
+				ImGui::DragFloat3("Rotate", &transform.rotate.x, 0.1f);
+				ImGui::DragFloat3("Scale", &transform.scale.x, 0.1f);
+
+				if (ImGui::CollapsingHeader("Material")) {
+					ImGui::DragFloat2("UVTranslate", &uvTransform.translate.x, 0.1f);
+					ImGui::DragFloat("UVRotate", &uvTransform.rotate.z, 0.1f);
+					ImGui::DragFloat2("UVScale", &uvTransform.scale.x, 0.1f);
+					ImGui::ColorEdit4("color", &materialData->color.x);
+				}
+			}
+			switch (model) {
+			case SPRITE:
+				if (ImGui::CollapsingHeader("Object2")) {
+					ImGui::DragFloat3("Translate", &transformSprite.translate.x, 0.01f);
+					ImGui::DragFloat3("Rotate", &transformSprite.rotate.x, 0.01f);
+					ImGui::DragFloat3("Scale", &transformSprite.scale.x, 0.01f);
+
+					if (ImGui::CollapsingHeader("Material")) {
+						ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f);
+						ImGui::DragFloat("UVRotate", &uvTransformSprite.rotate.z, 0.01f);
+						ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f);
+						ImGui::ColorEdit4("colorSprite", &materialDataSprite->color.x);
+					}
+				}
+				
+				break;
+			}
+			if (ImGui::CollapsingHeader("Light")) {
+				ImGui::ColorEdit3("LightColor", &directionalLightData->color.x);
+				ImGui::DragFloat3("LightDIrection", &directionalLightData->direction.x, 0.01f);
+				ImGui::DragFloat("Intensity", &directionalLightData->intensity, 0.01f);
+			}
 			ImGui::End();
 
 			// ImGuiの内部コマンドを生成する
@@ -1165,9 +1279,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootSignature(rootSignature.Get());
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			commandList->SetPipelineState(graphicsPipelineState.Get());
-			commandList->IASetIndexBuffer(&indexBufferViewSprite); // IBVを設定
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+			commandList->IASetIndexBuffer(&indexBufferView);
 			// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			// マテリアルCBufferの場所を設定
@@ -1177,23 +1291,36 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// SRVのDescriptorTableの戦闘を設定。2はrootParameter[2]である。
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 			// 描画
-			commandList->DrawInstanced(UINT(modelData.verticles.size()), 1, 0, 0);
+			switch (model) {
+			case SPRITE:
+				commandList->DrawInstanced(UINT(modelData.verticles.size()), 1, 0, 0);
+
+				break;
+			case SPHERE:
+				commandList->DrawIndexedInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0, 0);
+
+				break;
+			}
 
 			// Spriteの描画
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite); // VBVを設定
+			commandList->IASetIndexBuffer(&indexBufferViewSprite); // IBVを設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			// TransformationMatrixCBufferの場所を設定
-			// 描画！（DrawCall/ドローコール）
-			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			// 描画！（DrawCall/ドローコール
+			if (model == SPRITE)
+			{
+				commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			}
 
 			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 			// 実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
-			// 画面に描く処理はすべて終わり、画面に映すので、状態を繊維
+			// 画面に描く処理はすべて終わり、画面に映すので、状態を遷移
 			// 今回はRenderTargetからPresentにする
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
@@ -1245,10 +1372,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 worldViewProjectionMatrixSprite = matrix->Multiply(worldMatrixSprite, matrix->Multiply(viewMatrixSprite, projectionMatrixSprite));
 			*transformationMatrixDataSprite = { worldViewProjectionMatrixSprite, worldMatrixSprite };
 
-			Matrix4x4 uvTransformMatrix = matrix->MakeScaleMatrix(uvTransformSprite.scale);
-			uvTransformMatrix = matrix->Multiply(uvTransformMatrix, matrix->MakeRotateZMatrix(uvTransformSprite.rotate.z));
-			uvTransformMatrix = matrix->Multiply(uvTransformMatrix, matrix->MakeTranslateMatrix(uvTransformSprite.translate));
-			materialDataSprite->uvTransform = uvTransformMatrix;
+			Matrix4x4 uvTransformMatrixSprite = matrix->MakeScaleMatrix(uvTransformSprite.scale);
+			uvTransformMatrixSprite = matrix->Multiply(uvTransformMatrixSprite, matrix->MakeRotateZMatrix(uvTransformSprite.rotate.z));
+			uvTransformMatrixSprite = matrix->Multiply(uvTransformMatrixSprite, matrix->MakeTranslateMatrix(uvTransformSprite.translate));
+			materialDataSprite->uvTransform = uvTransformMatrixSprite;
 		}
 	}
 
