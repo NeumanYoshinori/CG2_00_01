@@ -591,7 +591,7 @@ void SoundUnload(SoundData* soundData) {
 	soundData->wfex = {};
 }
 
-void SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData) {
+void SoundPlayWave(const ComPtr<IXAudio2>& xAudio2, const SoundData& soundData) {
 	HRESULT result;
 
 	// 波形フォーマットを基にSourceVoiceの生成
