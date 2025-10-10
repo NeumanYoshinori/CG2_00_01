@@ -22,6 +22,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HwND, UINT msg
 #include <vector>
 #include <wrl.h>
 #include <xaudio2.h>
+#define DIRECTINPUT_VERSION 0x0800 // DirectInputのバージョン指定
+#include <dinput.h>
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -29,11 +31,13 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HwND, UINT msg
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dxcompiler.lib")
 #pragma comment(lib, "xaudio2.lib")
+#pragma comment(lib, "dinput8.lib")
+#pragma comment(lib, "dxguid.lib")
 
 using namespace std;
 using namespace DirectX;
-using namespace Microsoft;
-using namespace WRL;
+using namespace Microsoft::WRL;
+using namespace chrono;
 
 struct Vector4 {
 	float x;
@@ -123,6 +127,13 @@ struct SoundData {
 	BYTE* pBuffer;
 	// バッファのサイズ
 	unsigned int bufferSize;
+};
+
+enum InputData {
+	kNotPressed,
+	kPressed,
+	kPressTrigger,
+	kReleaseTrigger
 };
 
 static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
@@ -610,6 +621,14 @@ void SoundPlayWave(const ComPtr<IXAudio2>& xAudio2, const SoundData& soundData) 
 	result = pSourceVoice->Start();
 }
 
+bool IsKeyPressed(BYTE* key, uint8_t number) {
+	return (key[number]);
+}
+
+bool IsKeyNotPressed(BYTE* key, uint8_t number) {
+	return (key[number]);
+}
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3DResourceLeakChecker leakCheck;
@@ -625,12 +644,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// ここからファイルを作成しofstreamを取得する
 	// 現在時刻を取得
-	chrono::system_clock::time_point now = chrono::system_clock::now();
+	system_clock::time_point now = system_clock::now();
 	// 削って秒にする
-	chrono::time_point<chrono::system_clock, chrono::seconds>
-		nowSeconds = chrono::time_point_cast<chrono::seconds>(now);
+	time_point<system_clock, seconds>
+		nowSeconds = time_point_cast<seconds>(now);
 	// 日本時間に変換
-	chrono::zoned_time localTime{ chrono::current_zone(), nowSeconds };
+	zoned_time localTime{ current_zone(), nowSeconds };
 	// formatを使って年月日_時分秒の文字列に変換
 	string dateString = format("{:%Y%m%d_%H%M%S}", localTime);
 	// 時刻を使ってファイル名を決定
@@ -774,6 +793,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		infoQueue->Release();
 	}
 #endif
+
+	// DirectInputの初期化
+	IDirectInput8* directInput = nullptr;
+	HRESULT result;
+	result = DirectInput8Create(
+		wc.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+		(void**)&directInput, nullptr);
+	assert(SUCCEEDED(result));
+
+	// キーボードデバイスの生成
+	IDirectInputDevice8* keyboard = nullptr;
+	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
+	assert(SUCCEEDED(result));
+
+	// 入力データ形式のセット
+	result = keyboard->SetDataFormat(&c_dfDIKeyboard); // 標準形式
+	assert(SUCCEEDED(result));
+
+	// 排他制御レベルのセット
+	result = keyboard->SetCooperativeLevel(
+		hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	assert(SUCCEEDED(result));
 
 	// コマンドキューを生成する
 	ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
@@ -1213,7 +1254,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ComPtr<IXAudio2> xAudio2;
 	IXAudio2MasteringVoice* masterVoice;
 
-	HRESULT result;
 	// XAudioエンジンのインスタンスを生成
 	result = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
 	// マスターボイスを生成
@@ -1233,10 +1273,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			DispatchMessage(&msg);
 		}
 		else {
-			// ゲーム処理
+			// ゲームの処理
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
+
+			// キーボード情報の取得開始
+			keyboard->Acquire();
+
+			// 全キー入力状態の取得する
+			BYTE key[256] = {};
+			keyboard->GetDeviceState(sizeof(key), key);
+
+			if (IsKeyPressed(key, DIK_0)) {
+				OutputDebugStringA("Hit 0\n");
+			}
 
 			// 開発用UIの処理
 			ImGui::ShowDemoWindow();

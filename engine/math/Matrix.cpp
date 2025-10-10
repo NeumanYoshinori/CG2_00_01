@@ -43,8 +43,8 @@ Matrix4x4 Matrix::MakeRotateXMatrix(float radian)
 {
     Matrix4x4 result = {};
     result.m[0][0] = 1.0f; result.m[0][1] = 0.0f; result.m[0][2] = 0.0f; result.m[0][3] = 0.0f;
-    result.m[1][0] = 0.0f; result.m[1][1] = std::cos(radian); result.m[1][2] = std::sin(radian); result.m[1][3] = 0.0f;
-    result.m[2][0] = 0.0f; result.m[2][1] = -std::sin(radian); result.m[2][2] = std::cos(radian); result.m[2][3] = 0.0f;
+    result.m[1][0] = 0.0f; result.m[1][1] = cos(radian); result.m[1][2] = sin(radian); result.m[1][3] = 0.0f;
+    result.m[2][0] = 0.0f; result.m[2][1] = -sin(radian); result.m[2][2] = cos(radian); result.m[2][3] = 0.0f;
     result.m[3][0] = 0.0f; result.m[3][1] = 0.0f; result.m[3][2] = 0.0f; result.m[3][3] = 1.0f;
 
     return result;
@@ -54,9 +54,9 @@ Matrix4x4 Matrix::MakeRotateXMatrix(float radian)
 Matrix4x4 Matrix::MakeRotateYMatrix(float radian)
 {
     Matrix4x4 result = {};
-    result.m[0][0] = std::cos(radian); result.m[0][1] = 0.0f; result.m[0][2] = -std::sin(radian); result.m[0][3] = 0.0f;
+    result.m[0][0] = cos(radian); result.m[0][1] = 0.0f; result.m[0][2] = -sin(radian); result.m[0][3] = 0.0f;
     result.m[1][0] = 0.0f; result.m[1][1] = 1.0f; result.m[1][2] = 0.0f; result.m[1][3] = 0.0f;
-    result.m[2][0] = std::sin(radian); result.m[2][1] = 0.0f; result.m[2][2] = std::cos(radian); result.m[2][3] = 0.0f;
+    result.m[2][0] = sin(radian); result.m[2][1] = 0.0f; result.m[2][2] = cos(radian); result.m[2][3] = 0.0f;
     result.m[3][0] = 0.0f; result.m[3][1] = 0.0f; result.m[3][2] = 0.0f; result.m[3][3] = 1.0f;
 
     return result;
@@ -66,8 +66,8 @@ Matrix4x4 Matrix::MakeRotateYMatrix(float radian)
 Matrix4x4 Matrix::MakeRotateZMatrix(float radian)
 {
     Matrix4x4 result = {};
-    result.m[0][0] = std::cos(radian); result.m[0][1] = std::sin(radian); result.m[0][2] = 0.0f; result.m[0][3] = 0.0f;
-    result.m[1][0] = -std::sin(radian); result.m[1][1] = std::cos(radian); result.m[1][2] = 0.0f; result.m[1][3] = 0.0f;
+    result.m[0][0] = cos(radian); result.m[0][1] = sin(radian); result.m[0][2] = 0.0f; result.m[0][3] = 0.0f;
+    result.m[1][0] = -sin(radian); result.m[1][1] = cos(radian); result.m[1][2] = 0.0f; result.m[1][3] = 0.0f;
     result.m[2][0] = 0.0f; result.m[2][1] = 0.0f; result.m[2][2] = 1.0f; result.m[2][3] = 0.0f;
     result.m[3][0] = 0.0f; result.m[3][1] = 0.0f; result.m[3][2] = 0.0f; result.m[3][3] = 1.0f;
 
@@ -110,8 +110,8 @@ Matrix4x4 Matrix::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, 
 
 Matrix4x4 Matrix::MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip)
 {
-    Matrix4x4 result = { 1.0f / aspectRatio * (1.0f / std::tan(fovY / 2.0f)), 0.0f, 0.0f, 0.0f,
-                        0.0f, 1.0f / std::tan(fovY / 2.0f), 0.0f, 0.0f,
+    Matrix4x4 result = { 1.0f / aspectRatio * (1.0f / tan(fovY / 2.0f)), 0.0f, 0.0f, 0.0f,
+                        0.0f, 1.0f / tan(fovY / 2.0f), 0.0f, 0.0f,
                         0.0f, 0.0f, farClip / (farClip - nearClip), 1.0f,
                         0.0f, 0.0f, -nearClip * farClip / (farClip - nearClip), 0.0f };
 
