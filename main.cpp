@@ -145,15 +145,15 @@ struct SoundData {
 enum BlendMode {
 	//!< ブレンドなし
 	kBlendModeNonde,
-	//!< 通常ブレンド
+	//!< 通常αブレンド。Src * SrcA + Dest * (1 - SrcA)
 	kBlendModeNormal,
-	//!< 加算
+	//!< 加算。Src * SrcA + Dest * 1
 	kBlendModeAdd,
-	//!< 減算
+	//!< 減算。Dest * 1 - Src * SrcA
 	kBlendModeSubtract,
-	//!< 乗算
+	//!< 乗算。Src * 0 + Dest * Src
 	kBlendModeMultiply,
-	//!< スクリーン
+	//!< スクリーン。Src * (1 - Dest) + Dest * 1
 	kBlendModeScreen,
 	// 利用してはいけない
 	kCountOfBlendMode,
@@ -1029,9 +1029,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// すべての色要素を書き込む
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
 	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
