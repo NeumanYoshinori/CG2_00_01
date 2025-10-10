@@ -39,6 +39,7 @@ using namespace DirectX;
 using namespace Microsoft::WRL;
 using namespace chrono;
 
+// 4次元ベクトル
 struct Vector4 {
 	float x;
 	float y;
@@ -46,23 +47,27 @@ struct Vector4 {
 	float w;
 };
 
+// 2次元ベクトル
 struct Vector2 {
 	float x;
 	float y;
 };
 
+// 座標変換
 struct Transform {
 	Vector3 scale;
 	Vector3 rotate;
 	Vector3 translate;
 };
 
+// 頂点データ
 struct VertexData {
 	Vector4 position;
 	Vector2 texcoord;
 	Vector3 normal;
 };
 
+// マテリアル
 struct Material {
 	Vector4 color;
 	int32_t enableLighting;
@@ -70,26 +75,31 @@ struct Material {
 	Matrix4x4 uvTransform;
 };
 
+// 座標変換用行列
 struct TransformationMatrix {
 	Matrix4x4 WVP;
 	Matrix4x4 World;
 };
 
+// 平行光源
 struct DirectionalLight {
 	Vector4 color;
 	Vector3 direction;
 	float intensity;
 };
 
+// マテリアルデータ
 struct MaterialData {
 	string textureFilePath;
 };
 
+// モデルデータ
 struct ModelData {
 	vector<VertexData> verticles;
 	MaterialData material;
 };
 
+// リークチェッカー
 struct D3DResourceLeakChecker {
 	~D3DResourceLeakChecker()
 	{
@@ -103,6 +113,7 @@ struct D3DResourceLeakChecker {
 	}
 };
 
+// チャンクヘッダー
 struct ChunkHeader {
 	char id[4]; // チャンク毎のID
 	int32_t size; // チャンクサイズ
@@ -120,6 +131,7 @@ struct FormatChunk {
 	WAVEFORMATEX fmt; // 波形フォーマット
 };
 
+// サウンドデータ
 struct SoundData {
 	// 波形フォーマット
 	WAVEFORMATEX wfex;
@@ -129,11 +141,22 @@ struct SoundData {
 	unsigned int bufferSize;
 };
 
-enum InputData {
-	kNotPressed,
-	kPressed,
-	kPressTrigger,
-	kReleaseTrigger
+// ブレンドモード
+enum BlendMode {
+	//!< ブレンドなし
+	kBlendModeNonde,
+	//!< 通常ブレンド
+	kBlendModeNormal,
+	//!< 加算
+	kBlendModeAdd,
+	//!< 減算
+	kBlendModeSubtract,
+	//!< 乗算
+	kBlendModeMultiply,
+	//!< スクリーン
+	kBlendModeScreen,
+	// 利用してはいけない
+	kCountOfBlendMode,
 };
 
 static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
@@ -1004,8 +1027,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// BlendStateの設定
 	D3D12_BLEND_DESC blendDesc{};
 	// すべての色要素を書き込む
-	blendDesc.RenderTarget[0].RenderTargetWriteMask =
-		D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+
 	// RasiterzerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	// 裏面（時計回り）を表示しない
@@ -1173,7 +1203,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ComPtr<ID3D12Resource> wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
 
 	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
+	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 4.0f, 10.0f} };
 
 	// データを書き込む
 	TransformationMatrix* wvpData = nullptr;

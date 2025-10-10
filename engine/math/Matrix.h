@@ -1,19 +1,16 @@
 #pragma once
 
-struct Matrix4x4
-{
+struct Matrix4x4 {
 	float m[4][4];
 };
 
-struct Vector3
-{
+struct Vector3 {
 	float x;
 	float y;
 	float z;
 };
 
-class Matrix
-{
+class Matrix {
 public:
 	// 単位行列の作成
 	Matrix4x4 MakeIdentity4x4();
