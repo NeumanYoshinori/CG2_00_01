@@ -144,7 +144,7 @@ struct SoundData {
 // ブレンドモード
 enum BlendMode {
 	//!< ブレンドなし
-	kBlendModeNonde,
+	kBlendModeNone,
 	//!< 通常αブレンド。Src * SrcA + Dest * (1 - SrcA)
 	kBlendModeNormal,
 	//!< 加算。Src * SrcA + Dest * 1
@@ -524,7 +524,7 @@ ModelData LoadObjFile(const string& directoryPath, const string& filename) {
 				// 頂点の要素へのIndexは「位置/UV/法線」で格納されているので、分解してIndexを取得する
 				istringstream v(vertexDefinition);
 				uint32_t elementIndices[3];
-				for (int32_t element = 0; element < 3; ++element) {
+				for (uint32_t element = 0; element < 3; ++element) {
 					string index;
 					getline(v, index, '/'); // 区切りでインデックスを読んでいく
 					elementIndices[element] = stoi(index);
@@ -649,7 +649,7 @@ bool IsKeyPressed(BYTE* key, uint8_t number) {
 }
 
 bool IsKeyNotPressed(BYTE* key, uint8_t number) {
-	return (key[number]);
+	return (!key[number]);
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -1029,8 +1029,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// すべての色要素を書き込む
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
 	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
@@ -1085,7 +1085,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const float kLatEvery = pi / float(kSubdivision); // 緯度分割1つ分の角度
 
 	// モデル読み込み
-	ModelData modelData = LoadObjFile("resources", "plane.obj");
+	ModelData modelData = LoadObjFile("resources", "fence.obj");
 	// 頂点リソースを作る
 	ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.verticles.size());
 	// 頂点バッファビューを作成する
@@ -1216,14 +1216,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Transform transformSprite{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 
 	// Sprite用のTransformationMatrix用のリソースを作る。
-	ComPtr<ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(TransformationMatrix));
+	ComPtr<ID3D12Resource> wvpResourceSprite = CreateBufferResource(device, sizeof(TransformationMatrix));
 	// データを書き込む
-	TransformationMatrix* transformationMatrixDataSprite = nullptr;
+	TransformationMatrix* wvpDataSprite = nullptr;
 	// 書き込むためのアドレスを取得
-	transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
+	wvpResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&wvpDataSprite));
 	// 単位行列を書き込んでおく
-	transformationMatrixDataSprite->WVP = matrix->MakeIdentity4x4();
-	transformationMatrixDataSprite->World = matrix->MakeIdentity4x4();
+	wvpDataSprite->WVP = matrix->MakeIdentity4x4();
+	wvpDataSprite->World = matrix->MakeIdentity4x4();
 
 	// ImGuiの初期化
 	IMGUI_CHECKVERSION();
@@ -1241,7 +1241,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
 	const TexMetadata& metadata = mipImages.GetMetadata();
 	ComPtr<ID3D12Resource> textureResource = CreateTextureResource(device, metadata);
-
 	ComPtr<ID3D12Resource> intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
 
 	// 2枚目のTextureを読んで転送する
@@ -1294,6 +1293,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 音声再生
 	SoundPlayWave(xAudio2.Get(), soundData1);
 
+	static int currentBlend = kBlendModeNone;
+	const char* blendMode[] = { "kBlendModeNone", "kBlendModeNormal", "kBlendModeAdd", "kBlendModeSubtract", "kBlendModeMultiply", "kBlendModeScreen" };
+
 	MSG msg{};
 	// ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -1307,6 +1309,56 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
+
+			// 開発用UIの処理
+			ImGui::ShowDemoWindow();
+
+			switch (currentBlend) {
+			case kBlendModeNone:
+				blendDesc.RenderTarget[0].BlendEnable = FALSE;
+
+				break;
+			case kBlendModeNormal:
+				blendDesc.RenderTarget[0].BlendEnable = TRUE;
+				blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+				blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+				blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+
+				break;
+			case kBlendModeAdd:
+				blendDesc.RenderTarget[0].BlendEnable = TRUE;
+				blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+				blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+				blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+				break;
+			case kBlendModeSubtract:
+				blendDesc.RenderTarget[0].BlendEnable = TRUE;
+				blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+				blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
+				blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+				break;
+			case kBlendModeMultiply:
+				blendDesc.RenderTarget[0].BlendEnable = TRUE;
+				blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+				blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+				blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+
+				break;
+			case kBlendModeScreen:
+				blendDesc.RenderTarget[0].BlendEnable = TRUE;
+				blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+				blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+				blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+				break;
+			}
+
+			graphicsPipelineStateDesc.BlendState = blendDesc; // BlendState
+			hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
+				IID_PPV_ARGS(&graphicsPipelineState));
+			assert(SUCCEEDED(hr));
 
 			// キーボード情報の取得開始
 			keyboard->Acquire();
@@ -1359,6 +1411,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderAngle("SphereRotateY", &transform.rotate.y, 0.01f);
 			ImGui::SliderAngle("SphereRotateZ", &transform.rotate.z, 0.01f);
 			ImGui::ColorEdit4("color", &materialData->color.x);
+			if (ImGui::BeginCombo("Blend", blendMode[currentBlend])) {
+				for (uint32_t i = 0; i < 6; ++i) {
+					const bool isSelected = (currentBlend == i);
+					if (ImGui::Selectable(blendMode[i], isSelected)) {
+						currentBlend = i;
+
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::DragInt("currentBlend", &currentBlend);
 			ImGui::CheckboxFlags("enableLighting", &materialData->enableLighting, 1);
 			ImGui::ColorEdit4("colorSprite", &materialDataSprite->color.x);
 			ImGui::DragFloat3("translateSprite", &transformSprite.translate.x, 0.1f);
@@ -1381,10 +1447,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			commandList->SetPipelineState(graphicsPipelineState.Get());
 			commandList->IASetIndexBuffer(&indexBufferViewSprite); // IBVを設定
-
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 			// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			// Modelの描画
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 			// マテリアルCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			// wvp用のCBufferの場所を設定
@@ -1397,7 +1464,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// Spriteの描画
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite); // VBVを設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSprite->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			// TransformationMatrixCBufferの場所を設定
 			// 描画！（DrawCall/ドローコール）
@@ -1408,7 +1475,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
-			// 画面に描く処理はすべて終わり、画面に映すので、状態を繊維
+			// 画面に描く処理はすべて終わり、画面に映すので、状態を遷移
 			// 今回はRenderTargetからPresentにする
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
@@ -1444,19 +1511,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			hr = commandList->Reset(commandAllocator.Get(), nullptr);
 			assert(SUCCEEDED(hr));
 
+			// Model用のWVPMatrixを作る
 			Matrix4x4 worldMatrix = matrix->MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = matrix->MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrix = matrix->Inverse(cameraMatrix);
 			Matrix4x4 projectionMatrix = matrix->MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
-			Matrix4x4 worldViewProjectionMatrix = matrix->Multiply(worldMatrix, matrix->Multiply(viewMatrix, projectionMatrix));
-			*wvpData = { worldViewProjectionMatrix, worldMatrix };
+			Matrix4x4 wvpMatrix = matrix->Multiply(worldMatrix, matrix->Multiply(viewMatrix, projectionMatrix));
+			*wvpData = { wvpMatrix, worldMatrix };
 
 			// Sprite用のWorldViewProjectionMatrixを作る
 			Matrix4x4 worldMatrixSprite = matrix->MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = matrix->MakeIdentity4x4();
 			Matrix4x4 projectionMatrixSprite = matrix->MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
-			Matrix4x4 worldViewProjectionMatrixSprite = matrix->Multiply(worldMatrixSprite, matrix->Multiply(viewMatrixSprite, projectionMatrixSprite));
-			*transformationMatrixDataSprite = { worldViewProjectionMatrixSprite, worldMatrixSprite };
+			Matrix4x4 wvpMatrixSprite = matrix->Multiply(worldMatrixSprite, matrix->Multiply(viewMatrixSprite, projectionMatrixSprite));
+			*wvpDataSprite = { wvpMatrixSprite, worldMatrixSprite };
 
 			Matrix4x4 uvTransformMatrix = matrix->MakeScaleMatrix(uvTransformSprite.scale);
 			uvTransformMatrix = matrix->Multiply(uvTransformMatrix, matrix->MakeRotateZMatrix(uvTransformSprite.rotate.z));
