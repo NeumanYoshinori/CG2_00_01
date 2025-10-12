@@ -437,7 +437,7 @@ CreateDepthStencilTextureResource(const ComPtr<ID3D12Device>& device, int32_t wi
 		&resourceDesc, // Heapの特殊な設定
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,
 		&depthClearValue,
-	IID_PPV_ARGS(&resource));
+		IID_PPV_ARGS(&resource));
 	assert(SUCCEEDED(hr));
 	return resource;
 }
@@ -505,17 +505,20 @@ ModelData LoadObjFile(const string& directoryPath, const string& filename) {
 			position.x *= -1.0f;
 			position.w = 1.0f;
 			positions.push_back(position);
-		} else if (identifier == "vt") {
+		}
+		else if (identifier == "vt") {
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
 			texcoord.y = 1.0f - texcoord.y;
 			texcoords.push_back(texcoord);
-		} else if (identifier == "vn") {
+		}
+		else if (identifier == "vn") {
 			Vector3 normal;
 			s >> normal.x >> normal.y >> normal.z;
 			normal.x *= -1.0f;
 			normals.push_back(normal);
-		} else if (identifier == "f") {
+		}
+		else if (identifier == "f") {
 			VertexData triangle[3];
 			// 面は三角形限定。その他は未対応
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
@@ -539,7 +542,8 @@ ModelData LoadObjFile(const string& directoryPath, const string& filename) {
 			modelData.verticles.push_back(triangle[2]);
 			modelData.verticles.push_back(triangle[1]);
 			modelData.verticles.push_back(triangle[0]);
-		} else if (identifier == "mtllib") {
+		}
+		else if (identifier == "mtllib") {
 			// materialTemplateLibraryファイルの名前を取得する
 			string materialFilename;
 			s >> materialFilename;
@@ -561,7 +565,7 @@ SoundData SoundLoadWave(const char* filename) {
 
 	// RIFFヘッダーの読み込み
 	RiffHeader riff;
-	file.read((char*)& riff, sizeof(riff));
+	file.read((char*)&riff, sizeof(riff));
 	// ファイルがRIFFかチェック
 	if (strncmp(riff.chunk.id, "RIFF", 4) != 0) {
 		assert(0);
@@ -650,6 +654,14 @@ bool IsKeyPressed(BYTE* key, uint8_t number) {
 
 bool IsKeyNotPressed(BYTE* key, uint8_t number) {
 	return (!key[number]);
+}
+
+bool IsKeyTriggered(BYTE* key, BYTE* lastKey, uint8_t number) {
+	return (key[number] && !lastKey[number]);
+}
+
+bool IsKeyReleased(BYTE* key, BYTE* lastKey, uint8_t number) {
+	return (!key[number] && lastKey[number]);
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -1293,6 +1305,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 音声再生
 	SoundPlayWave(xAudio2.Get(), soundData1);
 
+	// 全キー入力状態の取得する
+	BYTE key[256] = {};
+	BYTE lastFrameKey[256] = {};
+
 	static int currentBlend = kBlendModeNone;
 	const char* blendMode[] = { "kBlendModeNone", "kBlendModeNormal", "kBlendModeAdd", "kBlendModeSubtract", "kBlendModeMultiply", "kBlendModeScreen" };
 
@@ -1363,13 +1379,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// キーボード情報の取得開始
 			keyboard->Acquire();
 
-			// 全キー入力状態の取得する
-			BYTE key[256] = {};
 			keyboard->GetDeviceState(sizeof(key), key);
 
+			// 押し続けたときにずっと0を表示する
 			if (IsKeyPressed(key, DIK_0)) {
 				OutputDebugStringA("Hit 0\n");
 			}
+
+			// 押した瞬間にIキーを表示する
+			if (IsKeyTriggered(key, lastFrameKey, DIK_I)) {
+				OutputDebugStringA("Hit I\n");
+			}
+
+			// 離したときにAキーを表示する
+			if (IsKeyReleased(key, lastFrameKey, DIK_A)) {
+				OutputDebugStringA("Hit A\n");
+			}
+
+			// 今のフレームの入力情報を前フレームにコピー
+			memcpy(lastFrameKey, key, sizeof(key));
 
 			// 開発用UIの処理
 			ImGui::ShowDemoWindow();
