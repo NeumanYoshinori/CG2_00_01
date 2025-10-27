@@ -1,0 +1,16 @@
+Hello,DirectX!
+
+clientSize:1280,720
+
+Use Adapter:NVIDIA GeForce RTX 4060 Laptop GPU
+
+Featurelevel : 12.2
+
+Complete create D3D12Device!!!
+
+Begin CompileShader, path:Object3D.VS.hlsl, profile:vs_6_0
+
+Object3D.VS.hlsl:17:23: error: use of undeclared identifier 'null'
+    output.position = null(input.position, gTransformationMatrix.WVP);
+                      ^
+
