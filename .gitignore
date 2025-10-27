@@ -317,4 +317,5 @@ DirectXGame/imgui.ini
 # DirectXTex Compiled Shaders
 **/DirectXTex/Shaders/Compiled/
 /Dumps
+/project/logs/
 /main.cpp
