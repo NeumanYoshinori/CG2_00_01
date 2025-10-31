@@ -24,6 +24,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HwND, UINT msg
 #include <xaudio2.h>
 #define DIRECTINPUT_VERSION 0x0800 // DirectInputのバージョン指定
 #include <dinput.h>
+#include <random>
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -157,6 +158,11 @@ enum BlendMode {
 	kBlendModeScreen,
 	// 利用してはいけない
 	kCountOfBlendMode,
+};
+
+struct Particle {
+	Transform transform;
+	Vector3 velocity;
 };
 
 static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
@@ -644,12 +650,25 @@ void SoundPlayWave(const ComPtr<IXAudio2>& xAudio2, const SoundData& soundData) 
 	result = pSourceVoice->Start();
 }
 
+// キーが押されたとき
 bool IsKeyPressed(BYTE* key, uint8_t number) {
 	return (key[number]);
 }
 
+// キーが押されていないとき
 bool IsKeyNotPressed(BYTE* key, uint8_t number) {
 	return (!key[number]);
+}
+
+// パーティクル生成関数
+Particle MakeNewParticle(mt19937& randomEngine) {
+	uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+	Particle particle;
+	particle.transform.scale = { 1.0f, 1.0f, 1.0f };
+	particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
+	particle.transform.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+	particle.velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+	return particle;
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -1258,6 +1277,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	scissorRect.top = 0;
 	scissorRect.bottom = kClientHeight;
 
+	// 乱数生成器の初期化
+	random_device seedGenerator;
+	mt19937 randomEngine(seedGenerator());
+
+	uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
 	ComPtr<ID3D12Resource> materialResource = CreateBufferResource(device, sizeof(Material));
 	// マテリアルにデータを書き込む
@@ -1297,14 +1322,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// WVP用のリソースを作る
 	ComPtr<ID3D12Resource> wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
 
-	Transform transforms[kNumInstance];
+	Particle particles[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; ++index) {
-		transforms[index].scale = { 1.0f, 1.0f, 1.0f };
-		transforms[index].rotate = { 0.0f, 0.0f, 0.0f };
-		transforms[index].translate = { index * 0.1f, index * 0.1f, index * 0.1f };
+		// 位置と速度を[-1,1]でランダムに初期化
+		particles[index] = MakeNewParticle(randomEngine);
 	}
 
-	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+	// Δtを設定
+	const float kDeltaTime = 1.0f / 60.0f;
+
 	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 4.0f, 10.0f} };
 
 	// データを書き込む
@@ -1392,8 +1418,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
 	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
+	// モンスターボールを使うか
 	bool useMonsterBall = true;
 
+	// xAudio
 	ComPtr<IXAudio2> xAudio2;
 	IXAudio2MasteringVoice* masterVoice;
 
@@ -1407,8 +1435,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 音声再生
 	SoundPlayWave(xAudio2.Get(), soundData1);
 
+	// ブレンドモード
 	static int currentBlend = kBlendModeNone;
 	const char* blendMode[] = { "kBlendModeNone", "kBlendModeNormal", "kBlendModeAdd", "kBlendModeSubtract", "kBlendModeMultiply", "kBlendModeScreen" };
+
+	// パーティクルが動くか
+	uint32_t canUpdate = false;
 
 	MSG msg{};
 	// ウィンドウの×ボタンが押されるまでループ
@@ -1490,6 +1522,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				OutputDebugStringA("Hit 0\n");
 			}
 
+			if (canUpdate) {
+				for (uint32_t index = 0; index < kNumInstance; index++) {
+					particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+				}
+			}
+
 			// 開発用UIの処理
 			ImGui::ShowDemoWindow();
 
@@ -1526,11 +1564,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderAngle("CameraRotateX", &cameraTransform.rotate.x, 0.01f);
 			ImGui::SliderAngle("CameraRotateY", &cameraTransform.rotate.y, 0.01f);
 			ImGui::SliderAngle("CameraRotateZ", &cameraTransform.rotate.z, 0.01f);
-			ImGui::SliderAngle("SphereRotateX", &transform.rotate.x, 0.01f);
-			ImGui::SliderAngle("SphereRotateY", &transform.rotate.y, 0.01f);
-			ImGui::SliderAngle("SphereRotateZ", &transform.rotate.z, 0.01f);
+			ImGui::SliderAngle("SphereRotateX", &particles[0].transform.rotate.x, 0.01f);
+			ImGui::SliderAngle("SphereRotateY", &particles[0].transform.rotate.y, 0.01f);
+			ImGui::SliderAngle("SphereRotateZ", &particles[0].transform.rotate.z, 0.01f);
 			ImGui::ColorEdit4("color", &materialData->color.x);
 			ImGui::CheckboxFlags("enableLighting", &materialData->enableLighting, 1);
+			ImGui::CheckboxFlags("update", &canUpdate, 1);
 			if (ImGui::BeginCombo("Blend", blendMode[currentBlend])) {
 				for (uint32_t i = 0; i < 6; ++i) {
 					const bool isSelected = (currentBlend == i);
@@ -1631,7 +1670,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// Model用のWVPMatrixを作る
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
-				Matrix4x4 worldMatrix = matrix->MakeAffineMatrix(transforms[index].scale, transforms[index].rotate, transforms[index].translate);
+				Matrix4x4 worldMatrix = matrix->MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
 				Matrix4x4 cameraMatrix = matrix->MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 				Matrix4x4 viewMatrix = matrix->Inverse(cameraMatrix);
 				Matrix4x4 projectionMatrix = matrix->MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
