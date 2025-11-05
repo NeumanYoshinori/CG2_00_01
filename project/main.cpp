@@ -660,6 +660,14 @@ bool IsKeyNotPressed(BYTE* key, uint8_t number) {
 	return (!key[number]);
 }
 
+bool IsKeyTriggered(BYTE* key, BYTE* preKey, uint8_t number) {
+	return (key[number] && !preKey[number]);
+}
+
+bool IsKeyReleased(BYTE* key, BYTE* preKey, uint8_t number) {
+	return (!key[number] && preKey[number]);
+}
+
 // パーティクル生成関数
 Particle MakeNewParticle(mt19937& randomEngine) {
 	uniform_real_distribution<float> distribution(-1.0f, 1.0f);
