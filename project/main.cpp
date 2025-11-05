@@ -1500,16 +1500,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				IID_PPV_ARGS(&graphicsPipelineStateForInstancing));
 			assert(SUCCEEDED(hr));
 
-			// キーボード情報の取得開始
-			keyboard->Acquire();
+			input->Update();
 
-			// 全キー入力状態の取得する
-			BYTE key[256] = {};
-			keyboard->GetDeviceState(sizeof(key), key);
-
-			if (IsKeyPressed(key, DIK_0)) {
+			/*if (IsKeyPressed(key, DIK_0)) {
 				OutputDebugStringA("Hit 0\n");
-			}
+			}*/
 
 			if (canUpdate) {
 				for (uint32_t index = 0; index < kNumInstance; index++) {
