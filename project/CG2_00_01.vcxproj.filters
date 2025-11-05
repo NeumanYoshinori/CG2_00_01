@@ -31,9 +31,6 @@
     <Filter Include="ソース ファイル\engine\base">
       <UniqueIdentifier>{c5d2dc11-ed38-4ab8-902c-399c840a78e6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\engine\io">
-      <UniqueIdentifier>{c300a7f8-ce81-4fba-aa31-0119adcd9834}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\engine\math">
       <UniqueIdentifier>{39060ab9-c97c-4cd8-bfa5-ef481eb41448}</UniqueIdentifier>
     </Filter>
@@ -61,14 +58,17 @@
     <Filter Include="ヘッダー ファイル\engine\base">
       <UniqueIdentifier>{6b623898-eacd-4172-9261-bb8ef2a0f407}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\engine\io">
-      <UniqueIdentifier>{4ea12745-2ee4-41d7-8c94-e75503f480ff}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ヘッダー ファイル\engine\math">
       <UniqueIdentifier>{db129fa5-8095-41cb-a2a7-ce5684fe784d}</UniqueIdentifier>
     </Filter>
     <Filter Include="ヘッダー ファイル\engine\scene">
       <UniqueIdentifier>{2efb3462-9bcb-4409-b088-4d4ba4bad021}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\engine\input">
+      <UniqueIdentifier>{c300a7f8-ce81-4fba-aa31-0119adcd9834}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\engine\input">
+      <UniqueIdentifier>{4ea12745-2ee4-41d7-8c94-e75503f480ff}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +99,9 @@
     <ClCompile Include="engine\math\Matrix.cpp">
       <Filter>ソース ファイル\engine\math</Filter>
     </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>ソース ファイル\engine\input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -127,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="engine\math\Matrix.h">
       <Filter>ヘッダー ファイル\engine\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>ヘッダー ファイル\engine\input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
