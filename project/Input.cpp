@@ -8,9 +8,7 @@
 
 void Input::Initialize(HINSTANCE hInstance, HWND hwnd) {
 	HRESULT result;
-	// DirectInputのインスタンス生成
-	ComPtr<IDirectInput8> directInput = nullptr;
-	result = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,(void**)&directInput, nullptr);
+	result = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
 
 	// キーボードデバイスの生成
@@ -27,10 +25,48 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd) {
 }
 
 void Input::Update() {
+	// 前回のキー入力を保持
+	memcpy(keyPre, key, sizeof(key));
+
 	// キーボード情報の取得開始
 	keyboard->Acquire();
 
-	// 全キー入力状態の取得する
-	BYTE key[256] = {};
 	keyboard->GetDeviceState(sizeof(key), key);
+}
+
+bool Input::PushKey(BYTE keyNumber) {
+	// 指定キーを押していればtrueを返す
+	if (key[keyNumber]) {
+		return true;
+	}
+	// そうでなければfalseを返す
+	return false;
+}
+
+bool Input::NotPushKey(BYTE keyNumber) {
+	// 指定キーを押していればtrueを返す
+	if (!key[keyNumber]) {
+		return true;
+	}
+	// そうでなければfalseを返す
+	return false;
+
+}
+
+bool Input::TriggerKey(BYTE keyNumber) {
+	// 指定キーを押した瞬間trueを返す
+	if (!keyPre[keyNumber] && key[keyNumber]) {
+		return true;
+	}
+	// そうでなければfalseを返す
+	return false;
+}
+
+bool Input::ReleaseKey(BYTE keyNumber) {
+	// 指定キーを離した瞬間trueを返す
+	if (keyPre[keyNumber] && !key[keyNumber]) {
+		return true;
+	}
+	// そうでなければfalseを返す
+	return false;
 }

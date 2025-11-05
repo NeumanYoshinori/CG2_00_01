@@ -36,20 +36,6 @@ using namespace DirectX;
 using namespace Microsoft::WRL;
 using namespace chrono;
 
-// 4次元ベクトル
-struct Vector4 {
-	float x;
-	float y;
-	float z;
-	float w;
-};
-
-// 2次元ベクトル
-struct Vector2 {
-	float x;
-	float y;
-};
-
 // 座標変換
 struct Transform {
 	Vector3 scale;
@@ -439,7 +425,7 @@ CreateDepthStencilTextureResource(const ComPtr<ID3D12Device>& device, int32_t wi
 		&resourceDesc, // Heapの特殊な設定
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,
 		&depthClearValue,
-	IID_PPV_ARGS(&resource));
+		IID_PPV_ARGS(&resource));
 	assert(SUCCEEDED(hr));
 	return resource;
 }
@@ -507,17 +493,20 @@ ModelData LoadObjFile(const string& directoryPath, const string& filename) {
 			position.x *= -1.0f;
 			position.w = 1.0f;
 			positions.push_back(position);
-		} else if (identifier == "vt") {
+		}
+		else if (identifier == "vt") {
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
 			texcoord.y = 1.0f - texcoord.y;
 			texcoords.push_back(texcoord);
-		} else if (identifier == "vn") {
+		}
+		else if (identifier == "vn") {
 			Vector3 normal;
 			s >> normal.x >> normal.y >> normal.z;
 			normal.x *= -1.0f;
 			normals.push_back(normal);
-		} else if (identifier == "f") {
+		}
+		else if (identifier == "f") {
 			VertexData triangle[3];
 			// 面は三角形限定。その他は未対応
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
@@ -541,7 +530,8 @@ ModelData LoadObjFile(const string& directoryPath, const string& filename) {
 			modelData.verticles.push_back(triangle[2]);
 			modelData.verticles.push_back(triangle[1]);
 			modelData.verticles.push_back(triangle[0]);
-		} else if (identifier == "mtllib") {
+		}
+		else if (identifier == "mtllib") {
 			// materialTemplateLibraryファイルの名前を取得する
 			string materialFilename;
 			s >> materialFilename;
@@ -563,7 +553,7 @@ SoundData SoundLoadWave(const char* filename) {
 
 	// RIFFヘッダーの読み込み
 	RiffHeader riff;
-	file.read((char*)& riff, sizeof(riff));
+	file.read((char*)&riff, sizeof(riff));
 	// ファイルがRIFFかチェック
 	if (strncmp(riff.chunk.id, "RIFF", 4) != 0) {
 		assert(0);
@@ -644,24 +634,6 @@ void SoundPlayWave(const ComPtr<IXAudio2>& xAudio2, const SoundData& soundData) 
 	// 波形データの再生
 	result = pSourceVoice->SubmitSourceBuffer(&buf);
 	result = pSourceVoice->Start();
-}
-
-// キーが押されたとき
-bool IsKeyPressed(BYTE* key, uint8_t number) {
-	return (key[number]);
-}
-
-// キーが押されていないとき
-bool IsKeyNotPressed(BYTE* key, uint8_t number) {
-	return (!key[number]);
-}
-
-bool IsKeyTriggered(BYTE* key, BYTE* preKey, uint8_t number) {
-	return (key[number] && !preKey[number]);
-}
-
-bool IsKeyReleased(BYTE* key, BYTE* preKey, uint8_t number) {
-	return (!key[number] && preKey[number]);
 }
 
 // パーティクル生成関数
@@ -1502,9 +1474,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			input->Update();
 
-			/*if (IsKeyPressed(key, DIK_0)) {
+			if (input->ReleaseKey(DIK_0)) {
 				OutputDebugStringA("Hit 0\n");
-			}*/
+			}
 
 			if (canUpdate) {
 				for (uint32_t index = 0; index < kNumInstance; index++) {
@@ -1659,7 +1631,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				Matrix4x4 viewMatrix = matrix->Inverse(cameraMatrix);
 				Matrix4x4 projectionMatrix = matrix->MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
 				Matrix4x4 wvpMatrix = matrix->Multiply(worldMatrix, matrix->Multiply(viewMatrix, projectionMatrix));
-				instancingData[index] = {wvpMatrix, worldMatrix};
+				instancingData[index] = { wvpMatrix, worldMatrix };
 			}
 
 			// Sprite用のWorldViewProjectionMatrixを作る

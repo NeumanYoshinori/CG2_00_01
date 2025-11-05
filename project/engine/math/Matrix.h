@@ -4,10 +4,25 @@ struct Matrix4x4 {
 	float m[4][4];
 };
 
+// 2次元ベクトル
+struct Vector2 {
+	float x;
+	float y;
+};
+
+// 3次元ベクトル
 struct Vector3 {
 	float x;
 	float y;
 	float z;
+};
+
+// 4次元ベクトル
+struct Vector4 {
+	float x;
+	float y;
+	float z;
+	float w;
 };
 
 const Vector3 operator+(const Vector3& v1, const Vector3& v2);
