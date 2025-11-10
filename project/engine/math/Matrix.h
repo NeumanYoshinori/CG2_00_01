@@ -4,11 +4,44 @@ struct Matrix4x4 {
 	float m[4][4];
 };
 
+// 2次元ベクトル
+struct Vector2 {
+	float x;
+	float y;
+};
+
+// 3次元ベクトル
 struct Vector3 {
 	float x;
 	float y;
 	float z;
 };
+
+// 4次元ベクトル
+struct Vector4 {
+	float x;
+	float y;
+	float z;
+	float w;
+};
+
+const Vector3 operator+(const Vector3& v1, const Vector3& v2);
+
+const Vector3 operator*(const Vector3& v1, const float f);
+
+Vector3& operator+=(Vector3& lhv, const Vector3& rhv);
+Vector3& operator-=(Vector3& lhv, const Vector3& rhv);
+Vector3& operator*=(Vector3& v, float s);
+Vector3& operator/=(Vector3& v, float s);
+
+// 代入演算子オーバーロード
+Matrix4x4& operator*=(Matrix4x4& lhm, const Matrix4x4& rhm);
+
+// 2項演算子オーバーロード
+Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2);
+
+Vector3 operator+(const Vector3& v);
+Vector3 operator-(const Vector3& v);
 
 class Matrix {
 public:
@@ -40,6 +73,6 @@ public:
 	// 逆行列
 	Matrix4x4 Inverse(const Matrix4x4& m);
 
-	// 
+	// 正射影行列
 	Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
 };
