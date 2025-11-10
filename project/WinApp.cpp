@@ -61,8 +61,21 @@ void WinApp::Initialize() {
 	ShowWindow(hwnd, SW_SHOW);
 }
 
-void WinApp::Update() {
+bool WinApp::ProcessMessage() {
+	MSG msg{};
 
+	// Windowにメッセージが来てたら最優先で処理させる
+	if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	// ウィンドウの×ボタンが押されるまでループ
+	if (msg.message == WM_QUIT) {
+		return true;
+	}
+
+	return false;
 }
 
 void WinApp::Finalize() {
