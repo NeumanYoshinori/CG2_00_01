@@ -6,6 +6,7 @@
 #include <array>
 #include <dxcapi.h>
 #include <fstream>
+#include <externals/DirectXTex/DirectXTex.h>
 
 // DirectX基盤
 class DirectXBase {
@@ -17,6 +18,41 @@ public:
 	void PreDraw();
 	// 描画後処理
 	void PostDraw();
+
+	// getter
+	ID3D12Device* GetDevice() const { return device.Get(); }
+	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
+
+	// シェーダーのコンパイル
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
+		// compilerするShaderファイルへのパス
+		const std::wstring& filePath,
+		// Compilerに使用するProfile
+		const wchar_t* profile);
+
+	// バッファリソースの生成
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
+
+	// テクスチャデータの転送
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metadata);
+
+	// テクスチャデータの転送
+	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages);
+
+	// 画像イメージデータ
+	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+
+	// SRVの指定番号のCPUデスクリプタハンドルを取得する
+	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
+
+	// SRVの指定番号のGPUデスクリプタハンドルを取得する
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
+
+	HANDLE GetFenceEvent() const { return fenceEvent; }
+
+	D3D12_CPU_DESCRIPTOR_HANDLE GetDsvHandle() const {
+		return dsvHandle;
+	}
 
 private:
 	// 初期化
@@ -47,12 +83,6 @@ private:
 	// 指定番号のGPUデスクリプタハンドルを取得する
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap,
 		uint32_t descriptorSize, uint32_t index);
-
-	// SRVの指定番号のCPUデスクリプタハンドルを取得する
-	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
-
-	// SRVの指定番号のGPUデスクリプタハンドルを取得する
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(int32_t width, int32_t height);
 
@@ -147,5 +177,7 @@ private:
 
 	// フェンス値
 	UINT64 fenceVal = 0;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
 };
 

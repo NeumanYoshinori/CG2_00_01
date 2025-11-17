@@ -3,6 +3,6 @@
 
 // ログ出力
 namespace Logger {
-	void Log(ostream& os, const std::string& message);
+	void Log(const std::string& message);
 }
 
