@@ -13,6 +13,11 @@ public:
 	// 初期化
 	void Initialize(WinApp* winApp);
 
+	// 描画前処理
+	void PreDraw();
+	// 描画後処理
+	void PostDraw();
+
 private:
 	// 初期化
 	void DeviceInitialize();
@@ -44,10 +49,10 @@ private:
 		uint32_t descriptorSize, uint32_t index);
 
 	// SRVの指定番号のCPUデスクリプタハンドルを取得する
-	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(uint32_t index);
+	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
 
 	// SRVの指定番号のGPUデスクリプタハンドルを取得する
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVDescriptorHandle(uint32_t index);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(int32_t width, int32_t height);
 
@@ -132,5 +137,15 @@ private:
 
 	// デフォルトインクルードハンドラ
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+
+	// TranstitionBarrierの設定
+	D3D12_RESOURCE_BARRIER barrier{};
+
+	HANDLE fenceEvent;
+
+	// フェンス値
+	UINT64 fenceVal = 0;
 };
 
