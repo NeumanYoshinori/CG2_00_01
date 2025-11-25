@@ -1,7 +1,14 @@
 #include "Logger.h"
+#include <dinput.h>
 
 using namespace std;
 
-void Logger::Log(const string& message) {
-	cout << message << endl;
+namespace Logger {
+	void Log(const std::string& message){
+		OutputDebugStringA(message.c_str());
+	}
+	void Log(ostream&os, const string& message) {
+		os << message << endl;
+		OutputDebugStringA(message.c_str());
+	}
 }

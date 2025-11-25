@@ -5,8 +5,17 @@
 #include "WinApp.h"
 #include <array>
 #include <dxcapi.h>
-#include <fstream>
+#include <cassert>
+#include "chrono"
 #include <externals/DirectXTex/DirectXTex.h>
+#include <externals/DirectXTex/d3dx12.h>
+#include "Logger.h"
+#include "StringUtility.h"
+#include <Windows.h>
+
+#pragma comment(lib, "dxcompiler.lib")
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
 
 // DirectX基盤
 class DirectXBase {
@@ -24,11 +33,7 @@ public:
 	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
 
 	// シェーダーのコンパイル
-	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
-		// compilerするShaderファイルへのパス
-		const std::wstring& filePath,
-		// Compilerに使用するProfile
-		const wchar_t* profile);
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
 
 	// バッファリソースの生成
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
@@ -49,11 +54,6 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
 	HANDLE GetFenceEvent() const { return fenceEvent; }
-
-	D3D12_CPU_DESCRIPTOR_HANDLE GetDsvHandle() const {
-		return dsvHandle;
-	}
-
 private:
 	// 初期化
 	void DeviceInitialize();
@@ -84,8 +84,6 @@ private:
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap,
 		uint32_t descriptorSize, uint32_t index);
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(int32_t width, int32_t height);
-
 	// 深度ステンシルビューの初期化
 	void DepthStencilInitialize();
 
@@ -105,19 +103,19 @@ private:
 	void ImGuiInitialize();
 
 	// DirectX12デバイス
-	Microsoft::WRL::ComPtr<ID3D12Device> device;
+	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 	// DXGIファクトリ
-	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
+	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 
 	// コマンドアロケータ
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
 	// コマンドリスト
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
 	// コマンドキュー
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
 
 	// スワップチェーン
-	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain;
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = nullptr;
 
 	// スワップチェーンデスク
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
@@ -132,26 +130,26 @@ private:
 	WinApp* winApp = nullptr;
 
 	// RTV用のデスクリプタヒープ生成
-	uint32_t descriptorSizeSRV;
+	uint32_t descriptorSizeSRV = 0;
 	// SRV用のデスクリプタヒープ生成
-	uint32_t descriptorSizeRTV;
+	uint32_t descriptorSizeRTV = 0;
 	// DSV用のデスクリプタヒープ生成
-	uint32_t descriptorSizeDSV;
+	uint32_t descriptorSizeDSV = 0;
 
 	// RTV用のヒープ
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
 
 	// SRV用のヒープ
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap = nullptr;
 
 	// DSV用のヒープ
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;
 
 	// rtvデスク
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	
 	// フェンス
-	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 
 	// ビューポート
 	D3D12_VIEWPORT viewport{};
@@ -170,14 +168,12 @@ private:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 
-	// TranstitionBarrierの設定
-	D3D12_RESOURCE_BARRIER barrier{};
-
-	HANDLE fenceEvent;
+	HANDLE fenceEvent = nullptr;
 
 	// フェンス値
-	UINT64 fenceVal = 0;
+	uint64_t fenceVal = 0;
 
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
+	// resourceの生成
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
 };
 
