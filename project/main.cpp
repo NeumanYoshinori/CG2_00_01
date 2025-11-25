@@ -22,6 +22,7 @@
 #include "DirectXBase.h"
 #include "Logger.h"
 #include "StringUtility.h"
+#include "D3DResourceLeakChecker.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -78,20 +79,6 @@ struct MaterialData {
 struct ModelData {
 	vector<VertexData> verticles;
 	MaterialData material;
-};
-
-// リークチェッカー
-struct D3DResourceLeakChecker {
-	~D3DResourceLeakChecker()
-	{
-		// リソースリリースチェック
-		ComPtr<IDXGIDebug1> debug;
-		if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-			debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-			debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
-			debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-		}
-	}
 };
 
 // チャンクヘッダー
