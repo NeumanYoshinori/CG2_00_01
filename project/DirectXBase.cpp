@@ -5,6 +5,7 @@
 #include <format>
 #include <fstream>
 #include <thread>
+#include <cassert>
 
 using namespace std;
 using namespace Microsoft::WRL;
@@ -20,17 +21,32 @@ void DirectXBase::Initialize(WinApp* winApp) {
 	// メンバ変数に記録
 	this->winApp = winApp;
 
+	// FPS固定初期化
+	InitializeFixFPS();
+
+	// デバイスの初期化
 	DeviceInitialize();
+	// コマンドの初期化
 	CommandInitialize();
+	// スワップチェーンの作成
 	CreateSwapChain();
+	// 深度バッファの作成
 	CreateDepthBuffer();
+	// 各種デスクリプタ―ヒープの作成
 	CreateEachDescriptorHeap();
+	// レンダーターゲットビューの初期化
 	RenderTargetViewInitialize();
+	// 深度ステンシルの初期化
 	DepthStencilInitialize();
+	// フェンスの初期化
 	FenceInitialize();
+	// ビューポート矩形の初期化
 	ViewportInitialize();
+	// シザー矩形の初期化
 	ScissorInitalize();
+	// DXCコンパイラの作成
 	CreateDxcCompiler();
+	//ImGuiの初期化
 	ImGuiInitialize();
 }
 
@@ -111,6 +127,9 @@ void DirectXBase::PostDraw() {
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
 
+	// FPS固定
+	UpdateFixFPS();
+
 	// 次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
@@ -134,7 +153,7 @@ void DirectXBase::DeviceInitialize() {
 #endif
 
 	// 出力ウィンドウへの文字出力
-	/*Log(logstream, "Hello,DirectX!\n");
+	Log("Hello,DirectX!\n");
 	Log(ConvertString(
 			format(
 				L"clientSize:{},{}\n",
@@ -142,7 +161,7 @@ void DirectXBase::DeviceInitialize() {
 				WinApp::kClientHeight
 			)
 		)
-	);*/
+	);
 
 	// 関数が成功したかどうかをSUCCEEDEDマクロで判定できる
 	hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
@@ -242,8 +261,8 @@ void DirectXBase::CommandInitialize() {
 void DirectXBase::CreateSwapChain() {
 	HRESULT hr;
 	// スワップチェーンを生成する
-	swapChainDesc.Width = winApp->kClientWidth; // 画面の幅。
-	swapChainDesc.Height = winApp->kClientHeight; // 画面の高さ。
+	swapChainDesc.Width = WinApp::kClientWidth; // 画面の幅。
+	swapChainDesc.Height = WinApp::kClientHeight; // 画面の高さ。
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 色の形式
 	swapChainDesc.SampleDesc.Count = 1; // マルチサンプルしない
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する
@@ -353,6 +372,34 @@ D3D12_CPU_DESCRIPTOR_HANDLE DirectXBase::GetSRVCPUDescriptorHandle(uint32_t inde
 
 D3D12_GPU_DESCRIPTOR_HANDLE DirectXBase::GetSRVGPUDescriptorHandle(uint32_t index) {
 	return GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, index);
+}
+
+void DirectXBase::InitializeFixFPS() {
+	// 現在時間を記録する
+	reference_ = steady_clock::now();
+}
+
+void DirectXBase::UpdateFixFPS() {
+	// 1/60秒ぴったりの時間
+	const microseconds kMinTime(uint64_t(100000.0f / 60.0f));
+	// 1/60秒よりわずかに短い時間
+	const microseconds kMinCheckTime(uint64_t(100000.0f / 65.0f));
+
+	// 現在時間を取得する
+	steady_clock::time_point now = steady_clock::now();
+	// 前回記録からの経過時間を取得する
+	microseconds elapsed = duration_cast<microseconds>(now - reference_);
+
+	// 1/60秒（よりわずかに短い時間）経っていない場合
+	if (elapsed < kMinCheckTime) {
+		// 1/60秒経過するまで微小なスリープを繰り返す
+		while (steady_clock::now() - reference_ < kMinTime) {
+			// 1マイクロ秒スリープ
+			this_thread::sleep_for(microseconds(1));
+		}
+	}
+	// 現在の時間を記録する
+	reference_ = steady_clock::now();
 }
 
 void DirectXBase::DepthStencilInitialize() {

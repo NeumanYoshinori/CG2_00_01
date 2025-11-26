@@ -5,8 +5,7 @@
 #include "WinApp.h"
 #include <array>
 #include <dxcapi.h>
-#include <cassert>
-#include "chrono"
+#include <chrono>
 #include <externals/DirectXTex/DirectXTex.h>
 #include <externals/DirectXTex/d3dx12.h>
 #include "Logger.h"
@@ -54,6 +53,12 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
 	HANDLE GetFenceEvent() const { return fenceEvent; }
+
+	// FPS固定初期化
+	void InitializeFixFPS();
+	// FPS固定更新
+	void UpdateFixFPS();
+
 private:
 	// 初期化
 	void DeviceInitialize();
@@ -175,5 +180,8 @@ private:
 
 	// resourceの生成
 	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+
+	// 記録時間
+	std::chrono::steady_clock::time_point reference_;
 };
 
