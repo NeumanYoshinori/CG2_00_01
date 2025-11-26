@@ -100,22 +100,22 @@
       <Filter>ソース ファイル\engine\math</Filter>
     </ClCompile>
     <ClCompile Include="engine\base\D3DResourceLeakChecker.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\engine\base</Filter>
     </ClCompile>
     <ClCompile Include="engine\base\DirectXBase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\base\Logger.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\base\StringUtility.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\base\WinApp.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\engine\base</Filter>
     </ClCompile>
     <ClCompile Include="engine\input\Input.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\engine\input</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\base\Logger.cpp">
+      <Filter>ソース ファイル\engine\base</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\base\StringUtility.cpp">
+      <Filter>ソース ファイル\engine\base</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\base\WinApp.cpp">
+      <Filter>ソース ファイル\engine\base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -146,23 +146,23 @@
     <ClInclude Include="engine\math\Matrix.h">
       <Filter>ヘッダー ファイル\engine\math</Filter>
     </ClInclude>
-    <ClInclude Include="engine\base\D3DResourceLeakChecker.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\base\DirectXBase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="engine\base\Logger.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\base\StringUtility.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\engine\base</Filter>
     </ClInclude>
     <ClInclude Include="engine\base\WinApp.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\engine\base</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\base\StringUtility.h">
+      <Filter>ヘッダー ファイル\engine\base</Filter>
     </ClInclude>
     <ClInclude Include="engine\input\Input.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\engine\input</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\base\DirectXBase.h">
+      <Filter>ヘッダー ファイル\engine\base</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\base\D3DResourceLeakChecker.h">
+      <Filter>ヘッダー ファイル\engine\base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
