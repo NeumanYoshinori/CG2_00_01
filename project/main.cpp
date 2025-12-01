@@ -21,6 +21,8 @@
 #include "Logger.h"
 #include "StringUtility.h"
 #include "D3DResourceLeakChecker.h"
+#include "SpriteCommon.h"
+#include "Sprite.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -402,6 +404,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 入力の初期化
 	input = new Input();
 	input->Initialize(winApp);
+
+	SpriteCommon* spriteCommon = nullptr;
+	// スプライト共通部の初期化
+	spriteCommon = new SpriteCommon;
+	spriteCommon->Initialize();
+
+	Sprite* sprite = new Sprite();
+	sprite->Initialize();
 
 	// DepthStencilStateの設定
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
@@ -1054,6 +1064,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// DirectX解放
 	delete dxBase;
+
+	// スプライトの解放
+	delete sprite;
+	delete spriteCommon;
 
 	// XAudio2解放
 	xAudio2.Reset();
