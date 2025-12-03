@@ -1,7 +1,8 @@
 #pragma once
 #include <wrl.h>
 #include <d3d12.h>
-#include "DirectXBase.h"
+
+class DirectXBase;
 
 // スプライト共通部
 class SpriteCommon {
@@ -23,10 +24,12 @@ private:
 	DirectXBase* dxBase_;
 
 	// コマンドリストを生成する
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = dxBase_->GetCommandList();
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
 
+	// ルートシグネチャ
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 
+	// グラフィックスパイプラインステート
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 };
 

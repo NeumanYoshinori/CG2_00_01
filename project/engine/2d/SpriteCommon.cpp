@@ -1,5 +1,6 @@
 #include "SpriteCommon.h"
 #include "Logger.h"
+#include "DirectXBase.h"
 
 using namespace Microsoft::WRL;
 using namespace Logger;
@@ -13,6 +14,7 @@ void SpriteCommon::Initialize(DirectXBase* dxBase) {
 }
 
 void SpriteCommon::DrawSetting() {
+	commandList = dxBase_->GetCommandList();
 	commandList->SetGraphicsRootSignature(rootSignature.Get());
 	commandList->SetPipelineState(graphicsPipelineState.Get());
 	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
@@ -116,6 +118,7 @@ void SpriteCommon::GenerateGraphicsPipeLine() {
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	// 三角形の中を塗りつぶす
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+
 	// Shaderをコンパイルする
 	ComPtr<IDxcBlob> vertexShaderBlob = dxBase_->CompileShader(L"resources/shaders/Object3D.VS.hlsl",
 		L"vs_6_0");
@@ -124,14 +127,6 @@ void SpriteCommon::GenerateGraphicsPipeLine() {
 	ComPtr<IDxcBlob> pixelShaderBlob = dxBase_->CompileShader(L"resources/shaders/Object3D.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
-
-	ComPtr<IDxcBlob> vertexShaderBlobForInstancing = dxBase_->CompileShader(L"resources/shaders/Particle.VS.hlsl",
-		L"vs_6_0");
-	assert(vertexShaderBlobForInstancing != nullptr);
-
-	ComPtr<IDxcBlob> pixelShaderBlobForInstancing = dxBase_->CompileShader(L"resources/shaders/Particle.PS.hlsl",
-		L"ps_6_0");
-	assert(pixelShaderBlobForInstancing != nullptr);
 
 	// DepthStencilStateの設定
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
@@ -163,7 +158,6 @@ void SpriteCommon::GenerateGraphicsPipeLine() {
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	// 実際に生成
-	ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 	hr = dxBase_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));

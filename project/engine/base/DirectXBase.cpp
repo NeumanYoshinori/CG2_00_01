@@ -109,14 +109,15 @@ void DirectXBase::PostDraw() {
 
 	ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get() };
 	commandQueue->ExecuteCommandLists(_countof(commandLists), commandLists->GetAddressOf());
-	// GPUとOSに画面の交換を行うよう通知する
-	swapChain->Present(1, 0);
-	assert(SUCCEEDED(hr));
 
 	// Fenceの値を更新
 	fenceVal++;
 	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
 	commandQueue->Signal(fence.Get(), fenceVal);
+
+	// GPUとOSに画面の交換を行うよう通知する
+	swapChain->Present(1, 0);
+	assert(SUCCEEDED(hr));
 
 	// Fenceの値が指定したSinal値にたどり着いているか確認する
 	// GetCompleteValueの初期値はFence作成時に渡した初期値
