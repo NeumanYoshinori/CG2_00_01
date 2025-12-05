@@ -21,10 +21,7 @@
 #include "D3DResourceLeakChecker.h"
 #include "SpriteCommon.h"
 #include "Sprite.h"
-#include "Vector2.h"
-#include "Vector3.h"
-#include "Vector4.h"
-#include "Matrix4x4.h"
+#include "Vector4.h"	
 #include "Transform.h"
 #include "MathFunction.h"
 
@@ -387,8 +384,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	spriteCommon = new SpriteCommon;
 	spriteCommon->Initialize(dxBase);
 
-	Sprite* sprite = new Sprite();
-	sprite->Initialize(spriteCommon);
+	vector<Sprite*> sprites;
+	for (uint32_t i = 0; i < 5; ++i) {
+		Sprite* sprite = new Sprite();
+		sprite->Initialize(spriteCommon);
+
+		sprites.push_back(sprite);
+	}
+
+	sprites[1]->SetPosition(Vector2{ 100.0f, 0.0f });
+	sprites[2]->SetPosition(Vector2{ 200.0f, 0.0f });
+	sprites[3]->SetPosition(Vector2{ 300.0f, 0.0f });
+	sprites[4]->SetPosition(Vector2{ 400.0f, 0.0f });
 
 	// RootSingature(パーティクル用)
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignatureForInstancing{};
@@ -473,8 +480,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
 	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
@@ -783,7 +790,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		// スプライトの更新
-		sprite->Update();
+		for (Sprite* sprite : sprites) {
+			sprite->Update();
+		}
 
 		// 開発用UIの処理
 		ImGui::ShowDemoWindow();
@@ -848,7 +857,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 共通描画設定
 		spriteCommon->DrawSetting();
 
-		sprite->Draw();
+		for (Sprite* sprite : sprites) {
+			sprite->Draw();
+		}
 
 		// 実際のcommandListのImGuiの描画コマンドを積む
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
@@ -884,7 +895,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete input;
 
 	// スプライトの解放
-	delete sprite;
+	for (Sprite* sprite : sprites) {
+		delete sprite;
+	}
+
 	delete spriteCommon;
 
 	// DirectX解放

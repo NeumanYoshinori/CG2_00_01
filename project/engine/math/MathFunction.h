@@ -1,8 +1,11 @@
 #pragma once
-#include "Vector3.h"
-#include "Matrix4x4.h"
+#include <Vector2.h>
+#include <Vector3.h>
+#include <Matrix4x4.h>
 
 namespace MathFunction {
+	Vector2& operator+=(Vector2& lhv, const Vector2& rhv);
+
 	const Vector3 operator+(const Vector3& v1, const Vector3& v2);
 	const Vector3 operator*(const Vector3& v1, const float f);
 	Vector3 operator+(const Vector3& v);

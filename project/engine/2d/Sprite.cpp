@@ -23,25 +23,57 @@ void Sprite::Initialize(SpriteCommon* spriteCommon) {
 
 	// 座標交換行列作成
 	CreateTransformationMatrixData();
+
+	// Texture
+	ScratchImage mipImages = dxBase_->LoadTexture("resources/uvChecker.png");
+	const TexMetadata& metadata = mipImages.GetMetadata();
+	textureResource = dxBase_->CreateTextureResource(metadata);
+	intermediateResource = dxBase_->UploadTextureData(textureResource, mipImages);
+
+	// metadataを基にSRVの設定
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = metadata.format;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ
+	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+
+	// SRVを作成するDescriptoHeapの場所を決める
+	textureSrvHandleCPU = dxBase_->GetSRVCPUDescriptorHandle(0);
+	textureSrvHandleGPU = dxBase_->GetSRVGPUDescriptorHandle(0);
+	// 先頭はImGuiが使っているのでその次を使う
+	textureSrvHandleCPU.ptr += dxBase_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	textureSrvHandleGPU.ptr += dxBase_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	// SRVの生成
+	dxBase_->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 }
 
 void Sprite::Update() {
-	// 1枚目の三角形
-	vertexData[0].position = { 0.0f, 360.0f, 0.0f, 1.0f }; // 左下
+	// 頂点リソースにデータを書き込む
+	// 左下
+	vertexData[0].position = { 0.0f, 1.0f, 0.0f, 1.0f };
 	vertexData[0].texcoord = { 0.0f, 1.0f };
-	vertexData[1].position = { 0.0f, 0.0f, 0.0f, 1.0f }; // 左上
+	vertexData[0].normal = { 0.0f, 0.0f, -1.0f };
+	// 左上
+	vertexData[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
 	vertexData[1].texcoord = { 0.0f, 0.0f };
-	vertexData[2].position = { 640.0f, 360.0f, 0.0f, 1.0f }; // 右下
+	vertexData[1].normal = { 0.0f, 0.0f, -1.0f };
+	// 右下
+	vertexData[2].position = { 1.0f, 1.0f, 0.0f, 1.0f };
 	vertexData[2].texcoord = { 1.0f, 1.0f };
-	// 2枚目の三角形
-	vertexData[3].position = { 640.0f, 0.0f, 0.0f, 1.0f }; // 左上
+	vertexData[2].normal = { 0.0f, 0.0f, -1.0f };
+	// 右上
+	vertexData[3].position = { 1.0f, 0.0f, 0.0f, 1.0f };
 	vertexData[3].texcoord = { 1.0f, 0.0f };
+	vertexData[3].normal = { 0.0f, 0.0f, -1.0f };
 
 	indexData[0] = 0; indexData[1] = 1; indexData[2] = 2;
 	indexData[3] = 1; indexData[4] = 3; indexData[5] = 2;
 
 	// Transform情報を作る
-	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+	Transform transform = {};
+	transform.scale = { size.x, size.y, 1.0f };
+	transform.rotate = { 0.0f, 0.0f, rotation };
+	transform.translate = { position.x, position.y, 0.0f };
 	// TransformからWorldMatrixを作る
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	// ViewMatrixを作って単位行列を書き込む
@@ -63,28 +95,6 @@ void Sprite::Draw() {
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	// TransformationMatrixCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-
-	// Texture
-	ScratchImage mipImages = dxBase_->LoadTexture("resources/uvChecker.png");
-	const TexMetadata& metadata = mipImages.GetMetadata();
-	textureResource = dxBase_->CreateTextureResource(metadata);
-	intermediateResource = dxBase_->UploadTextureData(textureResource, mipImages);
-
-	// metadataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = metadata.format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ
-	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-
-	// SRVを作成するDescriptoHeapの場所を決める
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxBase_->GetSRVCPUDescriptorHandle(0);
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxBase_->GetSRVGPUDescriptorHandle(0);
-	// 先頭はImGuiが使っているのでその次を使う
-	textureSrvHandleCPU.ptr += dxBase_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	textureSrvHandleGPU.ptr += dxBase_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	// SRVの生成
-	dxBase_->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 
 	// SRVのDescriptorTableの先頭を設定
 	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);

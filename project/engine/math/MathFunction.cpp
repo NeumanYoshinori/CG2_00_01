@@ -4,6 +4,12 @@
 using namespace std;
 
 namespace MathFunction {
+    Vector2& operator+=(Vector2& lhv, const Vector2& rhv) {
+        lhv.x += rhv.x;
+        lhv.y += rhv.y;
+        return lhv;
+    }
+
     const Vector3 operator+(const Vector3& v1, const Vector3& v2) {
         Vector3 temp(v1);
         return temp += v2;

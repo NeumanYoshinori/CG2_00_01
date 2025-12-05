@@ -44,6 +44,20 @@ public:
 	// 描画
 	void Draw();
 
+	// getter
+	const Vector2& GetPosition() const { return position; }
+	// setter
+	void SetPosition(const Vector2& position) { this->position = position; }
+
+	float GetRotation() const { return rotation; }
+	void SetRotation(float rotation) { this->rotation = rotation; }
+
+	const Vector4& GetColor() const { return materialData->color; }
+	void SetColor(const Vector4& color) { materialData->color = color; }
+
+	const Vector2& GetSize() const { return size; }
+	void SetSize(const Vector2& size) { this->size = size; }
+
 private:
 	// 頂点データ作成
 	void CreateVertexData();
@@ -79,5 +93,17 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = nullptr;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU;
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU;
+
+	// 座標
+	Vector2 position = { 0.0f, 0.0f };
+
+	// 回転
+	float rotation = 0.0f;
+
+	// サイズ
+	Vector2 size = { 640.0f, 360.0f };
 };
 
