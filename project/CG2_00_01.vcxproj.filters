@@ -64,11 +64,11 @@
     <Filter Include="ヘッダー ファイル\engine\scene">
       <UniqueIdentifier>{2efb3462-9bcb-4409-b088-4d4ba4bad021}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\engine\input">
-      <UniqueIdentifier>{c300a7f8-ce81-4fba-aa31-0119adcd9834}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ヘッダー ファイル\engine\input">
       <UniqueIdentifier>{4ea12745-2ee4-41d7-8c94-e75503f480ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\input">
+      <UniqueIdentifier>{c300a7f8-ce81-4fba-aa31-0119adcd9834}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -103,7 +103,7 @@
       <Filter>ソース ファイル\engine\base</Filter>
     </ClCompile>
     <ClCompile Include="engine\input\Input.cpp">
-      <Filter>ソース ファイル\engine\input</Filter>
+      <Filter>ソース ファイル\input</Filter>
     </ClCompile>
     <ClCompile Include="engine\base\Logger.cpp">
       <Filter>ソース ファイル\engine\base</Filter>
@@ -122,6 +122,9 @@
     </ClCompile>
     <ClCompile Include="engine\math\MathFunction.cpp">
       <Filter>ソース ファイル\engine\math</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\2d\TextureManager.cpp">
+      <Filter>ソース ファイル\engine\2d</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -190,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="engine\math\MathFunction.h">
       <Filter>ヘッダー ファイル\engine\math</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\2d\TextureManager.h">
+      <Filter>ヘッダー ファイル\engine\2d</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

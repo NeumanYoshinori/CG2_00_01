@@ -10,7 +10,7 @@
 #include <externals/DirectXTex/d3dx12.h>
 #include "Logger.h"
 #include "StringUtility.h"
-#include <Windows.h>
+#include <cstdint>
 
 #pragma comment(lib, "dxcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
@@ -28,8 +28,11 @@ public:
 	void PostDraw();
 
 	// getter
-	ID3D12Device* GetDevice() const { return device.Get(); }
-	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
+	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice() const { return device; }
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> GetCommandList() const { return commandList; }
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() const { return commandQueue; }
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() const { return commandAllocator; }
+	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence() const { return fence; }
 
 	// シェーダーのコンパイル
 	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
@@ -43,9 +46,6 @@ public:
 	// テクスチャデータの転送
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages);
 
-	// 画像イメージデータ
-	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
-
 	// SRVの指定番号のCPUデスクリプタハンドルを取得する
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
 
@@ -58,6 +58,9 @@ public:
 	void InitializeFixFPS();
 	// FPS固定更新
 	void UpdateFixFPS();
+
+	// 最大SRV数（最大テクスチャ枚数）
+	static const uint32_t kMaxSRVCount;
 
 private:
 	// 初期化
@@ -73,7 +76,7 @@ private:
 	void CreateDepthBuffer();
 
 	// 各種デスクリプタヒープの生成
-	void CreateEachDescriptorHeap();
+	void CreateDescriptorHeaps();
 
 	// デスクリプタヒープを生成する
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
@@ -132,7 +135,7 @@ private:
 	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
 
 	// WindowsAPI
-	WinApp* winApp = nullptr;
+	WinApp* winApp_ = nullptr;
 
 	// RTV用のデスクリプタヒープ生成
 	uint32_t descriptorSizeSRV = 0;
@@ -170,6 +173,12 @@ private:
 
 	// デフォルトインクルードハンドラ
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
+
+	// バックバッファのインデックス
+	UINT backBufferIndex;
+
+	// TransitionBarrier
+	D3D12_RESOURCE_BARRIER barrier{};
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 

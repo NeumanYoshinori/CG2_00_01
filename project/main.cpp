@@ -21,9 +21,10 @@
 #include "D3DResourceLeakChecker.h"
 #include "SpriteCommon.h"
 #include "Sprite.h"
-#include "Vector4.h"	
+#include "Vector4.h"
 #include "Transform.h"
 #include "MathFunction.h"
+#include "TextureManager.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -384,10 +385,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	spriteCommon = new SpriteCommon;
 	spriteCommon->Initialize(dxBase);
 
+	// テクスチャマネジャー
+	TextureManager* textureManager = TextureManager::GetInstance();
+
+	// テクスチャマネージャの初期化
+	textureManager->Initialize(dxBase);
+
+	textureManager->LoadTexture("resources/uvChecker.png");
+	textureManager->LoadTexture("resources/monsterBall.png");
+
+	string filePath[5] = { "resources/uvChecker.png", "resources/monsterBall.png", "resources/uvChecker.png", "resources/monsterBall.png", "resources/uvChecker.png" };
+
 	vector<Sprite*> sprites;
 	for (uint32_t i = 0; i < 5; ++i) {
 		Sprite* sprite = new Sprite();
-		sprite->Initialize(spriteCommon);
+		sprite->Initialize(spriteCommon, filePath[i]);
 
 		sprites.push_back(sprite);
 	}
@@ -635,46 +647,46 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	wvpData->WVP = MakeIdentity4x4();
 	wvpData->World = MakeIdentity4x4();
 
-	// Texture
-	ScratchImage mipImages = dxBase->LoadTexture("resources/uvChecker.png");
-	const TexMetadata& metadata = mipImages.GetMetadata();
-	ComPtr<ID3D12Resource> textureResource = dxBase->CreateTextureResource(metadata);
-	ComPtr<ID3D12Resource> intermediateResource = dxBase->UploadTextureData(textureResource, mipImages);
+	//// Texture
+	//ScratchImage mipImages = dxBase->LoadTexture("resources/uvChecker.png");
+	//const TexMetadata& metadata = mipImages.GetMetadata();
+	//ComPtr<ID3D12Resource> textureResource = dxBase->CreateTextureResource(metadata);
+	//ComPtr<ID3D12Resource> intermediateResource = dxBase->UploadTextureData(textureResource, mipImages);
 
-	// 2枚目のTextureを読んで転送する
-	ScratchImage mipImages2 = dxBase->LoadTexture(modelData.material.textureFilePath);
-	const TexMetadata& metadata2 = mipImages2.GetMetadata();
-	ComPtr<ID3D12Resource> textureResource2 = dxBase->CreateTextureResource(metadata2);
-	ComPtr<ID3D12Resource> intermediateResource2 = dxBase->UploadTextureData(textureResource2, mipImages2);
+	//// 2枚目のTextureを読んで転送する
+	//ScratchImage mipImages2 = dxBase->LoadTexture(modelData.material.textureFilePath);
+	//const TexMetadata& metadata2 = mipImages2.GetMetadata();
+	//ComPtr<ID3D12Resource> textureResource2 = dxBase->CreateTextureResource(metadata2);
+	//ComPtr<ID3D12Resource> intermediateResource2 = dxBase->UploadTextureData(textureResource2, mipImages2);
 
-	// metadataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = metadata.format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ
-	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+	//// metadataを基にSRVの設定
+	//D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	//srvDesc.Format = metadata.format;
+	//srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	//srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ
+	//srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
 
-	// SRVを作成するDescriptoHeapの場所を決める
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxBase->GetSRVCPUDescriptorHandle(0);
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxBase->GetSRVGPUDescriptorHandle(0);
-	// 先頭はImGuiが使っているのでその次を使う
-	textureSrvHandleCPU.ptr += dxBase->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	textureSrvHandleGPU.ptr += dxBase->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	// SRVの生成
-	dxBase->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
+	//// SRVを作成するDescriptoHeapの場所を決める
+	//D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxBase->GetSRVCPUDescriptorHandle(0);
+	//D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxBase->GetSRVGPUDescriptorHandle(0);
+	//// 先頭はImGuiが使っているのでその次を使う
+	//textureSrvHandleCPU.ptr += dxBase->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	//textureSrvHandleGPU.ptr += dxBase->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	//// SRVの生成
+	//dxBase->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 
-	// metadataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
-	srvDesc2.Format = metadata2.format;
-	srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ
-	srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
+	//// metadataを基にSRVの設定
+	//D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
+	//srvDesc2.Format = metadata2.format;
+	//srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	//srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ
+	//srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
 
-	// SRVを作成するDescriptoHeapの場所を決める
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = dxBase->GetSRVCPUDescriptorHandle(2);
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = dxBase->GetSRVGPUDescriptorHandle(2);
-	// SRVの生成
-	dxBase->GetDevice()->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
+	//// SRVを作成するDescriptoHeapの場所を決める
+	//D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = dxBase->GetSRVCPUDescriptorHandle(2);
+	//D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = dxBase->GetSRVGPUDescriptorHandle(2);
+	//// SRVの生成
+	//dxBase->GetDevice()->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC instancingSrvDesc{};
 	instancingSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -713,6 +725,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// パーティクルが動くか
 	uint32_t canUpdate = false;
+
+	// コマンドリストを生成する
+	ComPtr<ID3D12GraphicsCommandList> commandList = dxBase->GetCommandList();
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (true) {
@@ -833,26 +848,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 描画前処理
 		dxBase->PreDraw();
 
-		// コマンドリストを生成する
-		ComPtr<ID3D12GraphicsCommandList> commandList = dxBase->GetCommandList();
-
 		// RootSignatureを設定。PSOに設定しているけど別途設定が必要
-		commandList->SetGraphicsRootSignature(rootSignatureForInstancing.Get());
-		commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-		commandList->SetPipelineState(graphicsPipelineStateForInstancing.Get());
-		// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
-		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//commandList->SetGraphicsRootSignature(rootSignatureForInstancing.Get());
+		//commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+		//commandList->SetPipelineState(graphicsPipelineStateForInstancing.Get());
+		//// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
+		//commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		// Modelの描画
-		commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-		// マテリアルCBufferの場所を設定
-		commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-		// instancing用のDataを読み込むためにStructuredBufferのSRVを設定する
-		commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
-		// SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
-		commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-		// 描画
-		commandList->DrawInstanced(UINT(modelData.verticles.size()), kNumInstance, 0, 0);
+		//// Modelの描画
+		//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+		//// マテリアルCBufferの場所を設定
+		//commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		//// instancing用のDataを読み込むためにStructuredBufferのSRVを設定する
+		//commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
+		//// SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
+		//commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+		//// 描画
+		//commandList->DrawInstanced(UINT(modelData.verticles.size()), kNumInstance, 0, 0);
 
 		// 共通描画設定
 		spriteCommon->DrawSetting();
@@ -900,6 +912,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 	delete spriteCommon;
+
+	// テクスチャマネージャの終了
+	textureManager->Finalize();
 
 	// DirectX解放
 	delete dxBase;

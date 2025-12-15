@@ -4,16 +4,18 @@
 #include "DirectXBase.h"
 #include "MathFunction.h"
 #include "Transform.h"
+#include "TextureManager.h"
 
 using namespace Microsoft::WRL;
 using namespace MathFunction;
 using namespace DirectX;
+using namespace std;
 
-void Sprite::Initialize(SpriteCommon* spriteCommon) {
+void Sprite::Initialize(SpriteCommon* spriteCommon, string textureFilePath) {
 	// 引数で受け取ってメンバ変数に記録する
-	this->spriteCommon = spriteCommon;
+	spriteCommon_ = spriteCommon;
 
-	dxBase_ = spriteCommon->GetDxBase();
+	dxBase_ = spriteCommon_->GetDxBase();
 
 	// 頂点データ作成
 	CreateVertexData();
@@ -24,27 +26,8 @@ void Sprite::Initialize(SpriteCommon* spriteCommon) {
 	// 座標交換行列作成
 	CreateTransformationMatrixData();
 
-	// Texture
-	ScratchImage mipImages = dxBase_->LoadTexture("resources/uvChecker.png");
-	const TexMetadata& metadata = mipImages.GetMetadata();
-	textureResource = dxBase_->CreateTextureResource(metadata);
-	intermediateResource = dxBase_->UploadTextureData(textureResource, mipImages);
-
-	// metadataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = metadata.format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ
-	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-
-	// SRVを作成するDescriptoHeapの場所を決める
-	textureSrvHandleCPU = dxBase_->GetSRVCPUDescriptorHandle(0);
-	textureSrvHandleGPU = dxBase_->GetSRVGPUDescriptorHandle(0);
-	// 先頭はImGuiが使っているのでその次を使う
-	textureSrvHandleCPU.ptr += dxBase_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	textureSrvHandleGPU.ptr += dxBase_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	// SRVの生成
-	dxBase_->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
+	// テクスチャ番号の検索と記録
+	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 }
 
 void Sprite::Update() {
@@ -97,7 +80,8 @@ void Sprite::Draw() {
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 
 	// SRVのDescriptorTableの先頭を設定
-	commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
+
 	// 描画！（DrawCall/ドローコール）
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }

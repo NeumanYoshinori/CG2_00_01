@@ -7,6 +7,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 #include <cstdint>
+#include <string>
 
 class SpriteCommon;
 class DirectXBase;
@@ -36,7 +37,7 @@ struct TransformationMatrix {
 class Sprite {
 public:
 	// 初期化
-	void Initialize(SpriteCommon* spriteCommon);
+	void Initialize(SpriteCommon* spriteCommon, std::string textureFilePath);
 
 	// 更新
 	void Update();
@@ -68,7 +69,7 @@ private:
 	// 座標変換行列データ作成
 	void CreateTransformationMatrixData();
 
-	SpriteCommon* spriteCommon = nullptr;
+	SpriteCommon* spriteCommon_ = nullptr;
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr; // 頂点リソース
@@ -105,5 +106,8 @@ private:
 
 	// サイズ
 	Vector2 size = { 640.0f, 360.0f };
+
+	// テクスチャ番号
+	uint32_t textureIndex = 0;
 };
 
