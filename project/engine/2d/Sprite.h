@@ -59,6 +59,32 @@ public:
 	const Vector2& GetSize() const { return size; }
 	void SetSize(const Vector2& size) { this->size = size; }
 
+	// getter
+	const Vector2& GetAnchorPoint() const { return anchorPoint_; }
+	// setter
+	void SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
+
+	// setter
+	void SetFlipX(bool isFlipX) { isFlipX_ = isFlipX; }
+	void SetFlipY(bool isFlipY) { isFlipY_ = isFlipY; }
+
+	// getter
+	bool IsFlipX() const { return isFlipX_; }
+	bool IsFlipY() const { return isFlipY_; }
+
+	void SetTextureLeftTop(float leftTopX, float leftTopY) {
+		textureLeftTop.x = leftTopX;
+		textureLeftTop.y = leftTopY;
+	}
+
+	void SetTextureSize(float sizeX, float sizeY) {
+		textureSize.x = sizeX;
+		textureSize.y = sizeY;
+	}
+
+	const Vector2& GetTextureLeftTop() const { return textureLeftTop; }
+	const Vector2& GetTextureSize() const { return textureSize; }
+
 private:
 	// 頂点データ作成
 	void CreateVertexData();
@@ -68,6 +94,9 @@ private:
 
 	// 座標変換行列データ作成
 	void CreateTransformationMatrixData();
+
+	// テクスチャサイズをイメージに合わせる
+	void AdjustTextureSize();
 
 	SpriteCommon* spriteCommon_ = nullptr;
 
@@ -109,5 +138,18 @@ private:
 
 	// テクスチャ番号
 	uint32_t textureIndex = 0;
+
+	// アンカーポイント
+	Vector2 anchorPoint_ = { 0.0f, 0.0f };
+
+	// 左右フリップ
+	bool isFlipX_ = false;
+	// 上下フリップ
+	bool isFlipY_ = false;
+
+	// テクスチャ左上座標
+	Vector2 textureLeftTop = { 0.0f, 0.0f };
+	// テクスチャ切り出しサイズ
+	Vector2 textureSize = { 100.0f, 100.0f };
 };
 
