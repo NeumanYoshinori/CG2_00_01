@@ -14,12 +14,14 @@ using namespace StringUtility;
 using namespace DirectX;
 using namespace chrono;
 
+const uint32_t DirectXBase::kMaxSRVCount = 512;
+
 void DirectXBase::Initialize(WinApp* winApp) {
 	// NULL検出
 	assert(winApp);
 
 	// メンバ変数に記録
-	this->winApp = winApp;
+	winApp_ = winApp;
 
 	// FPS固定初期化
 	InitializeFixFPS();
@@ -33,7 +35,7 @@ void DirectXBase::Initialize(WinApp* winApp) {
 	// 深度バッファの作成
 	CreateDepthBuffer();
 	// 各種デスクリプタ―ヒープの作成
-	CreateEachDescriptorHeap();
+	CreateDescriptorHeaps();
 	// レンダーターゲットビューの初期化
 	RenderTargetViewInitialize();
 	// 深度ステンシルの初期化
@@ -52,10 +54,8 @@ void DirectXBase::Initialize(WinApp* winApp) {
 
 void DirectXBase::PreDraw() {
 	// これから書き込むバックバッファのインデックスを取得
-	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
-	// TransitionBarrierの設定
-	D3D12_RESOURCE_BARRIER barrier{};
 	// 今回のバリアはTransition
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	// Noneにしておく
@@ -72,6 +72,7 @@ void DirectXBase::PreDraw() {
 	// 描画先のRTVを設定する
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+
 	// 指定した色で画面全体をクリアする
 	float clearColor[] = { 0.1f, 0.25f, 0.5f, 0.5f, 1.0f };
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
@@ -87,10 +88,7 @@ void DirectXBase::PreDraw() {
 
 void DirectXBase::PostDraw() {
 	// これから書き込むバックバッファのインデックスを取得
-	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-
-	// TransitionBarrierの設定
-	D3D12_RESOURCE_BARRIER barrier{};
+	backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
 	// 画面に描く処理はすべて終わり、画面に映すので、状態を遷移
 	// 今回はRenderTargetからPresentにする
@@ -109,14 +107,15 @@ void DirectXBase::PostDraw() {
 
 	ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get() };
 	commandQueue->ExecuteCommandLists(_countof(commandLists), commandLists->GetAddressOf());
-	// GPUとOSに画面の交換を行うよう通知する
-	swapChain->Present(1, 0);
-	assert(SUCCEEDED(hr));
 
 	// Fenceの値を更新
 	fenceVal++;
 	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
 	commandQueue->Signal(fence.Get(), fenceVal);
+
+	// GPUとOSに画面の交換を行うよう通知する
+	swapChain->Present(1, 0);
+	assert(SUCCEEDED(hr));
 
 	// Fenceの値が指定したSinal値にたどり着いているか確認する
 	// GetCompleteValueの初期値はFence作成時に渡した初期値
@@ -269,7 +268,7 @@ void DirectXBase::CreateSwapChain() {
 	swapChainDesc.BufferCount = 2;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // モニタにうつしたら、中身を破棄
 	// コマンドキュー、ウィンドウハンドル、設定を渡して生成する
-	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winApp->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
+	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winApp_->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
 	assert(SUCCEEDED(hr));
 }
 
@@ -306,7 +305,7 @@ void DirectXBase::CreateDepthBuffer() {
 	assert(SUCCEEDED(hr));
 }
 
-void DirectXBase::CreateEachDescriptorHeap() {
+void DirectXBase::CreateDescriptorHeaps() {
 	// DescriptorSizeを取得しておく
 	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -316,7 +315,7 @@ void DirectXBase::CreateEachDescriptorHeap() {
 	rtvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 
 	// SRV用のヒープ
-	srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+	srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCount, true);
 
 	// DSV用のヒープ
 	dsvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
@@ -459,7 +458,7 @@ void DirectXBase::ImGuiInitialize() {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(winApp->GetHwnd());
+	ImGui_ImplWin32_Init(winApp_->GetHwnd());
 	ImGui_ImplDX12_Init(device.Get(),
 		swapChainDesc.BufferCount,
 		rtvDesc.Format,
@@ -517,9 +516,6 @@ ComPtr<IDxcBlob> DirectXBase::CompileShader(const wstring& filePath, const wchar
 	assert(SUCCEEDED(hr));
 	// 成功したログを出す
 	Log(ConvertString(format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
-	// もう使わないリソースを解放
-	shaderSource->Release();
-	shaderResult->Release();
 	// 実行用のバイナリを返却
 	return shaderBlob;
 }
@@ -564,8 +560,6 @@ ComPtr<ID3D12Resource> DirectXBase::CreateTextureResource(const TexMetadata& met
 	// 利用するHeapの設定。非常に特殊な運用。
 	D3D12_HEAP_PROPERTIES heapProperties{};
 	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT; // 細かい設定を行う
-	//heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK; // WriteBackポリシーでCPUアクセス可能
-	//heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0; // プロセッサの近くに配置
 
 	// Resourceの生成
 	ComPtr<ID3D12Resource> resource = nullptr;
@@ -597,20 +591,4 @@ ComPtr<ID3D12Resource> DirectXBase::UploadTextureData(const ComPtr<ID3D12Resourc
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
 	commandList->ResourceBarrier(1, &barrier);
 	return intermediateResource;
-}
-
-ScratchImage DirectXBase::LoadTexture(const string& filePath) {
-	// テクスチャファイルを読んでプログラムで扱えるようにする
-	ScratchImage image{};
-	wstring filePathW = ConvertString(filePath);
-	HRESULT hr = LoadFromWICFile(filePathW.c_str(), WIC_FLAGS_FORCE_SRGB, nullptr, image);
-	assert(SUCCEEDED(hr));
-
-	// ミップマップの作成
-	ScratchImage mipImages{};
-	hr = GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), TEX_FILTER_SRGB, 0, mipImages);
-	assert(SUCCEEDED(hr));
-
-	// ミップマップ付きのデータを返す
-	return mipImages;
 }
