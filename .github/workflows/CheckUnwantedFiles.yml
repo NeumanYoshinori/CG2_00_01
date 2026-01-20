@@ -37,12 +37,14 @@ jobs:
             DIR_CONDITIONS+=(-o -iname "$pattern")
           done
           unset DIR_CONDITIONS[0]
+
           # ファイル条件を構築(最初の不要な -o を後で削除)
           NAME_CONDITIONS=()
           for pattern in $UNWANTED_NAME_PATTERNS; do
             NAME_CONDITIONS+=(-o -iname "$pattern")
           done
           unset NAME_CONDITIONS[0]
+
           # 1回の find 実行で全件を検索
           # 1. .git を除外
           # 2. 不要なディレクトリを検索(-type d)し、見つけたらパスを出力(-print)し、その中身を枝刈り(-prune)
@@ -58,5 +60,5 @@ jobs:
             echo "$UNWANTED_LIST"
             exit 1
           fi
-					
+        
           echo "リポジトリはクリーンです。"
