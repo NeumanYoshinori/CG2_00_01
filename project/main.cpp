@@ -713,7 +713,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const float kDeltaTime = 1.0f / 60.0f;
 
 	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 4.0f, 10.0f} };
+	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, -10.0f} };
 
 	// データを書き込む
 	TransformationMatrix* wvpData = nullptr;
@@ -893,15 +893,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::ShowDemoWindow();
 
 		ImGui::Begin("Setting");
-		ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f);
-		ImGui::SliderAngle("CameraRotateX", &cameraTransform.rotate.x, 0.01f);
-		ImGui::SliderAngle("CameraRotateY", &cameraTransform.rotate.y, 0.01f);
-		ImGui::SliderAngle("CameraRotateZ", &cameraTransform.rotate.z, 0.01f);
-		ImGui::SliderAngle("SphereRotateX", &transform.rotate.x, 0.01f);
-		ImGui::SliderAngle("SphereRotateY", &transform.rotate.y, 0.01f);
-		ImGui::SliderAngle("SphereRotateZ", &transform.rotate.z, 0.01f);
 		ImGui::ColorEdit4("color", &materialData->color.x);
 		ImGui::CheckboxFlags("enableLighting", &materialData->enableLighting, 1);
+		ImGui::DragFloat("Shininess", &materialData->shininess);
 		ImGui::CheckboxFlags("update", &canUpdate, 1);
 		if (ImGui::BeginCombo("Blend", blendMode[currentBlend])) {
 			for (uint32_t i = 0; i < 6; ++i) {
@@ -917,6 +911,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::EndCombo();
 		}
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
+		ImGui::ColorEdit3("LightColor", &directionalLightData->color.x);
+		ImGui::DragFloat3("LightDirection", &directionalLightData->direction.x);
+		ImGui::DragFloat("Intensity", &directionalLightData->intensity);
 		ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 		ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
