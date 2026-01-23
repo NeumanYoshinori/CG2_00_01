@@ -394,23 +394,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	textureManager->LoadTexture("resources/uvChecker.png");
 	textureManager->LoadTexture("resources/monsterBall.png");
 
-	string filePath[5] = { "resources/uvChecker.png", "resources/monsterBall.png", "resources/uvChecker.png", "resources/monsterBall.png", "resources/uvChecker.png" };
-
-	/*vector<Sprite*> sprites;
-	for (uint32_t i = 0; i < 5; ++i) {
-		Sprite* sprite = new Sprite();
-		sprite->Initialize(spriteCommon, filePath[i]);
-
-		sprites.push_back(sprite);
-	}*/
-
-	/*sprites[1]->SetPosition(Vector2{ 100.0f, 0.0f });
-	sprites[2]->SetPosition(Vector2{ 200.0f, 0.0f });
-	sprites[3]->SetPosition(Vector2{ 300.0f, 0.0f });
-	sprites[4]->SetPosition(Vector2{ 400.0f, 0.0f });*/
+	string filePath[2] = {"resources/uvChecker.png", "resources/monsterBall.png"};
 
 	Sprite* sprite = new Sprite();
-	sprite->Initialize(spriteCommon, filePath[0]);
+	sprite->Initialize(spriteCommon, filePath[1]);
 
 	// RootSingature(パーティクル用)
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignatureForInstancing{};
@@ -807,11 +794,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
-		// スプライトの更新
-		/*for (Sprite* sprite : sprites) {
-			sprite->Update();
-		}*/
-
 		sprite->Update();
 
 		// 開発用UIの処理
@@ -874,10 +856,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 共通描画設定
 		spriteCommon->DrawSetting();
 
-		/*for (Sprite* sprite : sprites) {
-			sprite->Draw();
-		}*/
-
 		sprite->Draw();
 
 		// 実際のcommandListのImGuiの描画コマンドを積む
@@ -914,12 +892,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete input;
 
 	// スプライトの解放
-	/*for (Sprite* sprite : sprites) {
-		delete sprite;
-	}*/
-
 	delete sprite;
 
+	// スプライト共通部の解放
 	delete spriteCommon;
 
 	// テクスチャマネージャの終了
