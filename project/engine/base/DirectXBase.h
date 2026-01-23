@@ -33,6 +33,8 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() const { return commandQueue; }
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() const { return commandAllocator; }
 	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence() const { return fence; }
+	D3D12_VIEWPORT GetViewport() const { return viewport; }
+	D3D12_RECT GetScissorRect() const { return scissorRect; }
 
 	// シェーダーのコンパイル
 	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
@@ -45,6 +47,9 @@ public:
 
 	// テクスチャデータの転送
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages);
+
+	// 画像イメージデータ
+	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
 	// SRVの指定番号のCPUデスクリプタハンドルを取得する
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
