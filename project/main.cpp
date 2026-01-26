@@ -26,6 +26,8 @@
 #include "MathFunction.h"
 #include "TextureManager.h"
 #include <numbers>
+#include "Object3dCommon.h"
+#include "Object3d.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -388,7 +390,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//SpriteCommon* spriteCommon = nullptr;
 	//// スプライト共通部の初期化
-	//spriteCommon = new SpriteCommon;
+	//spriteCommon = new SpriteCommon();
 	//spriteCommon->Initialize(dxBase);
 
 	// テクスチャマネジャー
@@ -402,8 +404,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	string filePath[2] = {"resources/uvChecker.png", "resources/monsterBall.png"};
 
+	// スプライトの初期化
 	/*Sprite* sprite = new Sprite();
 	sprite->Initialize(spriteCommon, filePath[0]);*/
+
+	Object3dCommon* object3dCommon = nullptr;
+	// 3Dオブジェクト共通部の初期化
+	object3dCommon = new Object3dCommon();
+	object3dCommon->Initialize();
+
+	// 3dオブジェクトの初期化
+	Object3d* object3d = new Object3d();
+	object3d->Initialize();
 
 	// RootSingature(パーティクル用)
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignatureForInstancing{};
@@ -999,6 +1011,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//// スプライト共通部の解放
 	//delete spriteCommon;
+
+	// 3dオブジェクトの解放
+	delete object3d;
+
+	// 3dオブジェクト共通部の解放
+	delete object3dCommon;
 
 	// テクスチャマネージャの終了
 	textureManager->Finalize();
