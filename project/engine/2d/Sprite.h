@@ -1,13 +1,13 @@
 #pragma once
-#include <MathFunction.h>
+#include "MathFunction.h"
 #include <d3d12.h>
 #include <wrl.h>
 #include <cstdint>
 #include <string>
 #include "Transform.h"
+#include "DirectXBase.h"
 
 class SpriteCommon;
-class DirectXBase;
 
 // スプライト
 class Sprite {
@@ -42,44 +42,52 @@ public: // メンバ関数
 	// 描画
 	void Draw();
 
+	// 座標
 	// getter
 	const Vector2& GetPosition() const { return position; }
 	// setter
 	void SetPosition(const Vector2& position) { this->position = position; }
 
+	// 回転
 	float GetRotation() const { return rotation; }
 	void SetRotation(float rotation) { this->rotation = rotation; }
 
+	// 色
 	const Vector4& GetColor() const { return materialData->color; }
 	void SetColor(const Vector4& color) { materialData->color = color; }
 
+	// サイズ
 	const Vector2& GetSize() const { return size; }
 	void SetSize(const Vector2& size) { this->size = size; }
 
-	// getter
+	// アンカーポイント
 	const Vector2& GetAnchorPoint() const { return anchorPoint_; }
 	// setter
 	void SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
 
-	// setter
+	// フリップのsetter
 	void SetFlipX(bool isFlipX) { isFlipX_ = isFlipX; }
 	void SetFlipY(bool isFlipY) { isFlipY_ = isFlipY; }
 
-	// getter
+	// フリップのgetter
 	bool IsFlipX() const { return isFlipX_; }
 	bool IsFlipY() const { return isFlipY_; }
 
+	// テクスチャ左上座標のsetter
 	void SetTextureLeftTop(float leftTopX, float leftTopY) {
 		textureLeftTop.x = leftTopX;
 		textureLeftTop.y = leftTopY;
 	}
 
+	// テクスチャ切り出しサイズのsetter
 	void SetTextureSize(float sizeX, float sizeY) {
 		textureSize.x = sizeX;
 		textureSize.y = sizeY;
 	}
 
+	// テクスチャ左上座標のgetter
 	const Vector2& GetTextureLeftTop() const { return textureLeftTop; }
+	// テクスチャ切り出しサイズのgetter
 	const Vector2& GetTextureSize() const { return textureSize; }
 
 private:
@@ -95,6 +103,7 @@ private:
 	// テクスチャサイズをイメージに合わせる
 	void AdjustTextureSize();
 
+	// SpriteCommonのポインタ
 	SpriteCommon* spriteCommon_ = nullptr;
 
 	// バッファリソース
@@ -113,16 +122,15 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	D3D12_INDEX_BUFFER_VIEW indexBufferView;
 
+	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
 
 	// コマンドリスト
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
 
+	// テクスチャリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = nullptr;
-
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU;
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU;
 
 	// 座標
 	Vector2 position = { 0.0f, 0.0f };

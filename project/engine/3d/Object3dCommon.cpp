@@ -1,6 +1,5 @@
 #include "Object3dCommon.h"
 #include "Logger.h"
-#include "DirectXBase.h"
 
 using namespace Microsoft::WRL;
 using namespace Logger;

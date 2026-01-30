@@ -1,8 +1,7 @@
 #pragma once
 #include <wrl.h>
 #include <d3d12.h>
-
-class DirectXBase;
+#include "DIrectXBase.h"
 
 // スプライト共通部
 class SpriteCommon {
@@ -13,6 +12,7 @@ public: // メンバ関数
 	// 共通描画設定
 	void DrawSetting();
 
+	// DxBaseのgetter
 	DirectXBase* GetDxBase() const { return dxBase_; }
 
 private:
@@ -21,6 +21,7 @@ private:
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeLine();
 
+	// DirectXBase
 	DirectXBase* dxBase_;
 
 	// コマンドリストを生成する

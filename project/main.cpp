@@ -26,6 +26,8 @@
 #include <numbers>
 #include "Object3dCommon.h"
 #include "Object3d.h"
+#include "ModelCommon.h"
+#include "Model.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -293,9 +295,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3dCommon = new Object3dCommon();
 	object3dCommon->Initialize(dxBase);
 
+	ModelCommon* modelCommon = nullptr;
+	// モデル共通部の初期化
+	modelCommon = new ModelCommon();
+	modelCommon->Initialize(dxBase);
+
+	// モデルの初期化
+	Model* model = new Model();
+	model->Initialize(modelCommon);
+
+	Vector3 position[2];
+	position[0] = { 0.0f, 0.0f, 0.0f };
+	position[1] = { 2.0f, 2.0f, 2.0f };
+
+	Vector3 rotate[2] = { 0.0f };
+
 	// 3dオブジェクトの初期化
-	Object3d* object3d = new Object3d();
-	object3d->Initialize(object3dCommon);
+	Object3d* object3d[2];
+	for (uint32_t i = 0; i < 2; i++) {
+		object3d[i] = new Object3d();
+		object3d[i]->Initialize(object3dCommon);
+		object3d[i]->SetModel(model);
+		object3d[i]->SetTranslate(position[i]);
+	}
 
 	// 乱数生成器の初期化
 	random_device seedGenerator;
@@ -362,8 +384,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			OutputDebugStringA("Hit 0\n");
 		}
 
-		// 3Dオブジェクトの更新
-		object3d->Update();
+		rotate[0].x += 0.01f;
+		rotate[1].z += 0.01f;
+
+		for (uint32_t i = 0; i < 2; i++) {
+			// 3Dオブジェクトの更新
+			object3d[i]->Update();
+			object3d[i]->SetRotate(rotate[i]);
+		}
 
 		// スプライトの更新
 		sprite->Update();
@@ -380,8 +408,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3dCommon->DrawSetting();
 
-		// 3Dオブジェクトの描画
-		object3d->Draw();
+		for (uint32_t i = 0; i < 2; i++) {
+			// 3Dオブジェクトの描画
+			object3d[i]->Draw();
+		}
 
 		// 共通描画設定
 		spriteCommon->DrawSetting();
@@ -419,11 +449,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// スプライト共通部の解放
 	delete spriteCommon;
 
-	// 3dオブジェクトの解放
-	delete object3d;
+	for (uint32_t i = 0; i < 2; i++) {
+		// 3dオブジェクトの解放
+		delete object3d[i];
+	}
 
 	// 3dオブジェクト共通部の解放
 	delete object3dCommon;
+
+	// modelの解放
+	delete model;
+
+	// モデル共通部の解放
+	delete modelCommon;
 
 	// テクスチャマネージャの終了
 	textureManager->Finalize();

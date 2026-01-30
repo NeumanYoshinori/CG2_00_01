@@ -1,6 +1,5 @@
 #include "Sprite.h"
 #include "SpriteCommon.h"
-#include "DirectXBase.h"
 #include "TextureManager.h"
 
 using namespace Microsoft::WRL;
