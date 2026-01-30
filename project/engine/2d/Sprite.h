@@ -1,42 +1,38 @@
 #pragma once
-#include <Windows.h>
-#include <Vector2.h>
-#include <Vector3.h>
-#include <Vector4.h>
-#include <Matrix4x4.h>
+#include <MathFunction.h>
 #include <d3d12.h>
 #include <wrl.h>
 #include <cstdint>
 #include <string>
+#include "Transform.h"
 
 class SpriteCommon;
 class DirectXBase;
 
-// 頂点データ
-struct VertexData {
-	Vector4 position;
-	Vector2 texcoord;
-	Vector3 normal;
-};
-
-// マテリアルデータ
-struct Material {
-	Vector4 color;
-	int32_t enableLighting;
-	float padding[3];
-	Matrix4x4 uvTransform;
-	float shininess;
-};
-
-// 座標変換用行列
-struct TransformationMatrix {
-	Matrix4x4 WVP;
-	Matrix4x4 World;
-};
-
 // スプライト
 class Sprite {
 public: // メンバ関数
+	// 頂点データ
+	struct VertexData {
+		Vector4 position;
+		Vector2 texcoord;
+		Vector3 normal;
+	};
+
+	// マテリアルデータ
+	struct Material {
+		Vector4 color;
+		int32_t enableLighting;
+		float padding[3];
+		Matrix4x4 uvTransform;
+	};
+
+	// 座標変換用行列
+	struct TransformationMatrix {
+		Matrix4x4 WVP;
+		Matrix4x4 World;
+	};
+
 	// 初期化
 	void Initialize(SpriteCommon* spriteCommon, std::string textureFilePath);
 
@@ -105,7 +101,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr; // 頂点リソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource = nullptr; // インデックスリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr; // マテリアルリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource = nullptr; // 座標変換リソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource = nullptr; // 座標変換行列リソース
 
 	// バッファリソース内のデータを指すポインタ
 	VertexData* vertexData = nullptr;
@@ -152,5 +148,8 @@ private:
 	Vector2 textureLeftTop = { 0.0f, 0.0f };
 	// テクスチャ切り出しサイズ
 	Vector2 textureSize = { 100.0f, 100.0f };
+
+	// transform
+	Transform transform;
 };
 

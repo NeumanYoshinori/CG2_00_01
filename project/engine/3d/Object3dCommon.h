@@ -21,7 +21,7 @@ private:
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeLine();
 
-	DirectXBase* dxBase_ = nullptr;
+	DirectXBase* dxBase_;
 
 	// コマンドリストを生成する
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
