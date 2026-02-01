@@ -7,6 +7,7 @@
 #include <d3d12.h>
 #include "DirectXBase.h"
 #include "Model.h"
+#include "ModelManager.h"
 
 class Object3dCommon;
 
@@ -47,6 +48,8 @@ public: // メンバ関数
 	const Vector3& GetScale() const { return transform.scale; }
 	const Vector3& GetRotate() const { return transform.rotate; }
 	const Vector3& GetTranslate() const { return transform.translate; }
+
+	void SetModel(const std::string& filePath);
 
 private:
 	// 座標変換行列データ作成

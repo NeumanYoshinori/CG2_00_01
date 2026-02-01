@@ -26,8 +26,7 @@
 #include <numbers>
 #include "Object3dCommon.h"
 #include "Object3d.h"
-#include "ModelCommon.h"
-#include "Model.h"
+#include "ModelManager.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -290,34 +289,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Sprite* sprite = new Sprite();
 	sprite->Initialize(spriteCommon, filePath[0]);
 
+	ModelManager* modelManager = ModelManager::GetInstance();
+
+	// 3Dモデルマネージャの初期化
+	modelManager->Initialize(dxBase);
+
 	Object3dCommon* object3dCommon = nullptr;
 	// 3Dオブジェクト共通部の初期化
 	object3dCommon = new Object3dCommon();
 	object3dCommon->Initialize(dxBase);
 
-	ModelCommon* modelCommon = nullptr;
-	// モデル共通部の初期化
-	modelCommon = new ModelCommon();
-	modelCommon->Initialize(dxBase);
-
-	// モデルの初期化
-	Model* model = new Model();
-	model->Initialize(modelCommon);
-
-	Vector3 position[2];
-	position[0] = { 0.0f, 0.0f, 0.0f };
-	position[1] = { 2.0f, 2.0f, 2.0f };
-
 	Vector3 rotate[2] = { 0.0f };
+
+	// .objファイルからモデルを読み込む
+	ModelManager::GetInstance()->LoadModel("plane.obj");
+	ModelManager::GetInstance()->LoadModel("axis.obj");
 
 	// 3dオブジェクトの初期化
 	Object3d* object3d[2];
 	for (uint32_t i = 0; i < 2; i++) {
 		object3d[i] = new Object3d();
 		object3d[i]->Initialize(object3dCommon);
-		object3d[i]->SetModel(model);
-		object3d[i]->SetTranslate(position[i]);
 	}
+
+	// 初期化済みの3Dオブジェクトにモデルを紐づける
+	object3d[0]->SetModel("plane.obj");
+	object3d[1]->SetModel("axis.obj");
+	object3d[0]->SetTranslate({ 0.0f, 0.0f, 0.0f });
+	object3d[1]->SetTranslate({ 2.0f, 2.0f, 2.0f });
 
 	// 乱数生成器の初期化
 	random_device seedGenerator;
@@ -457,14 +456,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 3dオブジェクト共通部の解放
 	delete object3dCommon;
 
-	// modelの解放
-	delete model;
-
-	// モデル共通部の解放
-	delete modelCommon;
-
 	// テクスチャマネージャの終了
 	textureManager->Finalize();
+
+	// 3Dモデルマネージャの終了
+	ModelManager::GetInstance()->Finalize();
 
 	// DirectX解放
 	delete dxBase;

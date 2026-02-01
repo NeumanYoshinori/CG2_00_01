@@ -45,6 +45,11 @@ void Object3d::Draw() {
 	}
 }
 
+void Object3d::SetModel(const std::string& filePath) {
+	// モデルを検索
+	model_ = ModelManager::GetInstance()->FindModel(filePath);
+}
+
 void Object3d::CreateTransformationMatrixData() {
 	// TransformationMatrix用のリソースを作る。
 	transformationMatrixResource = dxBase_->CreateBufferResource(sizeof(TransformationMatrix));

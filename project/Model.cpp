@@ -8,12 +8,12 @@
 using namespace std;
 using namespace MathFunction;
 
-void Model::Initialize(ModelCommon* modelCommon) {
+void Model::Initialize(ModelCommon* modelCommon, const string& directorypath, const string& filename) {
 	// ModelCommonのポインタを引数からメンバ変数に記録する
 	modelCommon_ = modelCommon;
 
 	// モデル読み込み
-	modelData = LoadObjFile("resources", "plane.obj");
+	modelData = LoadObjFile(directorypath, filename);
 
 	dxBase_ = modelCommon_->GetDxBase();
 
@@ -87,7 +87,7 @@ Model::ModelData Model::LoadObjFile(const string& directoryPath, const string& f
 		istringstream s(line);
 		s >> identifier; // 先頭の識別子を読む
 
-		// identifierに応じた
+		// identifierに応じた処理
 		if (identifier == "v") {
 			Vector4 position;
 			s >> position.x >> position.y >> position.z;
