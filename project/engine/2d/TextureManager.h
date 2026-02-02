@@ -4,8 +4,7 @@
 #include <d3d12.h>
 #include <cstdint>
 #include <string>
-
-class DirectXBase;
+#include "DirectXBase.h"
 
 // テクスチャマネージャー
 class TextureManager {
@@ -40,11 +39,13 @@ private:
 		D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU;
 	};
 
+	// インスタンス
 	static TextureManager* instance;
 
 	// テクスチャデータ
 	std::vector<TextureData> textureDatas;
 
+	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
 
 	// SRVインデックスの開始番号

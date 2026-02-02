@@ -1,9 +1,5 @@
 #include "Sprite.h"
 #include "SpriteCommon.h"
-#include <wrl.h>
-#include "DirectXBase.h"
-#include "MathFunction.h"
-#include "Transform.h"
 #include "TextureManager.h"
 
 using namespace Microsoft::WRL;
@@ -78,7 +74,6 @@ void Sprite::Update() {
 	indexData[3] = 1; indexData[4] = 3; indexData[5] = 2;
 
 	// Transform情報を作る
-	Transform transform = {};
 	transform.scale = { size.x, size.y, 1.0f };
 	transform.rotate = { 0.0f, 0.0f, rotation };
 	transform.translate = { position.x, position.y, 0.0f };

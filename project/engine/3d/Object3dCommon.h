@@ -1,10 +1,10 @@
 #pragma once
 #include <wrl.h>
 #include <d3d12.h>
-#include "DIrectXBase.h"
+#include "DirectXBase.h"
 
-// スプライト共通部
-class SpriteCommon {
+// 3Dオブジェクト共通部
+class Object3dCommon {
 public: // メンバ関数
 	// 初期化
 	void Initialize(DirectXBase* dxBase);

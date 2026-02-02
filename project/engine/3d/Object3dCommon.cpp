@@ -1,10 +1,10 @@
-#include "SpriteCommon.h"
+#include "Object3dCommon.h"
 #include "Logger.h"
 
 using namespace Microsoft::WRL;
 using namespace Logger;
 
-void SpriteCommon::Initialize(DirectXBase* dxBase) {
+void Object3dCommon::Initialize(DirectXBase* dxBase) {
 	// 引数で受け取ってメンバ変数に記録する
 	dxBase_ = dxBase;
 
@@ -12,7 +12,7 @@ void SpriteCommon::Initialize(DirectXBase* dxBase) {
 	GenerateGraphicsPipeLine();
 }
 
-void SpriteCommon::DrawSetting() {
+void Object3dCommon::DrawSetting() {
 	commandList = dxBase_->GetCommandList();
 	commandList->SetGraphicsRootSignature(rootSignature.Get());
 	commandList->SetPipelineState(graphicsPipelineState.Get());
@@ -20,7 +20,7 @@ void SpriteCommon::DrawSetting() {
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void SpriteCommon::CreateRootSignature() {
+void Object3dCommon::CreateRootSignature() {
 	// RootSignature作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -78,7 +78,7 @@ void SpriteCommon::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
-void SpriteCommon::GenerateGraphicsPipeLine() {
+void Object3dCommon::GenerateGraphicsPipeLine() {
 	CreateRootSignature();
 
 	// InputLayout
@@ -114,7 +114,7 @@ void SpriteCommon::GenerateGraphicsPipeLine() {
 	// RasiterzerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	// カリングしない（裏面も表示させる）
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	// 三角形の中を塗りつぶす
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 

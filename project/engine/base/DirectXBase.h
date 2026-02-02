@@ -35,6 +35,7 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence() const { return fence; }
 	D3D12_VIEWPORT GetViewport() const { return viewport; }
 	D3D12_RECT GetScissorRect() const { return scissorRect; }
+	HANDLE GetFenceEvent() const { return fenceEvent; }
 
 	// シェーダーのコンパイル
 	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
@@ -56,8 +57,6 @@ public:
 
 	// SRVの指定番号のGPUデスクリプタハンドルを取得する
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
-
-	HANDLE GetFenceEvent() const { return fenceEvent; }
 
 	// FPS固定初期化
 	void InitializeFixFPS();
@@ -185,8 +184,10 @@ private:
 	// TransitionBarrier
 	D3D12_RESOURCE_BARRIER barrier{};
 
+	// RTVHandle
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 
+	// FenceEvent
 	HANDLE fenceEvent = nullptr;
 
 	// フェンス値
