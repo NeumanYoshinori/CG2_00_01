@@ -1,4 +1,5 @@
 #pragma once
+#include "Vector3.h"
 
 // 座標変換
 struct Transform {

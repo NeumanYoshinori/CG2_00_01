@@ -8,6 +8,7 @@
 #include "DirectXBase.h"
 #include "Model.h"
 #include "ModelManager.h"
+#include "Camera.h"
 
 class Object3dCommon;
 
@@ -49,7 +50,11 @@ public: // メンバ関数
 	const Vector3& GetRotate() const { return transform.rotate; }
 	const Vector3& GetTranslate() const { return transform.translate; }
 
+	// setter
 	void SetModel(const std::string& filePath);
+
+	// setter
+	void SetCamera(Camera* camera) { camera_ = camera; }
 
 private:
 	// 座標変換行列データ作成
@@ -76,13 +81,14 @@ private:
 
 	// Transform
 	Transform transform;
-	// カメラのTransform
-	Transform cameraTransform;
 
 	// コマンドリスト
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
 
 	// モデル
 	Model* model_ = nullptr;
+
+	// カメラ
+	Camera* camera_ = nullptr;
 };
 

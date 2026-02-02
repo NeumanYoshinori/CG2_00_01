@@ -15,15 +15,11 @@
 #include <random>
 #include "Input.h"
 #include "WinApp.h"
-#include "DirectXBase.h"
-#include "Logger.h"
-#include "StringUtility.h"
 #include "D3DResourceLeakChecker.h"
 #include "SpriteCommon.h"
 #include "Sprite.h"
 #include "MathFunction.h"
 #include "TextureManager.h"
-#include <numbers>
 #include "Object3dCommon.h"
 #include "Object3d.h"
 #include "ModelManager.h"
@@ -36,10 +32,7 @@ using namespace std;
 using namespace DirectX;
 using namespace Microsoft::WRL;
 using namespace chrono;
-using namespace Logger;
-using namespace StringUtility;
 using namespace MathFunction;
-using namespace numbers;
 
 // チャンクヘッダー
 struct ChunkHeader {
@@ -273,7 +266,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// テクスチャマネージャの初期化
 	textureManager->Initialize(dxBase);
-	
+
 	// テクスチャを読み込む
 	textureManager->LoadTexture("resources/uvChecker.png");
 	textureManager->LoadTexture("resources/monsterBall.png");
@@ -289,6 +282,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Sprite* sprite = new Sprite();
 	sprite->Initialize(spriteCommon, filePath[0]);
 
+	// モデルマネージャー
 	ModelManager* modelManager = ModelManager::GetInstance();
 
 	// 3Dモデルマネージャの初期化
@@ -317,6 +311,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3d[1]->SetModel("axis.obj");
 	object3d[0]->SetTranslate({ 0.0f, 0.0f, 0.0f });
 	object3d[1]->SetTranslate({ 2.0f, 2.0f, 2.0f });
+
+	// カメラの初期化
+	Camera* camera = new Camera();
+	camera->SetRotate({ 0.3f, 0.0f, 0.0f });
+	camera->SetTranslate({ 0.0f, 4.0f, -10.0f });
+	object3d[0]->SetCamera(camera);
+	object3d[1]->SetCamera(camera);
 
 	// 乱数生成器の初期化
 	random_device seedGenerator;
@@ -382,6 +383,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (input->ReleaseKey(DIK_0)) {
 			OutputDebugStringA("Hit 0\n");
 		}
+
+		// カメラの更新
+		camera->Update();
 
 		rotate[0].x += 0.01f;
 		rotate[1].z += 0.01f;
