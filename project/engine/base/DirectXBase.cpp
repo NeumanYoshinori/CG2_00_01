@@ -14,8 +14,6 @@ using namespace StringUtility;
 using namespace DirectX;
 using namespace chrono;
 
-const uint32_t DirectXBase::kMaxSRVCount = 512;
-
 void DirectXBase::Initialize(WinApp* winApp) {
 	// NULL検出
 	assert(winApp);
@@ -49,7 +47,7 @@ void DirectXBase::Initialize(WinApp* winApp) {
 	// DXCコンパイラの作成
 	CreateDxcCompiler();
 	//ImGuiの初期化
-	ImGuiInitialize();
+	//ImGuiInitialize();
 }
 
 void DirectXBase::PreDraw() {
@@ -78,9 +76,6 @@ void DirectXBase::PreDraw() {
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 	// 画面全体の深度をクリア
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-
-	ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap.Get() };
-	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
 	commandList->RSSetViewports(1, &viewport); // viewportを設定
 	commandList->RSSetScissorRects(1, &scissorRect); // Scissorを設定
@@ -307,15 +302,11 @@ void DirectXBase::CreateDepthBuffer() {
 
 void DirectXBase::CreateDescriptorHeaps() {
 	// DescriptorSizeを取得しておく
-	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	// RTV用のヒープ
 	rtvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
-
-	// SRV用のヒープ
-	srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCount, true);
 
 	// DSV用のヒープ
 	dsvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
@@ -363,14 +354,6 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXBase::GetGPUDescriptorHandle(const ComPtr<ID3
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;
-}
-
-D3D12_CPU_DESCRIPTOR_HANDLE DirectXBase::GetSRVCPUDescriptorHandle(uint32_t index) {
-	return GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, index);
-}
-
-D3D12_GPU_DESCRIPTOR_HANDLE DirectXBase::GetSRVGPUDescriptorHandle(uint32_t index) {
-	return GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, index);
 }
 
 void DirectXBase::InitializeFixFPS() {
@@ -453,19 +436,19 @@ void DirectXBase::CreateDxcCompiler() {
 	assert(SUCCEEDED(hr));
 }
 
-void DirectXBase::ImGuiInitialize() {
-	// ImGuiの初期化
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(winApp_->GetHwnd());
-	ImGui_ImplDX12_Init(device.Get(),
-		swapChainDesc.BufferCount,
-		rtvDesc.Format,
-		srvDescriptorHeap.Get(),
-		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-}
+//void DirectXBase::ImGuiInitialize() {
+//	// ImGuiの初期化
+//	IMGUI_CHECKVERSION();
+//	ImGui::CreateContext();
+//	ImGui::StyleColorsDark();
+//	ImGui_ImplWin32_Init(winApp_->GetHwnd());
+//	ImGui_ImplDX12_Init(device.Get(),
+//		swapChainDesc.BufferCount,
+//		rtvDesc.Format,
+//		srvDescriptorHeap.Get(),
+//		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+//		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+//}
 
 ComPtr<IDxcBlob> DirectXBase::CompileShader(const wstring& filePath, const wchar_t* profile) {
 	// これからシェーダーをコンパイラする旨をログに出す
@@ -591,20 +574,4 @@ ComPtr<ID3D12Resource> DirectXBase::UploadTextureData(const ComPtr<ID3D12Resourc
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
 	commandList->ResourceBarrier(1, &barrier);
 	return intermediateResource;
-}
-
-ScratchImage DirectXBase::LoadTexture(const string& filePath) {
-	// テクスチャファイルを読んでプログラムで扱えるようにする
-	ScratchImage image{};
-	wstring filePathW = ConvertString(filePath);
-	HRESULT hr = LoadFromWICFile(filePathW.c_str(), WIC_FLAGS_FORCE_SRGB, nullptr, image);
-	assert(SUCCEEDED(hr));
-
-	// ミップマップの作成
-	ScratchImage mipImages{};
-	hr = GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), TEX_FILTER_SRGB, 0, mipImages);
-	assert(SUCCEEDED(hr));
-
-	// ミップマップ付きのデータを返す
-	return mipImages;
 }

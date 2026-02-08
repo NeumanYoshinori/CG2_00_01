@@ -49,22 +49,13 @@ public:
 	// テクスチャデータの転送
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages);
 
-	// 画像イメージデータ
-	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
-
-	// SRVの指定番号のCPUデスクリプタハンドルを取得する
-	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
-
-	// SRVの指定番号のGPUデスクリプタハンドルを取得する
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
-
 	// FPS固定初期化
 	void InitializeFixFPS();
 	// FPS固定更新
 	void UpdateFixFPS();
 
-	// 最大SRV数（最大テクスチャ枚数）
-	static const uint32_t kMaxSRVCount;
+	// デスクリプタヒープを生成する
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
 private:
 	// 初期化
@@ -81,9 +72,6 @@ private:
 
 	// 各種デスクリプタヒープの生成
 	void CreateDescriptorHeaps();
-
-	// デスクリプタヒープを生成する
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
 	// レンダーターゲットビューの初期化
 	void RenderTargetViewInitialize();
@@ -112,7 +100,7 @@ private:
 	void CreateDxcCompiler();
 
 	// ImGuiの初期化
-	void ImGuiInitialize();
+	//void ImGuiInitialize();
 
 	// DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
@@ -142,17 +130,12 @@ private:
 	WinApp* winApp_ = nullptr;
 
 	// RTV用のデスクリプタヒープ生成
-	uint32_t descriptorSizeSRV = 0;
-	// SRV用のデスクリプタヒープ生成
 	uint32_t descriptorSizeRTV = 0;
 	// DSV用のデスクリプタヒープ生成
 	uint32_t descriptorSizeDSV = 0;
 
 	// RTV用のヒープ
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
-
-	// SRV用のヒープ
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap = nullptr;
 
 	// DSV用のヒープ
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;

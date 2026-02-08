@@ -159,5 +159,7 @@ private:
 
 	// transform
 	Transform transform;
+
+	std::string filePath;
 };
 

@@ -23,6 +23,7 @@
 #include "Object3dCommon.h"
 #include "Object3d.h"
 #include "ModelManager.h"
+#include "SrvManager.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -261,11 +262,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	input = new Input();
 	input->Initialize(winApp);
 
+	SrvManager* srvManager = nullptr;
+	// SRVマネージャの初期化
+	srvManager = new SrvManager();
+	srvManager->Initialize(dxBase);
+
 	// テクスチャマネジャー
 	TextureManager* textureManager = TextureManager::GetInstance();
 
 	// テクスチャマネージャの初期化
-	textureManager->Initialize(dxBase);
+	textureManager->Initialize(dxBase, srvManager);
 
 	// テクスチャを読み込む
 	textureManager->LoadTexture("resources/uvChecker.png");
@@ -280,7 +286,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// スプライトの初期化
 	Sprite* sprite = new Sprite();
-	sprite->Initialize(spriteCommon, filePath[0]);
+	sprite->Initialize(spriteCommon, "resources/uvChecker.png");
 
 	// モデルマネージャー
 	ModelManager* modelManager = ModelManager::GetInstance();
@@ -369,12 +375,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		// ゲームの処理
-		ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
+		//ImGui_ImplDX12_NewFrame();
+		//ImGui_ImplWin32_NewFrame();
+		//ImGui::NewFrame();
 
-		// 開発用UIの処理
-		ImGui::ShowDemoWindow();
+		//// 開発用UIの処理
+		//ImGui::ShowDemoWindow();
 
 		// キー入力の更新
 		input->Update();
@@ -400,13 +406,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprite->Update();
 
 		// 開発用UIの処理
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 
 		// ImGuiの内部コマンドを生成する
-		ImGui::Render();
+		//ImGui::Render();
 
 		// 描画前処理
 		dxBase->PreDraw();
+
+		srvManager->PreDraw();
 
 		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3dCommon->DrawSetting();
@@ -423,7 +431,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprite->Draw();
 
 		// 実際のcommandListのImGuiの描画コマンドを積む
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
+		//ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
 		// 描画後処理
 		dxBase->PostDraw();
@@ -466,6 +474,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 3Dモデルマネージャの終了
 	ModelManager::GetInstance()->Finalize();
 
+	// SRVマネージャの解放
+	delete srvManager;
+
 	// DirectX解放
 	delete dxBase;
 
@@ -475,9 +486,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	SoundUnload(&soundData1);
 
 	// ImGuiの終了処理
-	ImGui_ImplDX12_Shutdown();
+	/*ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
+	ImGui::DestroyContext();*/
 
 	return 0;
 }
