@@ -592,3 +592,19 @@ ComPtr<ID3D12Resource> DirectXBase::UploadTextureData(const ComPtr<ID3D12Resourc
 	commandList->ResourceBarrier(1, &barrier);
 	return intermediateResource;
 }
+
+ScratchImage DirectXBase::LoadTexture(const string& filePath) {
+	// テクスチャファイルを読んでプログラムで扱えるようにする
+	ScratchImage image{};
+	wstring filePathW = ConvertString(filePath);
+	HRESULT hr = LoadFromWICFile(filePathW.c_str(), WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	assert(SUCCEEDED(hr));
+
+	// ミップマップの作成
+	ScratchImage mipImages{};
+	hr = GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), TEX_FILTER_SRGB, 0, mipImages);
+	assert(SUCCEEDED(hr));
+
+	// ミップマップ付きのデータを返す
+	return mipImages;
+}
