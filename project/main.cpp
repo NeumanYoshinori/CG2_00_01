@@ -8,6 +8,11 @@
 #include <strsafe.h>
 #include <dxgidebug.h>
 #include "Matrix.h"
+#ifdef USE_IMGUI
+#include "externals/imgui/imgui.h"
+#include "externals/imgui/imgui_impl_dx12.h"
+#include "externals/imgui/imgui_impl_win32.h"
+#endif
 #include <vector>
 #include <wrl.h>
 #include <xaudio2.h>
@@ -751,7 +756,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// Δtを設定
 	const float kDeltaTime = 1.0f / 60.0f;
 
-	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 4.0f, 10.0f} };
+	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.3f, 3.14f, 0.0f}, {0.0f, 4.0f, 10.0f} };
 
 	// データを書き込む
 	TransformationMatrix* wvpData = nullptr;
