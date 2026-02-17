@@ -8,9 +8,6 @@
 #include <strsafe.h>
 #include <dxgidebug.h>
 #include "Matrix.h"
-#include "externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
 #include <vector>
 #include <wrl.h>
 #include <xaudio2.h>
@@ -863,6 +860,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			break;
 		}
 
+		#ifdef USE_IMGUI
 		// ゲームの処理
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -870,6 +868,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 開発用UIの処理
 		ImGui::ShowDemoWindow();
+		#endif
 
 		switch (currentBlend) {
 		case kBlendModeNone:
@@ -935,6 +934,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
+		#ifdef USE_IMGUI
 		// 開発用UIの処理
 		ImGui::ShowDemoWindow();
 
@@ -970,6 +970,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// ImGuiの内部コマンドを生成する
 		ImGui::Render();
+		#endif
 
 		// 描画前処理
 		dxBase->PreDraw();
@@ -1010,8 +1011,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 描画！（DrawCall/ドローコール）
 		//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
+		#ifdef USE_IMGUI
 		// 実際のcommandListのImGuiの描画コマンドを積む
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
+		#endif
 
 		dxBase->PostDraw();
 
@@ -1060,10 +1063,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 音声データ解放
 	SoundUnload(&soundData1);
 
+	#ifdef USE_IMGUI
 	// ImGuiの終了処理
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+	#endif
 
 	return 0;
 }

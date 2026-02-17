@@ -1,6 +1,8 @@
 #include "DirectXBase.h"
+#ifdef USE_IMGUI
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
+#endif
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -46,8 +48,11 @@ void DirectXBase::Initialize(WinApp* winApp) {
 	ScissorInitalize();
 	// DXCコンパイラの作成
 	CreateDxcCompiler();
+
+	#ifdef USE_IMGUI
 	//ImGuiの初期化
 	ImGuiInitialize();
+	#endif
 }
 
 void DirectXBase::PreDraw() {
@@ -455,6 +460,7 @@ void DirectXBase::CreateDxcCompiler() {
 }
 
 void DirectXBase::ImGuiInitialize() {
+	#ifdef USE_IMGUI
 	// ImGuiの初期化
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -466,6 +472,7 @@ void DirectXBase::ImGuiInitialize() {
 		srvDescriptorHeap.Get(),
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	#endif
 }
 
 ComPtr<IDxcBlob> DirectXBase::CompileShader(const wstring& filePath, const wchar_t* profile) {
