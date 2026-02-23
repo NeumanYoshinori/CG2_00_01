@@ -623,7 +623,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// Δtを設定
 	const float kDeltaTime = 1.0f / 60.0f;
 
-	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 4.0f, 10.0f} };
+	Transform cameraTransform{
+	{1.0f, 1.0f, 1.0f},
+	{pi_v<float> / 3.0f, pi_v<float>, 0.0f},
+	{0.0f, 23.0f, 10.0f} };
 
 	// データを書き込む
 	TransformationMatrix* wvpData = nullptr;
@@ -692,6 +695,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// パーティクルが動くか
 	uint32_t canUpdate = false;
+
+	// ビルボードを使うか
+	int useBillboard = true;
 
 	// コマンドリストを生成する
 	ComPtr<ID3D12GraphicsCommandList> commandList = dxBase->GetCommandList();
@@ -771,12 +777,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				continue;
 			}
 			// Model用のWVPMatrixを作る
-			Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
+			Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(pi_v<float>);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+			Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+			billboardMatrix.m[3][0] = 0.0f;
+			billboardMatrix.m[3][1] = 0.0f;
+			billboardMatrix.m[3][2] = 0.0f;
+			Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
+			Matrix4x4 translateMatrix = MakeTranslateMatrix(particles[index].transform.translate);
+			Matrix4x4 worldMatrix;
+			if (useBillboard) {
+				worldMatrix = scaleMatrix * billboardMatrix * translateMatrix;
+			}
+			else {
+				worldMatrix = scaleMatrix * translateMatrix;
+			}
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-			particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+			if (canUpdate) {
+				particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+			}
 			particles[index].currentTime += kDeltaTime;
 			instancingData[numInstance].WVP = worldViewProjectionMatrix;
 			instancingData[numInstance].World = worldMatrix;
@@ -802,6 +823,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::ColorEdit4("color", &materialData->color.x);
 		ImGui::CheckboxFlags("enableLighting", &materialData->enableLighting, 1);
 		ImGui::CheckboxFlags("update", &canUpdate, 1);
+		ImGui::CheckboxFlags("useBillborad", &useBillboard, 1);
 		if (ImGui::BeginCombo("Blend", blendMode[currentBlend])) {
 			for (uint32_t i = 0; i < 6; ++i) {
 				const bool isSelected = (currentBlend == i);
