@@ -118,6 +118,13 @@ struct ParticleForGPU {
 	Vector4 color;
 };
 
+struct Emitter {
+	Transform transform; // !< エミッタのTransform
+	uint32_t count; // !< 発生数
+	float frequency; // !< 発生頻度
+	float frequencyTime; // !< 頻度用時刻
+};
+
 static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
 	// 時刻を取得して、時刻を名前に入れたファイルを作成。Dumpsディレクトリ以下に出力
 	SYSTEMTIME time;
@@ -336,19 +343,28 @@ void SoundPlayWave(const ComPtr<IXAudio2>& xAudio2, const SoundData& soundData) 
 }
 
 // パーティクル生成関数
-Particle MakeNewParticle(mt19937& randomEngine) {
+Particle MakeNewParticle(mt19937& randomEngine, const Vector3& translate) {
 	uniform_real_distribution<float> distribution(-1.0f, 1.0f);
 	uniform_real_distribution<float> distColor(0.0f, 1.0f);
 	uniform_real_distribution<float> distTime(1.0f, 3.0f);
 	Particle particle;
 	particle.transform.scale = { 1.0f, 1.0f, 1.0f };
 	particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
-	particle.transform.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+	Vector3 randomTranslate{ distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+	particle.transform.translate = translate + randomTranslate;
 	particle.velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
 	particle.color = { distColor(randomEngine), distColor(randomEngine), distColor(randomEngine), 1.0f };
 	particle.lifeTime = distTime(randomEngine);
 	particle.currentTime = 0;
 	return particle;
+}
+
+list<Particle> Emit(const Emitter& emitter, mt19937& randomEngine) {
+	list<Particle> particles;
+	for (uint32_t count = 0; count < emitter.count; ++count) {
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+	}
+	return particles;
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -568,16 +584,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	memcpy(vertexData, modelData.verticles.data(), sizeof(VertexData)* modelData.verticles.size());
 
-	const uint32_t kNumMaxInstance = 10; // インスタンス数
+	const uint32_t kNumMaxInstance = 100; // インスタンス数
 
 	// 乱数生成器の初期化
 	random_device seedGenerator;
 	mt19937 randomEngine(seedGenerator());
 
+	Emitter emitter{};
+	emitter.count = 3;
+	emitter.frequency = 0.5f; // 0.5秒ごとに発生
+	emitter.frequencyTime = 0.0f; // 発生頻度用の時刻、0で初期化
+	emitter.transform.translate = { 0.0f, 0.0f, 0.0f };
+	emitter.transform.rotate = { 0.0f, 0.0f, 0.0f };
+	emitter.transform.scale = { 1.0f, 1.0f, 1.0f };
+
 	list<Particle> particles;
-	particles.push_back(MakeNewParticle(randomEngine));
-	particles.push_back(MakeNewParticle(randomEngine));
-	particles.push_back(MakeNewParticle(randomEngine));
+	particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+	particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+	particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
 
 	// Instancing用のTransformationMatrixリソースを作る
 	ComPtr<ID3D12Resource> instancingResource = dxBase->CreateBufferResource(sizeof(ParticleForGPU) * kNumMaxInstance);
@@ -696,7 +720,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const char* blendMode[] = { "kBlendModeNone", "kBlendModeNormal", "kBlendModeAdd", "kBlendModeSubtract", "kBlendModeMultiply", "kBlendModeScreen" };
 
 	// パーティクルが動くか
-	uint32_t canUpdate = false;
+	uint32_t canUpdate = true;
 
 	// ビルボードを使うか
 	int useBillboard = true;
@@ -773,6 +797,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			OutputDebugStringA("Hit 0\n");
 		}
 
+		emitter.frequencyTime += kDeltaTime; // 時刻を進める
+		if (emitter.frequency <= emitter.frequencyTime) { // 頻度より大きいなら発生
+			particles.splice(particles.end(), Emit(emitter, randomEngine)); // 発生処理
+			emitter.frequencyTime -= emitter.frequency; // 余計に過ぎた時間も加味して頻度計算する
+		}
+
 		uint32_t numInstance = 0; // 描画すべきインスタンス数
 		for (list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end(); ) {
 			if ((*particleIterator).lifeTime <= (*particleIterator).currentTime) {
@@ -824,6 +854,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::SliderAngle("CameraRotateX", &cameraTransform.rotate.x, 0.01f);
 		ImGui::SliderAngle("CameraRotateY", &cameraTransform.rotate.y, 0.01f);
 		ImGui::SliderAngle("CameraRotateZ", &cameraTransform.rotate.z, 0.01f);
+		ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f);
 		/*ImGui::SliderAngle("SphereRotateX", &particles[0].transform.rotate.x, 0.01f);
 		ImGui::SliderAngle("SphereRotateY", &particles[0].transform.rotate.y, 0.01f);
 		ImGui::SliderAngle("SphereRotateZ", &particles[0].transform.rotate.z, 0.01f);*/
@@ -832,9 +863,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::CheckboxFlags("update", &canUpdate, 1);
 		ImGui::CheckboxFlags("useBillborad", &useBillboard, 1);
 		if (ImGui::Button("Add Particle")) {
-			particles.push_back(MakeNewParticle(randomEngine));
-			particles.push_back(MakeNewParticle(randomEngine));
-			particles.push_back(MakeNewParticle(randomEngine));
+			particles.splice(particles.end(), Emit(emitter, randomEngine));
 		}
 		if (ImGui::BeginCombo("Blend", blendMode[currentBlend])) {
 			for (uint32_t i = 0; i < 6; ++i) {
