@@ -574,11 +574,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	random_device seedGenerator;
 	mt19937 randomEngine(seedGenerator());
 
-	Particle particles[kNumMaxInstance];
-	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-		// 位置と速度を[-1,1]でランダムに初期化
-		particles[index] = MakeNewParticle(randomEngine);
-	}
+	list<Particle> particles;
+	particles.push_back(MakeNewParticle(randomEngine));
+	particles.push_back(MakeNewParticle(randomEngine));
+	particles.push_back(MakeNewParticle(randomEngine));
 
 	// Instancing用のTransformationMatrixリソースを作る
 	ComPtr<ID3D12Resource> instancingResource = dxBase->CreateBufferResource(sizeof(ParticleForGPU) * kNumMaxInstance);
@@ -589,7 +588,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 		instancingData[index].WVP = MakeIdentity4x4();
 		instancingData[index].World = MakeIdentity4x4();
-		instancingData[index].color = particles[index].color;
+
+		for (list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end(); ++particleIterator) {
+			instancingData[index].color = (*particleIterator).color;
+		}
 	}
 
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
@@ -772,39 +774,44 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		uint32_t numInstance = 0; // 描画すべきインスタンス数
-		for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-			if (particles[index].lifeTime <= particles[index].currentTime) { // 生存期間を過ぎていたら更新せず描画対象にしない
+		for (list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end(); ) {
+			if ((*particleIterator).lifeTime <= (*particleIterator).currentTime) {
+				particleIterator = particles.erase(particleIterator); // 生存期間を過ぎていたら更新せず描画対象にしない
 				continue;
 			}
-			// Model用のWVPMatrixを作る
-			Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(pi_v<float>);
-			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-			Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
-			billboardMatrix.m[3][0] = 0.0f;
-			billboardMatrix.m[3][1] = 0.0f;
-			billboardMatrix.m[3][2] = 0.0f;
-			Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
-			Matrix4x4 translateMatrix = MakeTranslateMatrix(particles[index].transform.translate);
-			Matrix4x4 worldMatrix;
-			if (useBillboard) {
-				worldMatrix = scaleMatrix * billboardMatrix * translateMatrix;
-			}
-			else {
-				worldMatrix = scaleMatrix * translateMatrix;
-			}
-			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
-			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			if (canUpdate) {
-				particles[index].transform.translate += particles[index].velocity * kDeltaTime;
+				(*particleIterator).transform.translate += (*particleIterator).velocity * kDeltaTime;
 			}
-			particles[index].currentTime += kDeltaTime;
-			instancingData[numInstance].WVP = worldViewProjectionMatrix;
-			instancingData[numInstance].World = worldMatrix;
-			instancingData[numInstance].color = particles[index].color;
-			float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
-			instancingData[numInstance].color.w = alpha;
-			++numInstance; // 生きているParticleの数を1つカウントする
+			(*particleIterator).currentTime += kDeltaTime;
+
+			if (numInstance < kNumMaxInstance) {
+				// Model用のWVPMatrixを作る
+				Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(pi_v<float>);
+				Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+				Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+				billboardMatrix.m[3][0] = 0.0f;
+				billboardMatrix.m[3][1] = 0.0f;
+				billboardMatrix.m[3][2] = 0.0f;
+				Matrix4x4 scaleMatrix = MakeScaleMatrix((*particleIterator).transform.scale);
+				Matrix4x4 translateMatrix = MakeTranslateMatrix((*particleIterator).transform.translate);
+				Matrix4x4 worldMatrix;
+				if (useBillboard) {
+					worldMatrix = scaleMatrix * billboardMatrix * translateMatrix;
+				}
+				else {
+					worldMatrix = scaleMatrix * translateMatrix;
+				}
+				Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+				Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
+				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+				instancingData[numInstance].WVP = worldViewProjectionMatrix;
+				instancingData[numInstance].World = worldMatrix;
+				instancingData[numInstance].color = (*particleIterator).color;
+				float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifeTime);
+				instancingData[numInstance].color.w = alpha;
+				++numInstance; // 生きているParticleの数を1つカウントする
+			}
+			++particleIterator; // 次のパーティクルに進める
 		}
 
 		//sprite->Update();
@@ -817,13 +824,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::SliderAngle("CameraRotateX", &cameraTransform.rotate.x, 0.01f);
 		ImGui::SliderAngle("CameraRotateY", &cameraTransform.rotate.y, 0.01f);
 		ImGui::SliderAngle("CameraRotateZ", &cameraTransform.rotate.z, 0.01f);
-		ImGui::SliderAngle("SphereRotateX", &particles[0].transform.rotate.x, 0.01f);
+		/*ImGui::SliderAngle("SphereRotateX", &particles[0].transform.rotate.x, 0.01f);
 		ImGui::SliderAngle("SphereRotateY", &particles[0].transform.rotate.y, 0.01f);
-		ImGui::SliderAngle("SphereRotateZ", &particles[0].transform.rotate.z, 0.01f);
+		ImGui::SliderAngle("SphereRotateZ", &particles[0].transform.rotate.z, 0.01f);*/
 		ImGui::ColorEdit4("color", &materialData->color.x);
 		ImGui::CheckboxFlags("enableLighting", &materialData->enableLighting, 1);
 		ImGui::CheckboxFlags("update", &canUpdate, 1);
 		ImGui::CheckboxFlags("useBillborad", &useBillboard, 1);
+		if (ImGui::Button("Add Particle")) {
+			particles.push_back(MakeNewParticle(randomEngine));
+			particles.push_back(MakeNewParticle(randomEngine));
+			particles.push_back(MakeNewParticle(randomEngine));
+		}
 		if (ImGui::BeginCombo("Blend", blendMode[currentBlend])) {
 			for (uint32_t i = 0; i < 6; ++i) {
 				const bool isSelected = (currentBlend == i);
