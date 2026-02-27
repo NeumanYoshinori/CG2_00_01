@@ -1,5 +1,6 @@
 #include "MathFunction.h"
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -220,5 +221,24 @@ namespace MathFunction {
                                 (left + right) / (left - right), (top + bottom) / (bottom - top), nearClip / (nearClip - farClip), 1.0f };
 
         return result;
+    }
+
+    // 長さ(ノルム)
+    float Length(const Vector3& v) {
+        float result = sqrtf(powf(v.x, 2) + powf(v.y, 2) + powf(v.z, 2));
+
+        return result;
+    }
+
+    bool IsCollision(const AABB& aabb1, const Vector3& point) {
+        if (aabb1.min.x <= point.x && aabb1.max.x >= point.x &&
+            aabb1.min.y <= point.y && aabb1.max.y >= point.y &&
+            aabb1.min.z <= point.z && aabb1.max.z >= point.z)
+        {
+            // 衝突
+            return true;
+        }
+
+        return false;
     }
 }

@@ -125,6 +125,11 @@ struct Emitter {
 	float frequencyTime; // !< 頻度用時刻
 };
 
+struct AccelerationField {
+	Vector3 acceleration;
+	AABB area;
+};
+
 static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
 	// 時刻を取得して、時刻を名前に入れたファイルを作成。Dumpsディレクトリ以下に出力
 	SYSTEMTIME time;
@@ -696,6 +701,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = dxBase->GetSRVGPUDescriptorHandle(3);
 	dxBase->GetDevice()->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
+	AccelerationField accelerationField;
+	accelerationField.acceleration = { 15.0f, 0.0f, 0.0f };
+	accelerationField.area.min = { -1.0f, -1.0f, -1.0f };
+	accelerationField.area.max = { 1.0f, 1.0f, 1.0f };
+
 	// モンスターボールを使うか
 	bool useMonsterBall = true;
 
@@ -810,6 +820,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				continue;
 			}
 			if (canUpdate) {
+				// Fieldの範囲内位のParticleには加速度を適用する
+				if (IsCollision(accelerationField.area, (*particleIterator).transform.translate)) {
+					(*particleIterator).velocity += accelerationField.acceleration * kDeltaTime;
+				}
+				// 速度を適用
 				(*particleIterator).transform.translate += (*particleIterator).velocity * kDeltaTime;
 			}
 			(*particleIterator).currentTime += kDeltaTime;
