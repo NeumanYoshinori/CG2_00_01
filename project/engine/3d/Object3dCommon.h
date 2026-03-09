@@ -2,6 +2,7 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include "DirectXBase.h"
+#include "Camera.h"
 
 // 3Dオブジェクト共通部
 class Object3dCommon {
@@ -14,6 +15,11 @@ public: // メンバ関数
 
 	// DxBaseのgetter
 	DirectXBase* GetDxBase() const { return dxBase_; }
+
+	// setter
+	void SetDefaultCamera(Camera* camera) { defaultCamera_ = camera; }
+	// getter
+	Camera* GetDefaultCamera() const { return defaultCamera_; }
 
 private:
 	// ルートシグネチャの作成
@@ -32,5 +38,8 @@ private:
 
 	// グラフィックスパイプラインステート
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+
+	// デフォルトカメラ
+	Camera* defaultCamera_ = nullptr;
 };
 

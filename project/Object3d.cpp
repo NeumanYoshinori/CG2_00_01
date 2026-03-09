@@ -18,15 +18,22 @@ void Object3d::Initialize(Object3dCommon* object3dCommon) {
 
 	// Transform変数を作る
 	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-	cameraTransform = { {1.0f, 1.0f, 1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
+	
+	// デフォルトカメラをセットする
+	camera_ = object3dCommon_->GetDefaultCamera();
 }
 
 void Object3d::Update() {
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
-	transformationMatrixData->WVP = worldMatrix * viewMatrix * projectionMatrix;
+	Matrix4x4 worldViewProjectionMatrix;
+	if (camera_) {
+		const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();
+		worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
+	} else {
+		worldViewProjectionMatrix = worldMatrix;
+	}
+
+	transformationMatrixData->WVP = worldViewProjectionMatrix;
 	transformationMatrixData->World = worldMatrix;
 }
 

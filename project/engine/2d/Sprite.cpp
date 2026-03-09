@@ -25,6 +25,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, string textureFilePath) {
 	// テクスチャ番号の検索と記録
 	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 
+	filePath = textureFilePath;
 	AdjustTextureSize();
 }
 
@@ -46,7 +47,7 @@ void Sprite::Update() {
 	}
 
 	const TexMetadata& metadata =
-	TextureManager::GetInstance()->GetMetaData(textureIndex);
+	TextureManager::GetInstance()->GetMetaData(filePath);
 	float tex_left = textureLeftTop.x / metadata.width;
 	float tex_right = (textureLeftTop.x + textureSize.x) / metadata.width;
 	float tex_top = textureLeftTop.y / metadata.height;
@@ -100,7 +101,7 @@ void Sprite::Draw() {
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 
 	// SRVのDescriptorTableの先頭を設定
-	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
+	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(filePath));
 
 	// 描画！（DrawCall/ドローコール）
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
@@ -159,7 +160,7 @@ void Sprite::CreateTransformationMatrixData() {
 
 void Sprite::AdjustTextureSize() {
 	// テクスチャメタデータを取得
-	const TexMetadata& metadata = TextureManager::GetInstance()->GetMetaData(textureIndex);
+	const TexMetadata& metadata = TextureManager::GetInstance()->GetMetaData(filePath);
 
 	textureSize.x = static_cast<float>(metadata.width);
 	textureSize.y = static_cast<float>(metadata.height);

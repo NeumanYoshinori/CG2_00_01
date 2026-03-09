@@ -67,7 +67,7 @@ private:
 	// バッファリソース内のデータを指すポインタ
 	VertexData* vertexData = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr; // マテリアルリソース

@@ -149,6 +149,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="engine\3d\Object3dCommon.cpp" />
     <ClCompile Include="engine\base\D3DResourceLeakChecker.cpp" />
     <ClCompile Include="engine\base\DirectXBase.cpp" />
@@ -172,8 +173,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="ModelCommon.cpp" />
     <ClCompile Include="ModelManager.cpp" />
     <ClCompile Include="Object3d.cpp" />
+    <ClCompile Include="ParticleEmitter.cpp" />
+    <ClCompile Include="ParticleManager.cpp" />
+    <ClCompile Include="SrvManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="engine\base\D3DResourceLeakChecker.h" />
     <ClInclude Include="engine\base\DirectXBase.h" />
     <ClInclude Include="engine\base\Logger.h" />
@@ -202,6 +207,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="ModelCommon.h" />
     <ClInclude Include="ModelManager.h" />
     <ClInclude Include="Object3d.h" />
+    <ClInclude Include="ParticleEmitter.h" />
+    <ClInclude Include="ParticleManager.h" />
+    <ClInclude Include="SrvManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\Object3d.hlsli">

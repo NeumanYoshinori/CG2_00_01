@@ -141,6 +141,18 @@
     <ClCompile Include="ModelManager.cpp">
       <Filter>ソース ファイル\engine\3d</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>ソース ファイル\engine\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleManager.cpp">
+      <Filter>ソース ファイル\engine\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="SrvManager.cpp">
+      <Filter>ソース ファイル\engine\base</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleEmitter.cpp">
+      <Filter>ソース ファイル\engine\3d</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -209,9 +221,6 @@
     <ClInclude Include="engine\math\MathFunction.h">
       <Filter>ヘッダー ファイル\engine\math</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\Object3dCommon.h">
-      <Filter>ヘッダー ファイル\engine\3d</Filter>
-    </ClInclude>
     <ClInclude Include="Object3d.h">
       <Filter>ヘッダー ファイル\engine\3d</Filter>
     </ClInclude>
@@ -225,6 +234,21 @@
       <Filter>ヘッダー ファイル\engine\3d</Filter>
     </ClInclude>
     <ClInclude Include="ModelManager.h">
+      <Filter>ヘッダー ファイル\engine\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>ヘッダー ファイル\engine\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleManager.h">
+      <Filter>ヘッダー ファイル\engine\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\3d\Object3dCommon.h">
+      <Filter>ヘッダー ファイル\engine\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="SrvManager.h">
+      <Filter>ヘッダー ファイル\engine\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleEmitter.h">
       <Filter>ヘッダー ファイル\engine\3d</Filter>
     </ClInclude>
   </ItemGroup>
