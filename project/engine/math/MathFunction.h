@@ -4,6 +4,11 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 
+struct AABB {
+	Vector3 min; // 最小点
+	Vector3 max; // 最大点
+};
+
 namespace MathFunction {
 	Vector2& operator+=(Vector2& lhv, const Vector2& rhv);
 
@@ -53,5 +58,10 @@ namespace MathFunction {
 
 	// 正射影行列
 	Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
+
+	// 長さ
+	float Length(const Vector3& v);
+
+	bool IsCollision(const AABB& aabb, const Vector3& point);
 }
 

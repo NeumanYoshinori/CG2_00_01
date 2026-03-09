@@ -24,6 +24,8 @@
 #include "Object3d.h"
 #include "ModelManager.h"
 #include "SrvManager.h"
+#include "ParticleManager.h"
+#include "ParticleEmitter.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -79,11 +81,6 @@ enum BlendMode {
 	kBlendModeScreen,
 	// 利用してはいけない
 	kCountOfBlendMode,
-};
-
-struct Particle {
-	Transform transform;
-	Vector3 velocity;
 };
 
 struct CameraForGPU {
@@ -206,17 +203,6 @@ void SoundPlayWave(const ComPtr<IXAudio2>& xAudio2, const SoundData& soundData) 
 	result = pSourceVoice->Start();
 }
 
-// パーティクル生成関数
-Particle MakeNewParticle(mt19937& randomEngine) {
-	uniform_real_distribution<float> distribution(-1.0f, 1.0f);
-	Particle particle;
-	particle.transform.scale = { 1.0f, 1.0f, 1.0f };
-	particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
-	particle.transform.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
-	particle.velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
-	return particle;
-}
-
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3DResourceLeakChecker leakCheck;
@@ -226,23 +212,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 誰も補足しなかった場合に(Unhandled)、補足する関数を登録
 	SetUnhandledExceptionFilter(ExportDump);
 
-	// log出力用のフォルダ「logs」を作成
-	filesystem::create_directory("logs");
+	//// log出力用のフォルダ「logs」を作成
+	//filesystem::create_directory("logs");
 
-	// ここからファイルを作成しofstreamを取得する
-	// 現在時刻を取得
-	system_clock::time_point now = system_clock::now();
-	// 削って秒にする
-	time_point<system_clock, seconds>
-		nowSeconds = time_point_cast<seconds>(now);
-	// 日本時間に変換
-	zoned_time localTime{ current_zone(), nowSeconds };
-	// formatを使って年月日_時分秒の文字列に変換
-	string dateString = format("{:%Y%m%d_%H%M%S}", localTime);
-	// 時刻を使ってファイル名を決定
-	string logFilePath = string("logs/") + dateString + ".log";
-	// ファイルを作って書き込み準備
-	ofstream logStream(logFilePath);
+	//// ここからファイルを作成しofstreamを取得する
+	//// 現在時刻を取得
+	//system_clock::time_point now = system_clock::now();
+	//// 削って秒にする
+	//time_point<system_clock, seconds>
+	//	nowSeconds = time_point_cast<seconds>(now);
+	//// 日本時間に変換
+	//zoned_time localTime{ current_zone(), nowSeconds };
+	//// formatを使って年月日_時分秒の文字列に変換
+	//string dateString = format("{:%Y%m%d_%H%M%S}", localTime);
+	//// 時刻を使ってファイル名を決定
+	//string logFilePath = string("logs/") + dateString + ".log";
+	//// ファイルを作って書き込み準備
+	//ofstream logStream(logFilePath);
 
 	// ポインタ
 	WinApp* winApp = nullptr;
@@ -257,10 +243,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxBase->Initialize(winApp);
 
 	// ポインタ
-	Input* input = nullptr;
-	// 入力の初期化
-	input = new Input();
-	input->Initialize(winApp);
+	//Input* input = nullptr;
+	//// 入力の初期化
+	//input = new Input();
+	//input->Initialize(winApp);
 
 	SrvManager* srvManager = nullptr;
 	// SRVマネージャの初期化
@@ -274,87 +260,91 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	textureManager->Initialize(dxBase, srvManager);
 
 	// テクスチャを読み込む
-	textureManager->LoadTexture("resources/uvChecker.png");
+	/*textureManager->LoadTexture("resources/uvChecker.png");
 	textureManager->LoadTexture("resources/monsterBall.png");
 
-	string filePath[2] = { "resources/uvChecker.png", "resources/monsterBall.png" };
+	string filePath[2] = { "resources/uvChecker.png", "resources/monsterBall.png" };*/
 
-	SpriteCommon* spriteCommon = nullptr;
-	// スプライト共通部の初期化
-	spriteCommon = new SpriteCommon();
-	spriteCommon->Initialize(dxBase);
+	//SpriteCommon* spriteCommon = nullptr;
+	//// スプライト共通部の初期化
+	//spriteCommon = new SpriteCommon();
+	//spriteCommon->Initialize(dxBase);
 
 	// スプライトの初期化
-	Sprite* sprite = new Sprite();
-	sprite->Initialize(spriteCommon, "resources/uvChecker.png");
+	/*Sprite* sprite = new Sprite();
+	sprite->Initialize(spriteCommon, "resources/uvChecker.png");*/
 
 	// モデルマネージャー
-	ModelManager* modelManager = ModelManager::GetInstance();
+	/*ModelManager* modelManager = ModelManager::GetInstance();*/
 
 	// 3Dモデルマネージャの初期化
-	modelManager->Initialize(dxBase);
+	//modelManager->Initialize(dxBase);
 
-	Object3dCommon* object3dCommon = nullptr;
-	// 3Dオブジェクト共通部の初期化
-	object3dCommon = new Object3dCommon();
-	object3dCommon->Initialize(dxBase);
+	//Object3dCommon* object3dCommon = nullptr;
+	//// 3Dオブジェクト共通部の初期化
+	//object3dCommon = new Object3dCommon();
+	//object3dCommon->Initialize(dxBase);
 
-	Vector3 rotate[2] = { 0.0f };
+	//Vector3 rotate[2] = { 0.0f };
 
-	// .objファイルからモデルを読み込む
-	ModelManager::GetInstance()->LoadModel("plane.obj");
-	ModelManager::GetInstance()->LoadModel("axis.obj");
+	//// .objファイルからモデルを読み込む
+	//ModelManager::GetInstance()->LoadModel("plane.obj");
+	//ModelManager::GetInstance()->LoadModel("axis.obj");
 
 	// 3dオブジェクトの初期化
-	Object3d* object3d[2];
+	/*Object3d* object3d[2];
 	for (uint32_t i = 0; i < 2; i++) {
 		object3d[i] = new Object3d();
 		object3d[i]->Initialize(object3dCommon);
-	}
+	}*/
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
-	object3d[0]->SetModel("plane.obj");
+	/*object3d[0]->SetModel("plane.obj");
 	object3d[1]->SetModel("axis.obj");
 	object3d[0]->SetTranslate({ 0.0f, 0.0f, 0.0f });
-	object3d[1]->SetTranslate({ 2.0f, 2.0f, 2.0f });
+	object3d[1]->SetTranslate({ 2.0f, 2.0f, 2.0f });*/
 
 	// カメラの初期化
 	Camera* camera = new Camera();
 	camera->SetRotate({ 0.3f, 0.0f, 0.0f });
 	camera->SetTranslate({ 0.0f, 4.0f, -10.0f });
-	object3d[0]->SetCamera(camera);
-	object3d[1]->SetCamera(camera);
+	/*object3d[0]->SetCamera(camera);
+	object3d[1]->SetCamera(camera);*/
 
-	// 乱数生成器の初期化
-	random_device seedGenerator;
-	mt19937 randomEngine(seedGenerator());
+	// パーティクルマネージャ
+	ParticleManager* particleManager = ParticleManager::GetInstance();
+	particleManager->Initialize(dxBase, srvManager, camera);
 
-	uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+	particleManager->CreateParticleGroup("circle", "resources/circle.png");
 
-	Transform uvTransformSprite{
-		{ 1.0f, 1.0f, 1.0f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f },
-	};
+	Transform particleTransform;
+	particleTransform.translate = { 0.0f, 0.0f, 0.0f };
+	ParticleEmitter* particleEmitter = new ParticleEmitter("circle", particleTransform, 30, 1.0f);
 
-	// Δtを設定
-	const float kDeltaTime = 1.0f / 60.0f;
+	//Transform uvTransformSprite{
+	//	{ 1.0f, 1.0f, 1.0f },
+	//	{ 0.0f, 0.0f, 0.0f },
+	//	{ 0.0f, 0.0f, 0.0f },
+	//};
+
+	//// Δtを設定
+	//const float kDeltaTime = 1.0f / 60.0f;
 
 	// xAudio
-	ComPtr<IXAudio2> xAudio2;
-	IXAudio2MasteringVoice* masterVoice;
+	//ComPtr<IXAudio2> xAudio2;
+	//IXAudio2MasteringVoice* masterVoice;
 
-	HRESULT result;
+	//HRESULT result;
 
-	// XAudioエンジンのインスタンスを生成
-	result = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
-	// マスターボイスを生成
-	result = xAudio2->CreateMasteringVoice(&masterVoice);
+	//// XAudioエンジンのインスタンスを生成
+	//result = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
+	//// マスターボイスを生成
+	//result = xAudio2->CreateMasteringVoice(&masterVoice);
 
-	// 音声読み込み
-	SoundData soundData1 = SoundLoadWave("resources/Alarm01.wav");
-	// 音声再生
-	SoundPlayWave(xAudio2.Get(), soundData1);
+	//// 音声読み込み
+	//SoundData soundData1 = SoundLoadWave("resources/Alarm01.wav");
+	//// 音声再生
+	//SoundPlayWave(xAudio2.Get(), soundData1);
 
 	// ブレンドモード
 	static int currentBlend = kBlendModeNone;
@@ -383,27 +373,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//ImGui::ShowDemoWindow();
 
 		// キー入力の更新
-		input->Update();
+		/*input->Update();*/
 
 		// 0キーを押したときコンソールにHit 0と表示する
-		if (input->ReleaseKey(DIK_0)) {
+		/*if (input->ReleaseKey(DIK_0)) {
 			OutputDebugStringA("Hit 0\n");
-		}
+		}*/
 
 		// カメラの更新
 		camera->Update();
 
-		rotate[0].x += 0.01f;
-		rotate[1].z += 0.01f;
+		/*rotate[0].x += 0.01f;
+		rotate[1].z += 0.01f;*/
 
-		for (uint32_t i = 0; i < 2; i++) {
-			// 3Dオブジェクトの更新
-			object3d[i]->Update();
-			object3d[i]->SetRotate(rotate[i]);
-		}
+		//for (uint32_t i = 0; i < 2; i++) {
+		//	// 3Dオブジェクトの更新
+		//	object3d[i]->Update();
+		//	object3d[i]->SetRotate(rotate[i]);
+		//}
+
+		particleManager->Update();
+
+		particleEmitter->Update();
 
 		// スプライトの更新
-		sprite->Update();
+		/*sprite->Update();*/
 
 		// 開発用UIの処理
 		//ImGui::ShowDemoWindow();
@@ -417,18 +411,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvManager->PreDraw();
 
 		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
-		object3dCommon->DrawSetting();
+		/*object3dCommon->DrawSetting();*/
 
-		for (uint32_t i = 0; i < 2; i++) {
-			// 3Dオブジェクトの描画
-			object3d[i]->Draw();
-		}
+		//for (uint32_t i = 0; i < 2; i++) {
+		//	// 3Dオブジェクトの描画
+		//	object3d[i]->Draw();
+		//}
+
+		particleManager->Draw();
 
 		// 共通描画設定
-		spriteCommon->DrawSetting();
+		/*spriteCommon->DrawSetting();*/
 
 		// スプライトの描画
-		sprite->Draw();
+		/*sprite->Draw();*/
 
 		// 実際のcommandListのImGuiの描画コマンドを積む
 		//ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
@@ -452,27 +448,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	winApp = nullptr;
 
 	// キー入力処理解放
-	delete input;
+	//delete input;
 
-	// スプライトの解放
-	delete sprite;
+	//// スプライトの解放
+	//delete sprite;
 
-	// スプライト共通部の解放
-	delete spriteCommon;
+	//// スプライト共通部の解放
+	//delete spriteCommon;
 
-	for (uint32_t i = 0; i < 2; i++) {
-		// 3dオブジェクトの解放
-		delete object3d[i];
-	}
+	//for (uint32_t i = 0; i < 2; i++) {
+	//	// 3dオブジェクトの解放
+	//	delete object3d[i];
+	//}
 
 	// 3dオブジェクト共通部の解放
-	delete object3dCommon;
+	//delete object3dCommon;
 
 	// テクスチャマネージャの終了
 	textureManager->Finalize();
 
 	// 3Dモデルマネージャの終了
-	ModelManager::GetInstance()->Finalize();
+	/*modelManager->Finalize();*/
+
+	// パーティクルマネージャの終了
+	particleManager->Finalize();
 
 	// SRVマネージャの解放
 	delete srvManager;
@@ -481,9 +480,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete dxBase;
 
 	// XAudio2解放
-	xAudio2.Reset();
-	// 音声データ解放
-	SoundUnload(&soundData1);
+	//xAudio2.Reset();
+	//// 音声データ解放
+	//SoundUnload(&soundData1);
 
 	// ImGuiの終了処理
 	/*ImGui_ImplDX12_Shutdown();

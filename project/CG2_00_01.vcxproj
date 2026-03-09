@@ -173,6 +173,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="ModelCommon.cpp" />
     <ClCompile Include="ModelManager.cpp" />
     <ClCompile Include="Object3d.cpp" />
+    <ClCompile Include="ParticleEmitter.cpp" />
+    <ClCompile Include="ParticleManager.cpp" />
     <ClCompile Include="SrvManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -205,6 +207,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="ModelCommon.h" />
     <ClInclude Include="ModelManager.h" />
     <ClInclude Include="Object3d.h" />
+    <ClInclude Include="ParticleEmitter.h" />
+    <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="SrvManager.h" />
   </ItemGroup>
   <ItemGroup>
