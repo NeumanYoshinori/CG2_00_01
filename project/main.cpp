@@ -290,26 +290,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// .objファイルからモデルを読み込む
 	ModelManager::GetInstance()->LoadModel("plane.obj");
 	ModelManager::GetInstance()->LoadModel("axis.obj");
+	ModelManager::GetInstance()->LoadModel("field.pbj");
 
 	// 3dオブジェクトの初期化
-	Object3d* object3d[2];
-	for (uint32_t i = 0; i < 2; i++) {
-		object3d[i] = new Object3d();
-		object3d[i]->Initialize(object3dCommon);
-	}
+	Object3d* plane = new Object3d();
+	plane->Initialize(object3dCommon);
+
+	Object3d* axis = new Object3d();
+	axis->Initialize(object3dCommon);
+
+	Object3d* field = new Object3d();
+	field->Initialize(object3dCommon);
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
-	object3d[0]->SetModel("plane.obj");
-	object3d[1]->SetModel("axis.obj");
-	object3d[0]->SetTranslate({ 0.0f, 0.0f, 0.0f });
-	object3d[1]->SetTranslate({ 2.0f, 2.0f, 2.0f });
+	plane->SetModel("plane.obj");
+	plane->SetTranslate({ 0.0f, 0.0f, 0.0f });
+
+	axis->SetModel("axis.obj");
+	axis->SetTranslate({ 2.0f, 2.0f, 2.0f });
 
 	// カメラの初期化
 	Camera* camera = new Camera();
 	camera->SetRotate({ 0.3f, 0.0f, 0.0f });
 	camera->SetTranslate({ 0.0f, 4.0f, -10.0f });
-	object3d[0]->SetCamera(camera);
-	object3d[1]->SetCamera(camera);
+
+	plane->SetCamera(camera);
+	axis->SetCamera(camera);
 
 	// パーティクルマネージャ
 	ParticleManager* particleManager = ParticleManager::GetInstance();
@@ -386,11 +392,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		rotate[0].x += 0.01f;
 		rotate[1].z += 0.01f;
 
-		for (uint32_t i = 0; i < 2; i++) {
-			// 3Dオブジェクトの更新
-			object3d[i]->Update();
-			object3d[i]->SetRotate(rotate[i]);
-		}
+		// 3Dオブジェクトの更新
+		plane->Update();
+		plane->SetRotate(rotate[0]);
+
+		axis->Update();
+		axis->SetRotate(rotate[1]);
+
+		field->Update();
 
 		particleManager->Update();
 
@@ -413,10 +422,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3dCommon->DrawSetting();
 
-		for (uint32_t i = 0; i < 2; i++) {
-			// 3Dオブジェクトの描画
-			object3d[i]->Draw();
-		}
+		// 3Dオブジェクトの描画
+		plane->Draw();
+
+		axis->Draw();
+
+		field->Draw();
 
 		particleManager->Draw();
 
@@ -456,10 +467,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//// スプライト共通部の解放
 	delete spriteCommon;
 
-	for (uint32_t i = 0; i < 2; i++) {
-		// 3dオブジェクトの解放
-		delete object3d[i];
-	}
+	// 3dオブジェクトの解放
+	delete plane;
+	delete axis;
+	delete field;
 
 	// 3dオブジェクト共通部の解放
 	delete object3dCommon;
