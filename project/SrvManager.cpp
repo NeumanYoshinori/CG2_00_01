@@ -15,6 +15,9 @@ void SrvManager::Initialize(DirectXBase* directXBase) {
 }
 
 uint32_t SrvManager::Allocate() {
+	// 上限に達していないかチェックしてassert
+	assert(useIndex < kMaxSRVCount);
+
 	// returnする番号キーを記録しておく
 	int index = useIndex;
 	// 次回のために番号を1進める
