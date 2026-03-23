@@ -1,8 +1,18 @@
 #include "SrvManager.h"
 
+SrvManager* SrvManager::instance = nullptr;
+
 const uint32_t SrvManager::kMaxSRVCount = 512;
 
 using namespace Microsoft::WRL;
+
+SrvManager* SrvManager::GetInstance() {
+	if (instance == nullptr) {
+		instance = new SrvManager();
+	}
+
+	return instance;
+}
 
 void SrvManager::Initialize(DirectXBase* directXBase) {
 	// 引数で受け取ってメンバ変数に記録する
@@ -15,6 +25,9 @@ void SrvManager::Initialize(DirectXBase* directXBase) {
 }
 
 uint32_t SrvManager::Allocate() {
+	// 上限に達していないかチェックしてassert
+	assert(useIndex < kMaxSRVCount);
+
 	// returnする番号キーを記録しておく
 	int index = useIndex;
 	// 次回のために番号を1進める

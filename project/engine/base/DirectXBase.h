@@ -36,6 +36,10 @@ public:
 	D3D12_VIEWPORT GetViewport() const { return viewport; }
 	D3D12_RECT GetScissorRect() const { return scissorRect; }
 	HANDLE GetFenceEvent() const { return fenceEvent; }
+	D3D12_RENDER_TARGET_VIEW_DESC GetRtvDesc() const { return rtvDesc; }
+	D3D12_DEPTH_STENCIL_VIEW_DESC GetDsvDesc() const { return dsvDesc; }
+	// スワップチェーンリソースの数を取得
+	size_t GetSwapChainResourcesNum() const { return swapChainResources.size(); }
 
 	// シェーダーのコンパイル
 	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
@@ -99,9 +103,6 @@ private:
 	// DXCコンパイラの生成
 	void CreateDxcCompiler();
 
-	// ImGuiの初期化
-	//void ImGuiInitialize();
-
 	// DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 	// DXGIファクトリ
@@ -142,6 +143,9 @@ private:
 
 	// rtvデスク
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+
+	// dsvデスク
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	
 	// フェンス
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
