@@ -247,7 +247,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	SrvManager* srvManager = nullptr;
 	// SRVマネージャの初期化
-	srvManager = new SrvManager();
+	srvManager = SrvManager::GetInstance();
 	srvManager->Initialize(dxBase);
 
 	// テクスチャマネジャー
@@ -318,8 +318,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	particleTransform.translate = { 0.0f, 0.0f, 0.0f };
 	ParticleEmitter* particleEmitter = new ParticleEmitter("circle", particleTransform, 30, 1.0f);
 
-	ImGuiManager* imGuiManager = nullptr;
-	imGuiManager->Initialize(winApp, dxBase, srvManager);
+	ImGuiManager* imGuiManager = new ImGuiManager();
+	imGuiManager->Initialize(winApp, dxBase);
 
 	Transform uvTransformSprite{
 		{ 1.0f, 1.0f, 1.0f },
@@ -388,6 +388,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// スプライトの更新
 		sprite->Update();
 
+		imGuiManager->Begin();
+		imGuiManager->End();
+
 		// 描画前処理
 		dxBase->PreDraw();
 
@@ -408,6 +411,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// スプライトの描画
 		sprite->Draw();
+
+		imGuiManager->Draw();
 
 		// 描画後処理
 		dxBase->PostDraw();
@@ -447,7 +452,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	particleManager->Finalize();
 
 	// SRVマネージャの解放
-	delete srvManager;
+	srvManager->Finalize();
+
+	// ImGuiマネージャの終了処理
+	imGuiManager->Finalize();
 
 	// ImGuiマネージャの解放
 	delete imGuiManager;
