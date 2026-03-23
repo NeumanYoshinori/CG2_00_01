@@ -389,6 +389,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprite->Update();
 
 		imGuiManager->Begin();
+
+		camera->DebugUpdate();
+
 		imGuiManager->End();
 
 		// 描画前処理

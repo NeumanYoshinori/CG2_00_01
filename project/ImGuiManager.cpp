@@ -3,7 +3,8 @@
 
 using namespace Microsoft::WRL;
 
-void ImGuiManager::Initialize(WinApp* winApp, DirectXBase* dxBase) {
+void ImGuiManager::Initialize([[maybe_unused]] WinApp* winApp, [[maybe_unused]] DirectXBase* dxBase) {
+#ifdef USE_IMGUI
 	// メンバ変数に記録
 	dxBase_ = dxBase;
 
@@ -42,21 +43,27 @@ void ImGuiManager::Initialize(WinApp* winApp, DirectXBase* dxBase) {
 
 	// DirectX12用の初期化を行う
 	ImGui_ImplDX12_Init(&initInfo);
+#endif
 }
 
 void ImGuiManager::Begin() {
+#ifdef USE_IMGUI
 	// ImGuiフレーム開始
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+#endif
 }
 
 void ImGuiManager::End() {
+#ifdef USE_IMGUI
 	// 描画前準備
 	ImGui::Render();
+#endif
 }
 
 void ImGuiManager::Draw() {
+#ifdef USE_IMGUI
 	ComPtr<ID3D12GraphicsCommandList> commandList = dxBase_->GetCommandList();
 
 	// デスクリプタヒープの配列をセットするコマンド
@@ -64,11 +71,14 @@ void ImGuiManager::Draw() {
 	commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps->GetAddressOf());
 	// 描画コマンドを発行
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
+#endif
 }
 
 void ImGuiManager::Finalize() {
+#ifdef USE_IMGUI
 	// 後始末
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+#endif
 }
