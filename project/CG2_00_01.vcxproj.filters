@@ -132,7 +132,7 @@
     <ClCompile Include="engine\3d\ParticleEmitter.cpp">
       <Filter>ソース ファイル\engine\3d</Filter>
     </ClCompile>
-    <ClCompile Include="ImGuiManager.cpp">
+    <ClCompile Include="engine\2d\ImGuiManager.cpp">
       <Filter>ソース ファイル\engine\2d</Filter>
     </ClCompile>
   </ItemGroup>
@@ -209,7 +209,7 @@
     <ClInclude Include="engine\3d\ParticleEmitter.h">
       <Filter>ヘッダー ファイル\engine\3d</Filter>
     </ClInclude>
-    <ClInclude Include="ImGuiManager.h">
+    <ClInclude Include="engine\2d\ImGuiManager.h">
       <Filter>ヘッダー ファイル\engine\2d</Filter>
     </ClInclude>
   </ItemGroup>
