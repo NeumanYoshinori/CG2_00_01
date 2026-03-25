@@ -390,7 +390,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		imGuiManager->Begin();
 
+		// デモウィンドウの表示オン
+		ImGui::ShowDemoWindow();
+
+		ImGui::Begin("Settings");
 		camera->DebugUpdate();
+		Vector2 spritePos = sprite->GetPosition();
+		ImGui::DragFloat2("position", &spritePos.x);
+		sprite->SetPosition(spritePos);
+		ImGui::End();
 
 		imGuiManager->End();
 
