@@ -1,6 +1,4 @@
 #include "DirectXBase.h"
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -46,8 +44,6 @@ void DirectXBase::Initialize(WinApp* winApp) {
 	ScissorInitalize();
 	// DXCコンパイラの作成
 	CreateDxcCompiler();
-	//ImGuiの初期化
-	//ImGuiInitialize();
 }
 
 void DirectXBase::PreDraw() {
