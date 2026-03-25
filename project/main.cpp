@@ -9,7 +9,6 @@
 #include <vector>
 #include <wrl.h>
 #include <xaudio2.h>
-#include <random>
 #include "Input.h"
 #include "WinApp.h"
 #include "D3DResourceLeakChecker.h"
@@ -390,6 +389,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		imGuiManager->Begin();
 
+#ifdef USE_IMGUI
 		// デモウィンドウの表示オン
 		ImGui::ShowDemoWindow();
 
@@ -401,6 +401,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::End();
 
 		imGuiManager->End();
+#endif
 
 		// 描画前処理
 		dxBase->PreDraw();
