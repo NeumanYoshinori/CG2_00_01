@@ -399,9 +399,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat2("position", &spritePos.x);
 		sprite->SetPosition(spritePos);
 		ImGui::End();
+#endif
 
 		imGuiManager->End();
-#endif
 
 		// 描画前処理
 		dxBase->PreDraw();
