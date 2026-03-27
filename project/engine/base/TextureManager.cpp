@@ -88,9 +88,6 @@ void TextureManager::LoadTexture(const string& filePath) {
 	// フェンスイベント
 	HANDLE fenceEvent = dxBase_->GetFenceEvent();
 
-	// フェンス値
-	uint64_t fenceVal = 0;
-
 	// Fenceの値を更新
 	fenceVal++;
 	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
@@ -114,15 +111,9 @@ void TextureManager::LoadTexture(const string& filePath) {
 
 uint32_t TextureManager::GetTextureIndexByFilePath(const string& filePath) {
 	// 読み込み済みテクスチャを検索
-	auto it = textureDatas.find(filePath);
-	if (it != textureDatas.end()) {
-		// 読み込み済みなら要素番号を返す
-		uint32_t textureIndex = static_cast<uint32_t>(distance(textureDatas.begin(), it));
-		return textureIndex;
+	if (textureDatas.contains(filePath)) {
+		return textureDatas.at(filePath).srvIndex;
 	}
-
-	// テクスチャ枚数上限チェック
-	assert(srvManager_->CheckMax());
 
 	assert(0);
 	return 0;

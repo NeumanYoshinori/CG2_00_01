@@ -1,20 +1,38 @@
 #include "SrvManager.h"
 
+SrvManager* SrvManager::instance = nullptr;
+
 const uint32_t SrvManager::kMaxSRVCount = 512;
 
 using namespace Microsoft::WRL;
+
+SrvManager* SrvManager::GetInstance() {
+	if (instance == nullptr) {
+		instance = new SrvManager();
+	}
+
+	return instance;
+}
 
 void SrvManager::Initialize(DirectXBase* directXBase) {
 	// 引数で受け取ってメンバ変数に記録する
 	directXBase_ = directXBase;
 
 	// デスクリプタヒープの生成
-	descriptorHeap = directXBase_->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCount, true);
+	descriptorHeap_ = directXBase_->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCount, true);
 	// デスクリプタ1個分のサイズを取得して記録する
 	descriptorSize = directXBase_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
+void SrvManager::Finalize() {
+	delete instance;
+	instance = nullptr;
+}
+
 uint32_t SrvManager::Allocate() {
+	// 上限に達していないかチェックしてassert
+	assert(useIndex < kMaxSRVCount);
+
 	// returnする番号キーを記録しておく
 	int index = useIndex;
 	// 次回のために番号を1進める
@@ -24,13 +42,13 @@ uint32_t SrvManager::Allocate() {
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE SrvManager::GetCPUDescriptorHandle(uint32_t index) {
-	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap_->GetCPUDescriptorHandleForHeapStart();
 	handleCPU.ptr += (descriptorSize * index);
 	return handleCPU;
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE SrvManager::GetGPUDescriptorHandle(uint32_t index) {
-	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap_->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;
 }
@@ -61,7 +79,7 @@ void SrvManager::CreateSRVforStructuredBuffer(uint32_t srvIndex, ID3D12Resource*
 }
 
 void SrvManager::PreDraw() {
-	ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { descriptorHeap.Get() };
+	ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { descriptorHeap_.Get() };
 	directXBase_->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 }
 

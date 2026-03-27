@@ -23,6 +23,8 @@ public: // メンバ関数
 	// 更新
 	void Update();
 
+	void DebugUpdate();
+
 	// setter
 	void SetRotate(const Vector3& rotate) { transform.rotate = rotate; }
 	void SetTranslate(const Vector3& translate) { transform.translate = translate; }

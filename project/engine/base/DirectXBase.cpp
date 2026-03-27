@@ -1,6 +1,4 @@
 #include "DirectXBase.h"
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -46,8 +44,6 @@ void DirectXBase::Initialize(WinApp* winApp) {
 	ScissorInitalize();
 	// DXCコンパイラの作成
 	CreateDxcCompiler();
-	//ImGuiの初期化
-	//ImGuiInitialize();
 }
 
 void DirectXBase::PreDraw() {
@@ -386,7 +382,6 @@ void DirectXBase::UpdateFixFPS() {
 
 void DirectXBase::DepthStencilInitialize() {
 	// DSVの設定
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // Format
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D; // 3dTexture
 	// DSVHeapの先頭にDSVをつくる
@@ -435,20 +430,6 @@ void DirectXBase::CreateDxcCompiler() {
 	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
 	assert(SUCCEEDED(hr));
 }
-
-//void DirectXBase::ImGuiInitialize() {
-//	// ImGuiの初期化
-//	IMGUI_CHECKVERSION();
-//	ImGui::CreateContext();
-//	ImGui::StyleColorsDark();
-//	ImGui_ImplWin32_Init(winApp_->GetHwnd());
-//	ImGui_ImplDX12_Init(device.Get(),
-//		swapChainDesc.BufferCount,
-//		rtvDesc.Format,
-//		srvDescriptorHeap.Get(),
-//		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-//		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-//}
 
 ComPtr<IDxcBlob> DirectXBase::CompileShader(const wstring& filePath, const wchar_t* profile) {
 	// これからシェーダーをコンパイラする旨をログに出す

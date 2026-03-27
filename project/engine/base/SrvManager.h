@@ -4,8 +4,13 @@
 // SRV管理
 class SrvManager {
 public:
+	static SrvManager* GetInstance();
+
 	// 初期化
 	void Initialize(DirectXBase* directXBase);
+
+	// 終了
+	void Finalize();
 	
 	// 確保
 	uint32_t Allocate();
@@ -31,15 +36,24 @@ public:
 
 	bool CheckMax() const { return useIndex < kMaxSRVCount; }
 
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDescriptorHeap() const { return descriptorHeap_; }
+
 private:
+	static SrvManager* instance;
+
 	DirectXBase* directXBase_ = nullptr;
 
 	// SRV用のデスクリプタサイズ
 	uint32_t descriptorSize;
 	// SRV用デスクリプタヒープ
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap_;
 
 	// 次に使用するインデックス
 	uint32_t useIndex = 0;
+
+	SrvManager() = default;
+	~SrvManager() = default;
+	SrvManager(SrvManager&) = delete;
+	SrvManager& operator=(SrvManager&) = delete;
 };
 
