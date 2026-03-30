@@ -52,9 +52,6 @@
     <Filter Include="ヘッダー ファイル\engine\3d">
       <UniqueIdentifier>{11086dff-2a14-4051-98a3-4192c5d6f6f4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\engine\audio">
-      <UniqueIdentifier>{3e6799c1-fc7b-4771-93b8-463d1c6be0f5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ヘッダー ファイル\engine\base">
       <UniqueIdentifier>{6b623898-eacd-4172-9261-bb8ef2a0f407}</UniqueIdentifier>
     </Filter>
@@ -69,6 +66,9 @@
     </Filter>
     <Filter Include="ソース ファイル\engine\input">
       <UniqueIdentifier>{c300a7f8-ce81-4fba-aa31-0119adcd9834}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\engine\audio">
+      <UniqueIdentifier>{3e6799c1-fc7b-4771-93b8-463d1c6be0f5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +134,9 @@
     </ClCompile>
     <ClCompile Include="engine\2d\ImGuiManager.cpp">
       <Filter>ソース ファイル\engine\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioManager.cpp">
+      <Filter>ソース ファイル\engine\audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -211,6 +214,9 @@
     </ClInclude>
     <ClInclude Include="engine\2d\ImGuiManager.h">
       <Filter>ヘッダー ファイル\engine\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioManager.h">
+      <Filter>ヘッダー ファイル\engine\audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

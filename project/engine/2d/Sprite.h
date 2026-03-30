@@ -11,7 +11,7 @@ class SpriteCommon;
 
 // スプライト
 class Sprite {
-public: // メンバ関数
+private:
 	// 頂点データ
 	struct VertexData {
 		Vector4 position;
@@ -33,64 +33,6 @@ public: // メンバ関数
 		Matrix4x4 World;
 	};
 
-	// 初期化
-	void Initialize(SpriteCommon* spriteCommon, std::string textureFilePath);
-
-	// 更新
-	void Update();
-
-	// 描画
-	void Draw();
-
-	// 座標
-	// getter
-	const Vector2& GetPosition() const { return position; }
-	// setter
-	void SetPosition(const Vector2& position) { this->position = position; }
-
-	// 回転
-	float GetRotation() const { return rotation; }
-	void SetRotation(float rotation) { this->rotation = rotation; }
-
-	// 色
-	const Vector4& GetColor() const { return materialData->color; }
-	void SetColor(const Vector4& color) { materialData->color = color; }
-
-	// サイズ
-	const Vector2& GetSize() const { return size; }
-	void SetSize(const Vector2& size) { this->size = size; }
-
-	// アンカーポイント
-	const Vector2& GetAnchorPoint() const { return anchorPoint_; }
-	// setter
-	void SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
-
-	// フリップのsetter
-	void SetFlipX(bool isFlipX) { isFlipX_ = isFlipX; }
-	void SetFlipY(bool isFlipY) { isFlipY_ = isFlipY; }
-
-	// フリップのgetter
-	bool IsFlipX() const { return isFlipX_; }
-	bool IsFlipY() const { return isFlipY_; }
-
-	// テクスチャ左上座標のsetter
-	void SetTextureLeftTop(float leftTopX, float leftTopY) {
-		textureLeftTop.x = leftTopX;
-		textureLeftTop.y = leftTopY;
-	}
-
-	// テクスチャ切り出しサイズのsetter
-	void SetTextureSize(float sizeX, float sizeY) {
-		textureSize.x = sizeX;
-		textureSize.y = sizeY;
-	}
-
-	// テクスチャ左上座標のgetter
-	const Vector2& GetTextureLeftTop() const { return textureLeftTop; }
-	// テクスチャ切り出しサイズのgetter
-	const Vector2& GetTextureSize() const { return textureSize; }
-
-private:
 	// 頂点データ作成
 	void CreateVertexData();
 
@@ -161,5 +103,63 @@ private:
 	Transform transform;
 
 	std::string filePath;
+
+public: // メンバ関数
+	// 初期化
+	void Initialize(SpriteCommon* spriteCommon, std::string textureFilePath);
+
+	// 更新
+	void Update();
+
+	// 描画
+	void Draw();
+
+	// 座標
+	// getter
+	const Vector2& GetPosition() const { return position; }
+	// setter
+	void SetPosition(const Vector2& position) { this->position = position; }
+
+	// 回転
+	float GetRotation() const { return rotation; }
+	void SetRotation(float rotation) { this->rotation = rotation; }
+
+	// 色
+	const Vector4& GetColor() const { return materialData->color; }
+	void SetColor(const Vector4& color) { materialData->color = color; }
+
+	// サイズ
+	const Vector2& GetSize() const { return size; }
+	void SetSize(const Vector2& size) { this->size = size; }
+
+	// アンカーポイント
+	const Vector2& GetAnchorPoint() const { return anchorPoint_; }
+	// setter
+	void SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
+
+	// フリップのsetter
+	void SetFlipX(bool isFlipX) { isFlipX_ = isFlipX; }
+	void SetFlipY(bool isFlipY) { isFlipY_ = isFlipY; }
+
+	// フリップのgetter
+	bool IsFlipX() const { return isFlipX_; }
+	bool IsFlipY() const { return isFlipY_; }
+
+	// テクスチャ左上座標のsetter
+	void SetTextureLeftTop(float leftTopX, float leftTopY) {
+		textureLeftTop.x = leftTopX;
+		textureLeftTop.y = leftTopY;
+	}
+
+	// テクスチャ切り出しサイズのsetter
+	void SetTextureSize(float sizeX, float sizeY) {
+		textureSize.x = sizeX;
+		textureSize.y = sizeY;
+	}
+
+	// テクスチャ左上座標のgetter
+	const Vector2& GetTextureLeftTop() const { return textureLeftTop; }
+	// テクスチャ切り出しサイズのgetter
+	const Vector2& GetTextureSize() const { return textureSize; }
 };
 

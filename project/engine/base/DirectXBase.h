@@ -53,11 +53,6 @@ public:
 	// テクスチャデータの転送
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages);
 
-	// FPS固定初期化
-	void InitializeFixFPS();
-	// FPS固定更新
-	void UpdateFixFPS();
-
 	// デスクリプタヒープを生成する
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
@@ -102,6 +97,11 @@ private:
 
 	// DXCコンパイラの生成
 	void CreateDxcCompiler();
+
+	// FPS固定初期化
+	void InitializeFixFPS();
+	// FPS固定更新
+	void UpdateFixFPS();
 
 	// DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
