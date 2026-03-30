@@ -1,8 +1,9 @@
 #pragma once
+#include <Windows.h>
 #include <xaudio2.h>
 #include <fstream>
-#include <cstdint>
 #include <wrl.h>
+#include <vector>
 
 #pragma comment(lib, "xaudio2.lib")
 
@@ -34,10 +35,8 @@ public:
 	struct SoundData {
 		// 波形フォーマット
 		WAVEFORMATEX wfex;
-		// バッファの先頭アドレス
-		BYTE* pBuffer;
-		// バッファのサイズ
-		unsigned int bufferSize;
+		// バッファ
+		std::vector<BYTE> buffer;
 	};
 
 	// 初期化
@@ -46,7 +45,8 @@ public:
 	// 後始末
 	void Finalize();
 
-	SoundData SoundLoadWave(const char* filename);
+	// 音声ファイル読み込み
+	SoundData SoundLoadFile(const std::string& filename);
 
 	// 音声データ解放
 	void SoundUnload(SoundData* soundData);

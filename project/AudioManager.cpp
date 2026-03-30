@@ -1,77 +1,87 @@
 #include "AudioManager.h"
 #include <cassert>
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
+#include <StringUtility.h>
+
+#pragma comment(lib, "mfplat.lib")
+#pragma comment(lib, "Mfreadwrite.lib")
+#pragma comment(lib, "mfuuid.lib")
 
 using namespace std;
 using namespace Microsoft::WRL;
 
 void AudioManager::Initialize() {
+	HRESULT result; // 他と使いまわし可能
+
+	// Windows Media Foundationの初期化（ローカルファイル版）
+	result = MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET);
+	assert(SUCCEEDED(result));
+
 	// XAudioエンジンのインスタンスを生成
-	HRESULT result = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
+	XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
 
 	// マスターボイスを生成
 	result = xAudio2->CreateMasteringVoice(&masterVoice);
 }
 
-AudioManager::SoundData AudioManager::SoundLoadWave(const char* filename) {
-	// ファイル入力ストリームのインスタンス
-	ifstream file;
-	// .wavファイルをバイナリモードで開く
-	file.open(filename, ios_base::binary);
-	// ファイルオープン失敗を検出する
-	assert(file.is_open());
+AudioManager::SoundData AudioManager::SoundLoadFile(const string& filename) {
+	// フルパスをワイド文字列に変換
+	wstring filePathW = StringUtility::ConvertString(filename);
+	HRESULT result;
 
-	// RIFFヘッダーの読み込み
-	RiffHeader riff;
-	file.read((char*)&riff, sizeof(riff));
-	// ファイルがRIFFかチェック
-	if (strncmp(riff.chunk.id, "RIFF", 4) != 0) {
-		assert(0);
-	}
-	// タイプがWAVEかチェック
-	if (strncmp(riff.type, "WAVE", 4) != 0) {
-		assert(0);
-	}
+	// SourceReader作成
+	ComPtr<IMFSourceReader> pReader;
+	result = MFCreateSourceReaderFromURL(filePathW.c_str(), nullptr, &pReader);
+	assert(SUCCEEDED(result));
 
-	// Formatチャンクの読み込み
-	FormatChunk format = {};
-	// チャンクヘッダーの確認
-	file.read((char*)&format, sizeof(ChunkHeader));
-	if (strncmp(format.chunk.id, "fmt ", 4) != 0) {
-		assert(0);
-	}
+	// PCM形式にフォーマット指定する
+	ComPtr<IMFMediaType> pPCMType;
+	MFCreateMediaType(&pPCMType);
+	pPCMType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+	pPCMType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
+	result = pReader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, pPCMType.Get());
+	assert(SUCCEEDED(result));
 
-	// チャンク本体の読み込み
-	assert(format.chunk.size <= sizeof(format.fmt));
-	file.read((char*)&format.fmt, format.chunk.size);
+	// 実際にセットされたメディアタイプを取得する
+	ComPtr<IMFMediaType> pOutType;
+	pReader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, &pOutType);
 
-	// Dataチャンクの読み込み
-	ChunkHeader data;
-	file.read((char*)&data, sizeof(data));
-	// JUNKチャンクを検出した場合
-	if (strncmp(data.id, "JUNK", 4) == 0) {
-		// 読み取り位置をJUNKチャンクの終わりまで進める
-		file.seekg(data.size, ios_base::cur);
-		// 再読み込み
-		file.read((char*)&data, sizeof(data));
-	}
+	// WAVEフォーマットを取得する
+	WAVEFORMATEX* waveFormat = nullptr;
+	MFCreateWaveFormatExFromMFMediaType(pOutType.Get(), &waveFormat, nullptr);
 
-	if (strncmp(data.id, "data", 4) != 0) {
-		assert(0);
-	}
-
-	// Dataチャンクのデータ部（波形データ）の読み込み
-	char* pBuffer = new char[data.size];
-	file.read(pBuffer, data.size);
-
-	// Waveファイルを閉じる
-	file.close();
-
-	// returnするためのデータ
+	// コンテナに格納する音声データ
 	SoundData soundData = {};
+	soundData.wfex = *waveFormat;
 
-	soundData.wfex = format.fmt;
-	soundData.pBuffer = reinterpret_cast<BYTE*>(pBuffer);
-	soundData.bufferSize = data.size;
+	// 生成したWaveフォーマットを解放
+	CoTaskMemFree(waveFormat);
+
+	// PCMデータのバッファを構築
+	while (true) {
+		ComPtr<IMFSample> pSample;
+		DWORD streamIndex = 0, flags = 0;
+		LONGLONG llTimeStamp = 0;
+		// サンプルを読み込む
+		result = pReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, &streamIndex, &flags, &llTimeStamp, &pSample);
+		// ストリームの末尾に達したら抜ける
+		if (flags & MF_SOURCE_READERF_ENDOFSTREAM) break;
+		if (pSample) {
+			ComPtr<IMFMediaBuffer> pBuffer;
+			// サンプルに含まれるサウンドデータ尾バッファを一繋ぎにして取得
+			pSample->ConvertToContiguousBuffer(&pBuffer);
+
+			BYTE* pData = nullptr;	// データ読み取り用ポインタ
+			DWORD maxLength = 0, currentLength = 0;
+			// バッファ読み込み用にロック
+			pBuffer->Lock(&pData, &maxLength, &currentLength);
+			// バッファの末尾にデータを追加
+			soundData.buffer.insert(soundData.buffer.end(), pData, pData + currentLength);
+			pBuffer->Unlock();
+		}
+	}
 
 	return soundData;
 }
@@ -79,10 +89,7 @@ AudioManager::SoundData AudioManager::SoundLoadWave(const char* filename) {
 // 音声データ解放
 void AudioManager::SoundUnload(SoundData* soundData) {
 	// バッファのメモリを解放
-	delete[] soundData->pBuffer;
-
-	soundData->pBuffer = 0;
-	soundData->bufferSize = 0;
+	soundData->buffer.clear();
 	soundData->wfex = {};
 }
 
@@ -96,8 +103,8 @@ void AudioManager::SoundPlayWave(const SoundData& soundData) {
 
 	// 再生する波形データの設定
 	XAUDIO2_BUFFER buf{};
-	buf.pAudioData = soundData.pBuffer;
-	buf.AudioBytes = soundData.bufferSize;
+	buf.pAudioData = soundData.buffer.data();
+	buf.AudioBytes = static_cast<UINT32>(soundData.buffer.size());
 	buf.Flags = XAUDIO2_END_OF_STREAM;
 
 	// 波形データの再生
@@ -106,6 +113,12 @@ void AudioManager::SoundPlayWave(const SoundData& soundData) {
 }
 
 void AudioManager::Finalize() {
+	HRESULT result; // 他と使いまわし可能
+
+	// Windows Media Foundationの終了
+	result = MFShutdown();
+	assert(SUCCEEDED(result));
+
 	// XAudio2解放
 	xAudio2.Reset();
 }

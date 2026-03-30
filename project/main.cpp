@@ -209,9 +209,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	audioManager->Initialize();
 
 	// 音声読み込み
-	AudioManager::SoundData soundData1 = audioManager->SoundLoadWave("resources/Alarm01.wav");
+	AudioManager::SoundData soundData1 = audioManager->SoundLoadFile("resources/Alarm01.wav");
+	AudioManager::SoundData soundData2 = audioManager->SoundLoadFile("resources/The_maze_of_aqua.mp3");
 	// 音声再生
-	audioManager->SoundPlayWave(soundData1);
+	audioManager->SoundPlayWave(soundData2);
 
 	// ブレンドモード
 	static int currentBlend = kBlendModeNone;
@@ -219,6 +220,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// パーティクルが動くか
 	uint32_t canUpdate = false;
+
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (true) {
