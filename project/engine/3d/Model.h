@@ -48,11 +48,6 @@ public:
 	// .objファイルの読み取り
 	static ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
 
-	// 球作成
-	void CreateSphere();
-
-	void DrawSphere();
-
 private:
 	// 頂点データ作成
 	void CreateVertexData();

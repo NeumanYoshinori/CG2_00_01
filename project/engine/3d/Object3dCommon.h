@@ -39,9 +39,6 @@ public: // メンバ関数
 	// getter
 	Camera* GetDefaultCamera() const { return defaultCamera_; }
 
-	// ブレンドモード変更
-	/*void ChangeBlendMode(BlendMode blendMode);*/
-
 private:
 	// ルートシグネチャの作成
 	void CreateRootSignature();
