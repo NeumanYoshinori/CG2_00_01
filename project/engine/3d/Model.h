@@ -22,6 +22,7 @@ public:
 		int32_t enableLighting;
 		float padding[3];
 		Matrix4x4 uvTransform;
+		float shininess;
 	};
 
 	// マテリアルデータ
@@ -47,6 +48,11 @@ public:
 	// .objファイルの読み取り
 	static ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
 
+	// 球作成
+	void CreateSphere();
+
+	void DrawSphere();
+
 private:
 	// 頂点データ作成
 	void CreateVertexData();
@@ -68,6 +74,18 @@ private:
 	VertexData* vertexData = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+
+	// バッファリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceForInstancing = nullptr; // 頂点リソース
+	// バッファリソース内のデータを指すポインタ
+	VertexData* vertexDataForInstancing = nullptr;
+	// バッファリソースの使い道を補足するバッファビュー
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewForInstancing{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource = nullptr;
+	uint32_t* indexData = nullptr;
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr; // マテリアルリソース

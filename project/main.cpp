@@ -33,28 +33,6 @@ using namespace Microsoft::WRL;
 using namespace chrono;
 using namespace MathFunction;
 
-// ブレンドモード
-enum BlendMode {
-	//!< ブレンドなし
-	kBlendModeNone,
-	//!< 通常αブレンド。Src * SrcA + Dest * (1 - SrcA)
-	kBlendModeNormal,
-	//!< 加算。Src * SrcA + Dest * 1
-	kBlendModeAdd,
-	//!< 減算。Dest * 1 - Src * SrcA
-	kBlendModeSubtract,
-	//!< 乗算。Src * 0 + Dest * Src
-	kBlendModeMultiply,
-	//!< スクリーン。Src * (1 - Dest) + Dest * 1
-	kBlendModeScreen,
-	// 利用してはいけない
-	kCountOfBlendMode,
-};
-
-struct CameraForGPU {
-	Vector3 worldPosition;
-};
-
 static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
 	// 時刻を取得して、時刻を名前に入れたファイルを作成。Dumpsディレクトリ以下に出力
 	SYSTEMTIME time;
@@ -215,12 +193,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	audioManager->SoundPlayWave(soundData2);
 
 	// ブレンドモード
-	static int currentBlend = kBlendModeNone;
-	const char* blendMode[] = { "kBlendModeNone", "kBlendModeNormal", "kBlendModeAdd", "kBlendModeSubtract", "kBlendModeMultiply", "kBlendModeScreen" };
+	/*static int currentBlend = Object3dCommon::kBlendModeNone;
+	const char* blendMode[] = { "kBlendModeNone", "kBlendModeNormal", "kBlendModeAdd", "kBlendModeSubtract", "kBlendModeMultiply", "kBlendModeScreen" };*/
+
+	/*object3dCommon->ChangeBlendMode(Object3dCommon::kBlendModeAdd);*/
 
 	// パーティクルが動くか
 	uint32_t canUpdate = false;
-
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (true) {
@@ -298,11 +277,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 描画後処理
 		dxBase->PostDraw();
-
-		Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
-		uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
-		uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
-		/*materialData->uvTransform = uvTransformMatrix;*/
 	}
 
 	CloseHandle(dxBase->GetFenceEvent());
@@ -310,7 +284,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// キー入力処理解放
 	delete input;
 
-	//// スプライトの解放
+	// スプライトの解放
 	delete sprite;
 
 	// スプライト共通部の解放

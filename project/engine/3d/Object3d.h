@@ -28,6 +28,11 @@ public: // メンバ関数
 		float intensity;
 	};
 
+	// カメラ
+	struct CameraForGPU {
+		Vector3 worldPosition;
+	};
+
 	// 初期化
 	void Initialize(Object3dCommon* object3dCommon);
 
@@ -63,6 +68,9 @@ private:
 	// 平行光源データ作成
 	void CreateDirectionalLight();
 
+	// カメラデータ作成
+	void CreateCameraData();
+
 	// Object3DCommonのポインタ
 	Object3dCommon* object3dCommon_ = nullptr;
 
@@ -78,6 +86,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = nullptr;
 	// バッファリソース内のデータを指すポインタ
 	DirectionalLight* directionalLightData = nullptr;
+
+	// バッファリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource = nullptr;
+	// バッファリソース内のデータを指すポインタ
+	CameraForGPU* cameraData = nullptr;
 
 	// Transform
 	Transform transform;

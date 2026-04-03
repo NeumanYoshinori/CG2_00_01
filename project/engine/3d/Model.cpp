@@ -4,6 +4,7 @@
 #include <sstream>
 #include <cassert>
 #include "TextureManager.h"
+#include <numbers>
 
 using namespace std;
 using namespace MathFunction;
@@ -168,6 +169,7 @@ void Model::CreateMaterialData() {
 
 	// マテリアルデータの初期値を書き込む
 	materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData->enableLighting = false;
+	materialData->enableLighting = true;
 	materialData->uvTransform = MakeIdentity4x4();
+	materialData->shininess = 10.0f;
 }
