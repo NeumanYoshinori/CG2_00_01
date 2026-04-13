@@ -183,6 +183,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\3d\ParticleEmitter.cpp" />
     <ClCompile Include="engine\3d\ParticleManager.cpp" />
     <ClCompile Include="engine\base\SrvManager.cpp" />
+    <ClCompile Include="engine\3d\Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\audio\AudioManager.h" />
@@ -211,6 +212,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\3d\ParticleManager.h" />
     <ClInclude Include="engine\base\SrvManager.h" />
     <ClInclude Include="engine\2d\ImGuiManager.h" />
+    <ClInclude Include="engine\3d\Sphere.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\Object3d.hlsli">

@@ -1,5 +1,4 @@
 #include "Object3d.h"
-#include "Object3dCommon.h"
 
 using namespace std;
 using namespace MathFunction;
@@ -38,6 +37,9 @@ void Object3d::Update() {
 
 	transformationMatrixData->WVP = worldViewProjectionMatrix;
 	transformationMatrixData->World = worldMatrix;
+
+	Matrix4x4 worldInverseMatrix = Inverse(worldMatrix);
+	transformationMatrixData->WorldInverseTranspose = Transpose(worldInverseMatrix);
 }
 
 void Object3d::Draw() {
@@ -72,6 +74,7 @@ void Object3d::CreateTransformationMatrixData() {
 	// 単位行列を書き込んでおく
 	transformationMatrixData->WVP = MakeIdentity4x4();
 	transformationMatrixData->World = MakeIdentity4x4();
+	transformationMatrixData->WorldInverseTranspose = MakeIdentity4x4();
 }
 
 void Object3d::CreateDirectionalLight() {

@@ -1,13 +1,9 @@
 #include <Windows.h>
 #include <filesystem>
-#include <fstream>
-#include <sstream>
 #include <chrono>
 #include <cassert>
 #include <dbghelp.h>
 #include <strsafe.h>
-#include <vector>
-#include <wrl.h>
 #include "Input.h"
 #include "WinApp.h"
 #include "D3DResourceLeakChecker.h"
@@ -23,6 +19,7 @@
 #include "ParticleEmitter.h"
 #include "ImGuiManager.h"
 #include "AudioManager.h"
+#include "Sphere.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -173,14 +170,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	particleTransform.translate = { 0.0f, 0.0f, 0.0f };
 	ParticleEmitter* particleEmitter = new ParticleEmitter("circle", particleTransform, 30, 1.0f);
 
+	Sphere* sphere = new Sphere();
+	sphere->Initialize(object3dCommon, "resources/monsterBall.png");
+	sphere->SetCamera(camera);
+
 	ImGuiManager* imGuiManager = new ImGuiManager();
 	imGuiManager->Initialize(winApp, dxBase);
-
-	Transform uvTransformSprite{
-		{ 1.0f, 1.0f, 1.0f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f },
-	};
 
 	// オーディオマネージャ初期化
 	AudioManager* audioManager = new AudioManager();
@@ -191,15 +186,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	AudioManager::SoundData soundData2 = audioManager->SoundLoadFile("resources/The_maze_of_aqua.mp3");
 	// 音声再生
 	audioManager->SoundPlayWave(soundData2);
-
-	// ブレンドモード
-	/*static int currentBlend = Object3dCommon::kBlendModeNone;
-	const char* blendMode[] = { "kBlendModeNone", "kBlendModeNormal", "kBlendModeAdd", "kBlendModeSubtract", "kBlendModeMultiply", "kBlendModeScreen" };*/
-
-	/*object3dCommon->ChangeBlendMode(Object3dCommon::kBlendModeAdd);*/
-
-	// パーティクルが動くか
-	uint32_t canUpdate = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (true) {
@@ -233,6 +219,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		particleEmitter->Update();
 
+		// 球の更新
+		sphere->Update();
+
 		// スプライトの更新
 		sprite->Update();
 
@@ -265,6 +254,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			object3d[i]->Draw();
 		}
 
+		// 球の描画
+		sphere->Draw();
+
 		particleManager->Draw();
 
 		// 共通描画設定
@@ -294,6 +286,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 3dオブジェクトの解放
 		delete object3d[i];
 	}
+
+	// 球の解放
+	delete sphere;
 
 	// 3dオブジェクト共通部の解放
 	delete object3dCommon;
