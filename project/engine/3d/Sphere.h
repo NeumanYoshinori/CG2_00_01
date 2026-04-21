@@ -9,6 +9,7 @@
 #include "Model.h"
 #include "ModelManager.h"
 #include "Camera.h"
+#include "LightManager.h"
 
 class Object3dCommon;
 
@@ -57,7 +58,7 @@ public: // メンバ関数
 	};
 
 	// 初期化
-	void Initialize(Object3dCommon* object3dCommon, std::string textureFilePath);
+	void Initialize(Object3dCommon* object3dCommon, std::string textureFilePath, LightManager* lightManager);
 
 	// 更新
 	void Update();
@@ -148,5 +149,7 @@ private:
 	std::string filePath;
 
 	const uint32_t kSubdivision = 16; // 分割数
+
+	LightManager* lightManager_ = nullptr;
 };
 

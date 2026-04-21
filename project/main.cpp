@@ -123,6 +123,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Sprite* sprite = new Sprite();
 	sprite->Initialize(spriteCommon, "resources/uvChecker.png");
 
+	// カメラの初期化
+	Camera* camera = new Camera();
+	camera->SetRotate({ 0.3f, 0.0f, 0.0f });
+	camera->SetTranslate({ 0.0f, 4.0f, -10.0f });
+
+	LightManager* lightManager = LightManager::GetInstance();
+	lightManager->Initialize(dxBase);
+
 	// モデルマネージャー
 	ModelManager* modelManager = ModelManager::GetInstance();
 
@@ -134,31 +142,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3dCommon = new Object3dCommon();
 	object3dCommon->Initialize(dxBase);
 
-	Vector3 rotate[2] = { 0.0f };
-
 	// .objファイルからモデルを読み込む
-	ModelManager::GetInstance()->LoadModel("plane.obj");
-	ModelManager::GetInstance()->LoadModel("axis.obj");
+	ModelManager::GetInstance()->LoadModel("terrain.obj");
+	ModelManager::GetInstance()->LoadModel("honMaguro.obj");
 
 	// 3dオブジェクトの初期化
-	Object3d* object3d[2];
-	for (uint32_t i = 0; i < 2; i++) {
-		object3d[i] = new Object3d();
-		object3d[i]->Initialize(object3dCommon);
-	}
+	Object3d* terrain;
+	terrain = new Object3d();
+	terrain->Initialize(object3dCommon, lightManager);
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
-	object3d[0]->SetModel("plane.obj");
-	object3d[1]->SetModel("axis.obj");
-	object3d[0]->SetTranslate({ 0.0f, 0.0f, 0.0f });
-	object3d[1]->SetTranslate({ 2.0f, 2.0f, 2.0f });
+	terrain->SetModel("terrain.obj");
+	terrain->SetCamera(camera);
 
-	// カメラの初期化
-	Camera* camera = new Camera();
-	camera->SetRotate({ 0.3f, 0.0f, 0.0f });
-	camera->SetTranslate({ 0.0f, 4.0f, -10.0f });
-	object3d[0]->SetCamera(camera);
-	object3d[1]->SetCamera(camera);
+	// 3dオブジェクトの初期化
+	Object3d* fence;
+	fence = new Object3d();
+	fence->Initialize(object3dCommon, lightManager);
+
+	// 初期化済みの3Dオブジェクトにモデルを紐づける
+	fence->SetModel("honMaguro.obj");
+	fence->SetCamera(camera);
 
 	// パーティクルマネージャ
 	ParticleManager* particleManager = ParticleManager::GetInstance();
@@ -171,7 +175,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ParticleEmitter* particleEmitter = new ParticleEmitter("circle", particleTransform, 30, 1.0f);
 
 	Sphere* sphere = new Sphere();
-	sphere->Initialize(object3dCommon, "resources/monsterBall.png");
+	sphere->Initialize(object3dCommon, "resources/monsterBall.png", lightManager);
 	sphere->SetCamera(camera);
 
 	ImGuiManager* imGuiManager = new ImGuiManager();
@@ -206,14 +210,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// カメラの更新
 		camera->Update();
 
-		rotate[0].x += 0.01f;
-		rotate[1].z += 0.01f;
-
-		for (uint32_t i = 0; i < 2; i++) {
-			// 3Dオブジェクトの更新
-			object3d[i]->Update();
-			object3d[i]->SetRotate(rotate[i]);
-		}
+		// 3Dオブジェクトの更新
+		terrain->Update();
+		//fence->Update();
 
 		particleManager->Update();
 
@@ -234,8 +233,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::Begin("Settings");
 		camera->DebugUpdate();
 		Vector2 spritePos = sprite->GetPosition();
-		ImGui::DragFloat2("position", &spritePos.x);
+		ImGui::DragFloat2("spritePos", &spritePos.x);
 		sprite->SetPosition(spritePos);
+		Vector3 terrainPos = terrain->GetTranslate();
+		ImGui::DragFloat3("terrainPos", &terrainPos.x, 0.01f);
+		terrain->SetTranslate(terrainPos);
+		Vector3 terrainRot = terrain->GetRotate();
+		ImGui::DragFloat3("terrainRot", &terrainRot.x, 0.01f);
+		terrain->SetRotate(terrainRot);
+		Vector3 spherePos = sphere->GetTranslate();
+		ImGui::DragFloat3("spherePos", &spherePos.x, 0.01f);
+		sphere->SetTranslate(spherePos);
+		LightManager::GetInstance()->DebugPointLight();
 		ImGui::End();
 #endif
 
@@ -249,21 +258,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3dCommon->DrawSetting();
 
-		for (uint32_t i = 0; i < 2; i++) {
-			// 3Dオブジェクトの描画
-			object3d[i]->Draw();
-		}
+		// 3Dオブジェクトの描画
+		terrain->Draw();
+
+		//fence->Draw();
 
 		// 球の描画
 		sphere->Draw();
 
-		particleManager->Draw();
+		//particleManager->Draw();
 
 		// 共通描画設定
 		spriteCommon->DrawSetting();
 
 		// スプライトの描画
-		sprite->Draw();
+		//sprite->Draw();
 
 		imGuiManager->Draw();
 
@@ -282,10 +291,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// スプライト共通部の解放
 	delete spriteCommon;
 
-	for (uint32_t i = 0; i < 2; i++) {
-		// 3dオブジェクトの解放
-		delete object3d[i];
-	}
+	// 3dオブジェクトの解放
+	delete terrain;
+	delete fence;
 
 	// 球の解放
 	delete sphere;
@@ -311,6 +319,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ImGuiマネージャの解放
 	delete imGuiManager;
 	imGuiManager = nullptr;
+
+	// ライトマネージャの解放
+	lightManager->Finalize();
 
 	// DirectX解放
 	delete dxBase;

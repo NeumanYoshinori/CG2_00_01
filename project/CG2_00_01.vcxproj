@@ -168,6 +168,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\base\WinApp.cpp" />
     <ClCompile Include="engine\input\Input.cpp" />
     <ClCompile Include="engine\2d\ImGuiManager.cpp" />
+    <ClCompile Include="engine\3d\LightManager.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
@@ -184,6 +185,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\3d\ParticleManager.cpp" />
     <ClCompile Include="engine\base\SrvManager.cpp" />
     <ClCompile Include="engine\3d\Sphere.cpp" />
+    <ClCompile Include="engine\3d\PointLight.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\audio\AudioManager.h" />
@@ -213,6 +215,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\base\SrvManager.h" />
     <ClInclude Include="engine\2d\ImGuiManager.h" />
     <ClInclude Include="engine\3d\Sphere.h" />
+    <ClInclude Include="engine\3d\LightManager.h" />
+    <ClInclude Include="engine\3d\PointLight.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\Object3d.hlsli">

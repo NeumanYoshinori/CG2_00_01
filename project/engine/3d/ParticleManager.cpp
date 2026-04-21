@@ -37,9 +37,10 @@ void ParticleManager::Initialize(DirectXBase* dxBase, SrvManager* srvManager, Ca
 	// グラフィックスパイプライン生成
 	GenerateGraphicsPipeline();
 
-	// 
+	// 頂点データ作成
 	CreateVertexData();
 
+	// マテリアルデータ作成
 	CreateMaterialData();
 }
 
@@ -133,10 +134,10 @@ void ParticleManager::CreateParticleGroup(const string name, const string textur
 	TextureManager::GetInstance()->LoadTexture(textureFilePath);
 	// マテリアルデータにテクスチャのSRVインデックスを記録
 	particleGroup.materialData.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
-	// インスタン寝具用のリソースの生成
+	// インスタンシング用のリソースの生成
 	particleGroup.instancingResource = dxBase_->CreateBufferResource(sizeof(ParticleForGPU) * kNumMaxInstance);
 	particleGroup.instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&particleGroup.instancingData));
-	// インスタン寝具用にSRVを確保してSRVインデックスを記録
+	// インスタンシング用にSRVを確保してSRVインデックスを記録
 	particleGroup.srvIndex = srvManager_->Allocate();
 	// SRV生成（StructuredBuffer用設定）
 	srvManager_->CreateSRVforStructuredBuffer(particleGroup.srvIndex, particleGroup.instancingResource.Get(), kNumMaxInstance, sizeof(ParticleForGPU));

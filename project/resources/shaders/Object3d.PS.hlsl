@@ -17,6 +17,20 @@ struct Camera {
     float32_t3 worldPosition;
 };
 
+static const int kNumPointLight = 1;
+
+struct PointLight {
+    float32_t4 color;
+    float32_t3 position;
+    float intensity;
+    float radius;
+    float decay;
+};
+
+cbuffer lightGroup : register(b3) {
+    PointLight pointLights[kNumPointLight];
+}
+
 struct PixelShaderOutput {
     float32_t4 color : SV_TARGET0;
 };
@@ -31,19 +45,14 @@ PixelShaderOutput main(VertexShaderOutput input) {
     PixelShaderOutput output;
     float4 transformedUV = mul(float32_t4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float32_t4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
-    float32_t3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
-    float32_t3 reflectLight = reflect(gDirectionalLight.direction, normalize(input.normal));
-    float32_t3 halfVector = normalize(-gDirectionalLight.direction + toEye);
-    float NDotH = dot(normalize(input.normal), halfVector);
-    float specularPow = pow(saturate(NDotH), gMaterial.shininess);
-    
-    // textureのα値が0のときにPixelを棄却
-    if (textureColor.a == 0.0) {
-        discard;
-    }
     
     //  textureのα値が0.5以下のときにPixelを棄却
     if (textureColor.a <= 0.5) {
+        discard;
+    }
+    
+    // textureのα値が0のときにPixelを棄却
+    if (textureColor.a == 0.0) {
         discard;
     }
     
@@ -53,17 +62,46 @@ PixelShaderOutput main(VertexShaderOutput input) {
     }
     
     if (gMaterial.enableLighting != 0) {
-        float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-        float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
-        output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
+        float32_t3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
+        float32_t3 halfVectorD = normalize(-gDirectionalLight.direction + toEye);
+        float NDotHD = dot(normalize(input.normal), halfVectorD);
+        float specularPowD = pow(saturate(NDotHD), gMaterial.shininess);
+        float NdotLD = dot(normalize(input.normal), gDirectionalLight.direction);
+        float cosD = pow(NdotLD * 0.5f + 0.5f, 2.0f);
+        float32_t3 color = { 0.0f, 0.0f, 0.0f };
+
         // 拡散反射
-        float32_t3 diffuse =
-        gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
+        float32_t3 diffuseDirectionalLight =
+        gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cosD * gDirectionalLight.intensity;
         // 鏡面反射
-        float32_t3 specular =
-        gDirectionalLight.color.rgb * gDirectionalLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f);
-        // 拡散・鏡面反射
-        output.color.rgb = diffuse + specular;
+        float32_t3 specularDirectionalLight =
+        gDirectionalLight.color.rgb * gDirectionalLight.intensity * specularPowD * gDirectionalLight.color.rgb;
+         // 拡散・鏡面反射
+        color += diffuseDirectionalLight + specularDirectionalLight;
+        
+        for (int i = 0; i < kNumPointLight; i++) {
+            float32_t3 pointLightDirection = normalize(pointLights[i].position - input.worldPosition);
+            float32_t distance = length(pointLights[i].position - input.worldPosition);
+            float32_t factor = pow(saturate(-distance / pointLights[i].radius + 1.0), pointLights[i].decay);
+            
+            float32_t3 halfVectorP = normalize(-pointLightDirection + toEye);
+            float NDotHP = dot(normalize(input.normal), halfVectorP);
+            float specularPowP = pow(saturate(NDotHP), gMaterial.shininess);
+            float NdotLP = dot(normalize(input.normal), -pointLightDirection);
+            float cosP = pow(NdotLP * 0.5f + 0.5f, 2.0f);
+            
+             // 拡散反射
+            float32_t3 diffuse =
+            gMaterial.color.rgb * textureColor.rgb * pointLights[i].color.rgb * cosP * pointLights[i].intensity * factor;
+            // 鏡面反射
+            float32_t3 specular =
+            pointLights[i].color.rgb * pointLights[i].intensity * factor * specularPowP * pointLights[i].color.rgb;
+            
+            color += diffuse + specular;
+        }
+        
+        output.color.rgb = color;
+        
         // アルファは今まで通り
         output.color.a = gMaterial.color.a * textureColor.a;
     }

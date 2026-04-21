@@ -2,11 +2,12 @@
 #include "Object3dCommon.h"
 #include <numbers>
 #include "TextureManager.h"
+#include "LightManager.h"
 
 using namespace std;
 using namespace MathFunction;
 
-void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath) {
+void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath, LightManager* lightManager) {
 	// 引数で受け取ってメンバ変数に記録する
 	object3dCommon_ = object3dCommon;
 
@@ -35,6 +36,8 @@ void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath) 
 
 	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 	filePath = textureFilePath;
+
+	lightManager_ = lightManager;
 }
 
 void Sphere::Update() {
@@ -53,6 +56,8 @@ void Sphere::Update() {
 
 	Matrix4x4 worldInverseMatrix = Inverse(worldMatrix);
 	transformationMatrixData->WorldInverseTranspose = Transpose(worldInverseMatrix);
+
+	lightManager_->Update();
 }
 
 void Sphere::Draw() {
@@ -72,6 +77,7 @@ void Sphere::Draw() {
 	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 	// カメラのCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
+	lightManager_->Draw();
 	commandList->DrawIndexedInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0, 0);
 }
 
@@ -185,7 +191,7 @@ void Sphere::CreateDirectionalLight() {
 	// デフォルト値はとりあえず以下のようにしておく
 	directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
-	directionalLightData->intensity = 1.0f;
+	directionalLightData->intensity = 0.0f;
 }
 
 void Sphere::CreateCameraData() {

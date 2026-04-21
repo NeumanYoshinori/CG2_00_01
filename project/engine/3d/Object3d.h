@@ -10,6 +10,7 @@
 #include "ModelManager.h"
 #include "Camera.h"
 #include "Object3dCommon.h"
+#include "LightManager.h"
 
 // 3Dオブジェクト
 class Object3d {
@@ -41,7 +42,7 @@ public: // メンバ関数
 	};
 
 	// 初期化
-	void Initialize(Object3dCommon* object3dCommon);
+	void Initialize(Object3dCommon* object3dCommon, LightManager* lightManager);
 
 	// 更新
 	void Update();
@@ -110,5 +111,7 @@ private:
 
 	// カメラ
 	Camera* camera_ = nullptr;
+
+	LightManager* lightManager_ = LightManager::GetInstance();
 };
 
