@@ -96,7 +96,7 @@ PixelShaderOutput main(VertexShaderOutput input) {
             // 鏡面反射
             float32_t3 specular =
             pointLights[i].color.rgb * pointLights[i].intensity * factor * specularPowP * pointLights[i].color.rgb;
-            
+            // 拡散・鏡面反射
             color += diffuse + specular;
         }
         

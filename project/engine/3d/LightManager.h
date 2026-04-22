@@ -15,8 +15,6 @@ public:
 
 	void Initialize(DirectXBase* dxBase);
 
-	void Update();
-
 	void Draw();
 
 	void Finalize();

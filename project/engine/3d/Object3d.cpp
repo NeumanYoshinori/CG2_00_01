@@ -43,8 +43,6 @@ void Object3d::Update() {
 
 	Matrix4x4 worldInverseMatrix = Inverse(worldMatrix);
 	transformationMatrixData->WorldInverseTranspose = Transpose(worldInverseMatrix);
-
-	lightManager_->Update();
 }
 
 void Object3d::Draw() {
