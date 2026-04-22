@@ -252,4 +252,16 @@ namespace MathFunction {
 
         return result;
     }
+
+    // 正規化
+    Vector3 Normalize(const Vector3& v) {
+        float len = Length(v);
+        Vector3 result = {};
+
+        result.x = v.x / len;
+        result.y = v.y / len;
+        result.z = v.z / len;
+
+        return result;
+    }
 }

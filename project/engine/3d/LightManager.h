@@ -1,14 +1,17 @@
 #pragma once
 #include "PointLight.h"
+#include "SpotLight.h"
 #include "DirectXBase.h"
 #include "SrvManager.h"
 
 class LightManager {
 public:
 	static const uint32_t kMaxPointLights = 2;
+	static const uint32_t kMaxSpotLights = 1;
 
 	struct ConstBufferData {
 		std::array<PointLight::ConstBufferData, kMaxPointLights> pointLights_;
+		std::array<SpotLight::ConstBufferData, kMaxSpotLights> spotLights_;
 	};
 
 	static LightManager* GetInstance();

@@ -26,7 +26,7 @@ void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath, 
 	CreateDirectionalLight();
 
 	// Transform変数を作る
-	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, -1.5f, 0.0f}, {0.0f, 0.0f, 2.0f} };
 
 	// デフォルトカメラをセットする
 	camera_ = object3dCommon_->GetDefaultCamera();
@@ -188,7 +188,7 @@ void Sphere::CreateDirectionalLight() {
 
 	// デフォルト値はとりあえず以下のようにしておく
 	directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
+	directionalLightData->direction = Normalize({ 0.0f, -1.0f, 0.0f });
 	directionalLightData->intensity = 0.0f;
 }
 
