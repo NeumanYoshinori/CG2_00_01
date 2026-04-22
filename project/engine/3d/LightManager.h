@@ -5,7 +5,7 @@
 
 class LightManager {
 public:
-	static const uint32_t kMaxPointLights = 1;
+	static const uint32_t kMaxPointLights = 2;
 
 	struct ConstBufferData {
 		std::array<PointLight::ConstBufferData, kMaxPointLights> pointLights_;

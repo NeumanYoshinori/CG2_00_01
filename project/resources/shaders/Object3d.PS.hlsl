@@ -17,7 +17,7 @@ struct Camera {
     float32_t3 worldPosition;
 };
 
-static const int kNumPointLight = 1;
+static const int kNumPointLight = 2;
 
 struct PointLight {
     float32_t4 color;
@@ -66,7 +66,7 @@ PixelShaderOutput main(VertexShaderOutput input) {
         float32_t3 halfVectorD = normalize(-gDirectionalLight.direction + toEye);
         float NDotHD = dot(normalize(input.normal), halfVectorD);
         float specularPowD = pow(saturate(NDotHD), gMaterial.shininess);
-        float NdotLD = dot(normalize(input.normal), gDirectionalLight.direction);
+        float NdotLD = dot(normalize(input.normal), -gDirectionalLight.direction);
         float cosD = pow(NdotLD * 0.5f + 0.5f, 2.0f);
         float32_t3 color = { 0.0f, 0.0f, 0.0f };
 

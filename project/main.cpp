@@ -144,7 +144,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// .objファイルからモデルを読み込む
 	ModelManager::GetInstance()->LoadModel("terrain.obj");
-	ModelManager::GetInstance()->LoadModel("honMaguro.obj");
 
 	// 3dオブジェクトの初期化
 	Object3d* terrain;
@@ -154,15 +153,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	terrain->SetModel("terrain.obj");
 	terrain->SetCamera(camera);
-
-	// 3dオブジェクトの初期化
-	Object3d* fence;
-	fence = new Object3d();
-	fence->Initialize(object3dCommon, lightManager);
-
-	// 初期化済みの3Dオブジェクトにモデルを紐づける
-	fence->SetModel("honMaguro.obj");
-	fence->SetCamera(camera);
 
 	// パーティクルマネージャ
 	ParticleManager* particleManager = ParticleManager::GetInstance();
@@ -232,9 +222,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Begin("Settings");
 		camera->DebugUpdate();
-		Vector2 spritePos = sprite->GetPosition();
-		ImGui::DragFloat2("spritePos", &spritePos.x);
-		sprite->SetPosition(spritePos);
 		Vector3 terrainPos = terrain->GetTranslate();
 		ImGui::DragFloat3("terrainPos", &terrainPos.x, 0.01f);
 		terrain->SetTranslate(terrainPos);
@@ -293,7 +280,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// 3dオブジェクトの解放
 	delete terrain;
-	delete fence;
 
 	// 球の解放
 	delete sphere;
