@@ -33,7 +33,7 @@ public:
 
 	// モデルデータ
 	struct ModelData {
-		std::vector<VertexData> verticles;
+		std::vector<VertexData> vertices;
 		MaterialData material;
 	};
 
@@ -43,8 +43,6 @@ public:
 	// 描画
 	void Draw();
 
-	// .mtlファイルの読み取り
-	static MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 	// .objファイルの読み取り
 	static ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
 

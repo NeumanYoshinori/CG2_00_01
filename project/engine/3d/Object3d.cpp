@@ -92,7 +92,7 @@ void Object3d::CreateDirectionalLight() {
 	// デフォルト値はとりあえず以下のようにしておく
 	directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	directionalLightData->direction = Normalize({ 0.0f, -1.0f, 0.0f });
-	directionalLightData->intensity = 0.0f;
+	directionalLightData->intensity = 1.0f;
 }
 
 void Object3d::CreateCameraData() {

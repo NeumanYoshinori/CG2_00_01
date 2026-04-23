@@ -52,7 +52,7 @@ void LightManager::Initialize(DirectXBase* dxBase) {
 	for (int i = 0; i < kMaxPointLights; i ++) {
 		constMap_->pointLights_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		constMap_->pointLights_[i].position = { 0.0f, 0.0f, 0.0f };
-		constMap_->pointLights_[i].intensity = 0.0f;
+		constMap_->pointLights_[i].intensity = 1.0f;
 		constMap_->pointLights_[i].radius = 2.0f;
 		constMap_->pointLights_[i].decay = 0.8f;
 	}
