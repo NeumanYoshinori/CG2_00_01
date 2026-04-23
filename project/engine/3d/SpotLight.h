@@ -11,6 +11,7 @@ public:
 		float distance;
 		float decay;
 		float cosAngle;
+		float cosFalloffStart;
 		float padding[2];
 	};
 };

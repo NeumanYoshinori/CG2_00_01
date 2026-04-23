@@ -36,6 +36,8 @@ private:
 
 	SrvManager* srvManager_ = nullptr;
 
+	float cosAngle[kMaxSpotLights] = { 0.0f };
+
 	LightManager() = default;
 	~LightManager() = default;
 	LightManager(LightManager&) = delete;

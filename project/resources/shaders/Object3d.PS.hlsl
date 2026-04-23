@@ -29,13 +29,14 @@ struct PointLight {
 };
 
 struct SpotLight {
-    float32_t3 color;
+    float32_t4 color;
     float32_t3 position;
     float32_t intensity;
     float32_t3 direction;
     float32_t distance;
     float32_t decay;
     float32_t cosAngle;
+    float32_t cosFalloffStart;
 };
 
 cbuffer lightGroup : register(b3) {
@@ -94,7 +95,7 @@ PixelShaderOutput main(VertexShaderOutput input) {
         color += diffuseDirectionalLight + specularDirectionalLight;
         
         for (int i = 0; i < kNumPointLight; i++) {
-            float32_t3 pointLightDirection = normalize(pointLights[i].position - input.worldPosition);
+            float32_t3 pointLightDirection = normalize(input.worldPosition - pointLights[i].position);
             float32_t distance = length(pointLights[i].position - input.worldPosition);
             float32_t factor = pow(saturate(-distance / pointLights[i].radius + 1.0), pointLights[i].decay);
             
@@ -117,9 +118,9 @@ PixelShaderOutput main(VertexShaderOutput input) {
         for (int j = 0; j < kNumSpotLight; j++) {
             float32_t3 spotLightDirectionOnSurface = normalize(input.worldPosition - spotLights[j].position);
             float32_t distance = length(spotLights[j].position - input.worldPosition);
-            float32_t attenuationFactor = 1.0f / (distance * distance);
+            float32_t attenuationFactor = pow(saturate(-distance / spotLights[j].distance + 1.0), spotLights[j].decay);
             float32_t cosAngle = dot(spotLightDirectionOnSurface, spotLights[j].direction);
-            float32_t falloffFactor = saturate((cosAngle - spotLights[j].cosAngle) / (1.0f - spotLights[j].cosAngle));
+            float32_t falloffFactor = saturate((cosAngle - spotLights[j].cosAngle) / (spotLights[j].cosFalloffStart - spotLights[j].cosAngle));
             
             float32_t3 halfVectorS = normalize(-spotLightDirectionOnSurface + toEye);
             float NDotHS = dot(normalize(input.normal), halfVectorS);

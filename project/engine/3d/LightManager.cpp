@@ -39,6 +39,7 @@ void LightManager::DebugPointLight() {
 	ImGui::DragFloat("spotLightDistance1", &constMap_->spotLights_[0].distance, 0.01f);
 	ImGui::DragFloat("spotLightDecay1", &constMap_->spotLights_[0].decay, 0.01f);
 	ImGui::DragFloat("spotLightCosAngle1", &constMap_->spotLights_[0].cosAngle, 0.01f);
+	ImGui::DragFloat("spotLightCosFalloffStart", &constMap_->spotLights_[0].cosFalloffStart, 0.01f);
 #endif
 }
 
@@ -51,7 +52,7 @@ void LightManager::Initialize(DirectXBase* dxBase) {
 	for (int i = 0; i < kMaxPointLights; i ++) {
 		constMap_->pointLights_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		constMap_->pointLights_[i].position = { 0.0f, 0.0f, 0.0f };
-		constMap_->pointLights_[i].intensity = 1.0f;
+		constMap_->pointLights_[i].intensity = 0.0f;
 		constMap_->pointLights_[i].radius = 2.0f;
 		constMap_->pointLights_[i].decay = 0.8f;
 	}
@@ -61,9 +62,10 @@ void LightManager::Initialize(DirectXBase* dxBase) {
 		constMap_->spotLights_[i].position = { 2.0f, 1.25f, 0.0f };
 		constMap_->spotLights_[i].distance = 7.0f;
 		constMap_->spotLights_[i].direction = Normalize({ -1.0f, -1.0f, 0.0f });
-		constMap_->spotLights_[i].intensity = 0.0f;
+		constMap_->spotLights_[i].intensity = 1.0f;
 		constMap_->spotLights_[i].decay = 2.0f;
 		constMap_->spotLights_[i].cosAngle = cos(numbers::pi_v<float> / 3.0f);
+		constMap_->spotLights_[i].cosFalloffStart = 1.0f;
 	}
 }
 
