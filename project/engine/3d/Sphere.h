@@ -89,9 +89,6 @@ private:
 	// 座標変換行列データ作成
 	void CreateTransformationMatrixData();
 
-	// 平行光源データ作成
-	void CreateDirectionalLight();
-
 	// カメラデータ作成
 	void CreateCameraData();
 
@@ -124,11 +121,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource = nullptr; // 座標返還行列リソース
 	// バッファリソース内のデータを指すポインタ
 	TransformationMatrix* transformationMatrixData = nullptr;
-
-	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = nullptr;
-	// バッファリソース内のデータを指すポインタ
-	DirectionalLight* directionalLightData = nullptr;
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource = nullptr;

@@ -23,16 +23,25 @@ void LightManager::Finalize() {
 
 void LightManager::DebugPointLight() {
 #ifdef USE_IMGUI
+	ImGui::DragFloat3("directionalLightDirection", &constMap_->directionalLights_[0].direction.x, 0.01f);
+
 	ImGui::DragFloat3("pointLightPos1", &constMap_->pointLights_[0].position.x, 0.01f);
 	ImGui::DragFloat("pointLightIntensity1", &constMap_->pointLights_[0].intensity, 0.01f);
 	ImGui::DragFloat("pointLightRadius1", &constMap_->pointLights_[0].radius, 0.01f);
 	ImGui::DragFloat("pointLightDecay1", &constMap_->pointLights_[0].decay, 0.01f);
+	bool pointLightActive1 = constMap_->pointLights_[0].isActive;
+	if (ImGui::Checkbox("pointLightActive1", &pointLightActive1)) {
+		constMap_->pointLights_[0].isActive = pointLightActive1;
+	}
 
 	ImGui::DragFloat3("pointLightPos2", &constMap_->pointLights_[1].position.x, 0.01f);
 	ImGui::DragFloat("pointLightIntensity2", &constMap_->pointLights_[1].intensity, 0.01f);
 	ImGui::DragFloat("pointLightRadius2", &constMap_->pointLights_[1].radius, 0.01f);
 	ImGui::DragFloat("pointLightDecay2", &constMap_->pointLights_[1].decay, 0.01f);
-
+	bool pointLightActive2 = constMap_->pointLights_[1].isActive;
+	if (ImGui::Checkbox("pointLightActive2", &pointLightActive2)) {
+		constMap_->pointLights_[1].isActive = pointLightActive2;
+	}
 	ImGui::DragFloat3("spotLightPos1", &constMap_->spotLights_[0].position.x, 0.01f);
 	ImGui::DragFloat("spotLightIntensity1", &constMap_->spotLights_[0].intensity, 0.01f);
 	ImGui::DragFloat3("spotLightDirection1", &constMap_->spotLights_[0].direction.x, 0.01f);
@@ -40,6 +49,10 @@ void LightManager::DebugPointLight() {
 	ImGui::DragFloat("spotLightDecay1", &constMap_->spotLights_[0].decay, 0.01f);
 	ImGui::DragFloat("spotLightCosAngle1", &constMap_->spotLights_[0].cosAngle, 0.01f);
 	ImGui::DragFloat("spotLightCosFalloffStart", &constMap_->spotLights_[0].cosFalloffStart, 0.01f);
+	bool spotLightActive = constMap_->spotLights_[0].isActive;
+	if (ImGui::Checkbox("spotLightActive1", &spotLightActive)) {
+		constMap_->spotLights_[0].isActive = spotLightActive;
+	}
 #endif
 }
 
@@ -49,12 +62,19 @@ void LightManager::Initialize(DirectXBase* dxBase) {
 	constBuff_ = dxBase_->CreateBufferResource(sizeof(ConstBufferData));
 	constBuff_->Map(0, nullptr, reinterpret_cast<void**>(&constMap_));
 
+	for (int i = 0; i < kMaxDirectionalLights; i++) {
+		constMap_->directionalLights_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		constMap_->directionalLights_[i].direction = Normalize({ 0.0f, -1.0f, 0.0f });
+		constMap_->directionalLights_[i].intensity = 0.0f;
+	}
+
 	for (int i = 0; i < kMaxPointLights; i ++) {
 		constMap_->pointLights_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		constMap_->pointLights_[i].position = { 0.0f, 0.0f, 0.0f };
 		constMap_->pointLights_[i].intensity = 1.0f;
 		constMap_->pointLights_[i].radius = 2.0f;
 		constMap_->pointLights_[i].decay = 0.8f;
+		constMap_->pointLights_[i].isActive = false;
 	}
 
 	for (int i = 0; i < kMaxSpotLights; i++) {
@@ -66,11 +86,12 @@ void LightManager::Initialize(DirectXBase* dxBase) {
 		constMap_->spotLights_[i].decay = 2.0f;
 		constMap_->spotLights_[i].cosAngle = cos(numbers::pi_v<float> / 3.0f);
 		constMap_->spotLights_[i].cosFalloffStart = 1.0f;
+		constMap_->spotLights_[i].isActive = true;
 	}
 }
 
 void LightManager::Draw() {
 	ComPtr<ID3D12GraphicsCommandList> commandList = dxBase_->GetCommandList();
 
-	commandList->SetGraphicsRootConstantBufferView(5, constBuff_->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(3, constBuff_->GetGPUVirtualAddress());
 }

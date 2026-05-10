@@ -13,9 +13,6 @@ void Object3d::Initialize(Object3dCommon* object3dCommon, LightManager* lightMan
 	// 座標変換行列データ作成
 	CreateTransformationMatrixData();
 
-	// 平行光源データ作成
-	CreateDirectionalLight();
-
 	// Transform変数を作る
 	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 	
@@ -51,12 +48,12 @@ void Object3d::Draw() {
 
 	// wvp用のCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-	// 平行光源CBufferの場所を設定
-	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+
+	// ライトのcbufferの場所を設定
+	lightManager_->Draw();
+
 	// カメラのCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
-
-	lightManager_->Draw();
 
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {
@@ -80,19 +77,6 @@ void Object3d::CreateTransformationMatrixData() {
 	transformationMatrixData->WVP = MakeIdentity4x4();
 	transformationMatrixData->World = MakeIdentity4x4();
 	transformationMatrixData->WorldInverseTranspose = MakeIdentity4x4();
-}
-
-void Object3d::CreateDirectionalLight() {
-	// 平行光源リソースを作る
-	directionalLightResource = dxBase_->CreateBufferResource(sizeof(DirectionalLight));
-
-	// 平行光源リソースにデータを書き込むためのアドレスを取得して平行光源構造体のポインタに割り当てる
-	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
-
-	// デフォルト値はとりあえず以下のようにしておく
-	directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	directionalLightData->direction = Normalize({ 0.0f, -1.0f, 0.0f });
-	directionalLightData->intensity = 1.0f;
 }
 
 void Object3d::CreateCameraData() {

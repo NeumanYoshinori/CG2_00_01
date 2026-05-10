@@ -22,9 +22,6 @@ void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath, 
 	// 座標変換行列データ作成
 	CreateTransformationMatrixData();
 
-	// 平行光源データ作成
-	CreateDirectionalLight();
-
 	// Transform変数を作る
 	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, -1.5f, 0.0f}, {0.0f, 0.0f, 2.0f} };
 
@@ -71,11 +68,10 @@ void Sphere::Draw() {
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭を設定
 	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(filePath));
-	// 平行光源CBufferの場所を設定
-	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+	// ライトのCBufferの場所を設定
+	lightManager_->Draw();
 	// カメラのCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
-	lightManager_->Draw();
 	commandList->DrawIndexedInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0, 0);
 }
 
@@ -177,19 +173,6 @@ void Sphere::CreateTransformationMatrixData() {
 	transformationMatrixData->WVP = MakeIdentity4x4();
 	transformationMatrixData->World = MakeIdentity4x4();
 	transformationMatrixData->WorldInverseTranspose = MakeIdentity4x4();
-}
-
-void Sphere::CreateDirectionalLight() {
-	// 平行光源リソースを作る
-	directionalLightResource = dxBase_->CreateBufferResource(sizeof(DirectionalLight));
-
-	// 平行光源リソースにデータを書き込むためのアドレスを取得して平行光源構造体のポインタに割り当てる
-	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
-
-	// デフォルト値はとりあえず以下のようにしておく
-	directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	directionalLightData->direction = Normalize({ 0.0f, -1.0f, 0.0f });
-	directionalLightData->intensity = 1.0f;
 }
 
 void Sphere::CreateCameraData() {

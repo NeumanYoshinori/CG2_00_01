@@ -22,23 +22,9 @@ public: // メンバ関数
 		Matrix4x4 WorldInverseTranspose;
 	};
 
-	// 平行光源
-	struct DirectionalLight {
-		Vector4 color;
-		Vector3 direction;
-		float intensity;
-	};
-
 	// カメラ
 	struct CameraForGPU {
 		Vector3 worldPosition;
-	};
-
-	// ポイントライト
-	struct PointLight {
-		Vector4 color;
-		Vector3 position;
-		float intensity;
 	};
 
 	// 初期化
@@ -73,9 +59,6 @@ private:
 	// 座標変換行列データ作成
 	void CreateTransformationMatrixData();
 
-	// 平行光源データ作成
-	void CreateDirectionalLight();
-
 	// カメラデータ作成
 	void CreateCameraData();
 
@@ -89,11 +72,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource = nullptr; // 座標返還行列リソース
 	// バッファリソース内のデータを指すポインタ
 	TransformationMatrix* transformationMatrixData = nullptr;
-
-	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = nullptr;
-	// バッファリソース内のデータを指すポインタ
-	DirectionalLight* directionalLightData = nullptr;
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource = nullptr;
