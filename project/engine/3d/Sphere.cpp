@@ -7,7 +7,7 @@
 using namespace std;
 using namespace MathFunction;
 
-void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath, LightManager* lightManager) {
+void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath) {
 	// 引数で受け取ってメンバ変数に記録する
 	object3dCommon_ = object3dCommon;
 
@@ -33,8 +33,6 @@ void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath, 
 
 	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 	filePath = textureFilePath;
-
-	lightManager_ = lightManager;
 }
 
 void Sphere::Update() {

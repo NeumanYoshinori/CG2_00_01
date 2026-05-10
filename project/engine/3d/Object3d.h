@@ -28,7 +28,7 @@ public: // メンバ関数
 	};
 
 	// 初期化
-	void Initialize(Object3dCommon* object3dCommon, LightManager* lightManager);
+	void Initialize(Object3dCommon* object3dCommon);
 
 	// 更新
 	void Update();

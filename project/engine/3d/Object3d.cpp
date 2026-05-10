@@ -4,7 +4,7 @@
 using namespace std;
 using namespace MathFunction;
 
-void Object3d::Initialize(Object3dCommon* object3dCommon, LightManager* lightManager) {
+void Object3d::Initialize(Object3dCommon* object3dCommon) {
 	// 引数で受け取ってメンバ変数に記録する
 	object3dCommon_ = object3dCommon;
 
@@ -21,8 +21,6 @@ void Object3d::Initialize(Object3dCommon* object3dCommon, LightManager* lightMan
 
 	// カメラデータ作成
 	CreateCameraData();
-
-	lightManager_ = lightManager;
 }
 
 void Object3d::Update() {

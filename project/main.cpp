@@ -148,7 +148,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 3dオブジェクトの初期化
 	Object3d* terrain;
 	terrain = new Object3d();
-	terrain->Initialize(object3dCommon, lightManager);
+	terrain->Initialize(object3dCommon);
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	terrain->SetModel("terrain.obj");
@@ -165,7 +165,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ParticleEmitter* particleEmitter = new ParticleEmitter("circle", particleTransform, 30, 1.0f);
 
 	Sphere* sphere = new Sphere();
-	sphere->Initialize(object3dCommon, "resources/monsterBall.png", lightManager);
+	sphere->Initialize(object3dCommon, "resources/monsterBall.png");
 	sphere->SetCamera(camera);
 
 	ImGuiManager* imGuiManager = new ImGuiManager();

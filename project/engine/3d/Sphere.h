@@ -58,7 +58,7 @@ public: // メンバ関数
 	};
 
 	// 初期化
-	void Initialize(Object3dCommon* object3dCommon, std::string textureFilePath, LightManager* lightManager);
+	void Initialize(Object3dCommon* object3dCommon, std::string textureFilePath);
 
 	// 更新
 	void Update();
@@ -142,6 +142,6 @@ private:
 
 	const uint32_t kSubdivision = 16; // 分割数
 
-	LightManager* lightManager_ = nullptr;
+	LightManager* lightManager_ = LightManager::GetInstance();
 };
 
