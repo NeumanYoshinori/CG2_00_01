@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 #include "DirectXBase.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 class ModelCommon;
 
@@ -31,10 +34,18 @@ public:
 		uint32_t textureIndex = 0;
 	};
 
+	// ノード
+	struct Node {
+		Matrix4x4 localMatrix;
+		std::string name;
+		std::vector<Node> children;
+	};
+
 	// モデルデータ
 	struct ModelData {
 		std::vector<VertexData> vertices;
 		MaterialData material;
+		Node rootNode;
 	};
 
 	// 初期化
@@ -44,7 +55,11 @@ public:
 	void Draw();
 
 	// .objファイルの読み取り
-	static ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
+	static ModelData LoadModelFile(const std::string& directoryPath, const std::string& filename);
+
+	static Node ReadNode(aiNode* node);
+
+	ModelData GetModelData() const { return modelData; }
 
 private:
 	// 頂点データ作成
@@ -67,13 +82,6 @@ private:
 	VertexData* vertexData = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-
-	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceForInstancing = nullptr; // 頂点リソース
-	// バッファリソース内のデータを指すポインタ
-	VertexData* vertexDataForInstancing = nullptr;
-	// バッファリソースの使い道を補足するバッファビュー
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewForInstancing{};
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource = nullptr;
 	uint32_t* indexData = nullptr;

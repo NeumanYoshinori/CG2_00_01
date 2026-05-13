@@ -5,9 +5,6 @@
 #include <cassert>
 #include "TextureManager.h"
 #include <numbers>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 
 using namespace std;
 using namespace MathFunction;
@@ -17,7 +14,7 @@ void Model::Initialize(ModelCommon* modelCommon, const string& directorypath, co
 	modelCommon_ = modelCommon;
 
 	// モデル読み込み
-	modelData = LoadObjFile(directorypath, filename);
+	modelData = LoadModelFile(directorypath, filename);
 
 	dxBase_ = modelCommon_->GetDxBase();
 
@@ -47,7 +44,7 @@ void Model::Draw() {
 	commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 }
 
-Model::ModelData Model::LoadObjFile(const string& directoryPath, const string& filename) {
+Model::ModelData Model::LoadModelFile(const string& directoryPath, const string& filename) {
 	// 中で必要となる変数の宣言
 	ModelData modelData; // 構築するModelData
 
@@ -91,7 +88,27 @@ Model::ModelData Model::LoadObjFile(const string& directoryPath, const string& f
 		}
 	}
 
+	modelData.rootNode = ReadNode(scene->mRootNode);
+
 	return modelData;
+}
+
+Model::Node Model::ReadNode(aiNode* node) {
+	Node result;
+	aiMatrix4x4 aiLocalMatrix = node->mTransformation; // nodeのlocalMatrixを取得
+	aiLocalMatrix.Transpose(); // 烈ベクトル形式を行ベクトルに転置
+	for (uint32_t i = 0; i < 4; i++) {
+		for (uint32_t j = 0; j < 4; j++) {
+			result.localMatrix.m[i][j] = aiLocalMatrix[i][j]; // 他の要素も同様に
+		}
+	}
+	result.name = node->mName.C_Str(); // Node名を格納
+	result.children.resize(node->mNumChildren); // 子供の数だけ確保
+	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex) {
+		// 再帰的に呼んで階層構造を作っていく
+		result.children[childIndex] = ReadNode(node->mChildren[childIndex]);
+	}
+	return result;
 }
 
 void Model::CreateVertexData() {
