@@ -231,7 +231,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Vector3 spherePos = sphere->GetTranslate();
 		ImGui::DragFloat3("spherePos", &spherePos.x, 0.01f);
 		sphere->SetTranslate(spherePos);
-		LightManager::GetInstance()->DebugPointLight();
+		lightManager->DebugPointLight();
 		ImGui::End();
 #endif
 

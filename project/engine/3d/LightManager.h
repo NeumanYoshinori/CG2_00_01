@@ -1,6 +1,5 @@
 #pragma once
 #include "DirectXBase.h"
-#include "SrvManager.h"
 #include "MathFunction.h"
 
 class LightManager {
@@ -38,7 +37,6 @@ public:
 		float cosAngle;
 		float cosFalloffStart;
 		int32_t isActive;
-		float padding[3];
 	};
 
 	struct ConstBufferData {
@@ -64,8 +62,6 @@ private:
 	ConstBufferData* constMap_ = nullptr;
 
 	DirectXBase* dxBase_ = nullptr;
-
-	SrvManager* srvManager_ = nullptr;
 
 	LightManager() = default;
 	~LightManager() = default;

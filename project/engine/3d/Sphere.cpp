@@ -2,7 +2,6 @@
 #include "Object3dCommon.h"
 #include <numbers>
 #include "TextureManager.h"
-#include "LightManager.h"
 
 using namespace std;
 using namespace MathFunction;
