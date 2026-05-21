@@ -9,8 +9,9 @@
 #include "Model.h"
 #include "ModelManager.h"
 #include "Camera.h"
-#include "Object3dCommon.h"
 #include "LightManager.h"
+
+class Object3dCommon;
 
 // 3Dオブジェクト
 class Object3d {

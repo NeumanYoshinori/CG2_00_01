@@ -46,12 +46,22 @@ void TextureManager::LoadTexture(const string& filePath) {
 	// テクスチャファイルを読んでプログラムで扱えるようにする
 	ScratchImage image{};
 	wstring filePathW = ConvertString(filePath);
-	HRESULT hr = LoadFromWICFile(filePathW.c_str(), WIC_FLAGS_FORCE_SRGB, nullptr, image);
+
+	HRESULT hr;
+	if (filePathW.ends_with(L".dds")) { // .ddsで終わっていたらddsをみなす。
+		hr = LoadFromDDSFile(filePathW.c_str(), DDS_FLAGS_NONE, nullptr, image);
+	} else {
+		hr = LoadFromWICFile(filePathW.c_str(), WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	}
 	assert(SUCCEEDED(hr));
 
 	// ミップマップの作成
 	ScratchImage mipImages{};
-	hr = GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), TEX_FILTER_SRGB, 0, mipImages);
+	if (IsCompressed(image.GetMetadata().format)) { // 圧縮フォーマットかどうかを調べる
+		mipImages = move(image); // 圧縮フォーマットならそのまま使うのでmoveする
+	} else {
+		hr = GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), TEX_FILTER_SRGB, 4, mipImages);
+	}
 	assert(SUCCEEDED(hr));
 
 	// テクスチャデータを追加して書き込む
@@ -63,7 +73,7 @@ void TextureManager::LoadTexture(const string& filePath) {
 	textureData.srvHandleCPU = srvManager_->GetCPUDescriptorHandle(textureData.srvIndex);
 	textureData.srvHandleGPU = srvManager_->GetGPUDescriptorHandle(textureData.srvIndex);
 
-	srvManager_->CreateSRVforTexture2D(textureData.srvIndex, textureData.resource.Get(), textureData.metadata.format, UINT(textureData.metadata.mipLevels));
+	srvManager_->CreateSRVforTexture2D(textureData.srvIndex, textureData.resource.Get(), textureData.metadata.format, UINT(textureData.metadata.mipLevels), textureData.metadata.IsCubemap());
 
 	// テクスチャデータ転送
 	ComPtr<ID3D12Resource> intermediateResource = dxBase_->UploadTextureData(textureData.resource, mipImages);

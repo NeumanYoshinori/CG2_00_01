@@ -20,6 +20,8 @@
 #include "ImGuiManager.h"
 #include "AudioManager.h"
 #include "Sphere.h"
+#include "SkyboxCommon.h"
+#include "Skybox.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -111,12 +113,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// テクスチャを読み込む
 	textureManager->LoadTexture("resources/uvChecker.png");
 	textureManager->LoadTexture("resources/monsterBall.png");
+	textureManager->LoadTexture("resources/rostock_laage_airport_4k.dds");
 
+	// ファイルパス
 	string filePath[2] = { "resources/uvChecker.png", "resources/monsterBall.png" };
 
-	SpriteCommon* spriteCommon = nullptr;
 	// スプライト共通部の初期化
-	spriteCommon = new SpriteCommon();
+	SpriteCommon* spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxBase);
 
 	// スプライトの初期化
@@ -125,9 +128,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// カメラの初期化
 	Camera* camera = new Camera();
-	camera->SetRotate({ 0.3f, 0.0f, 0.0f });
-	camera->SetTranslate({ 0.0f, 4.0f, -10.0f });
+	camera->SetRotate({ 0.0f, 1.75f, 0.0f });
+	camera->SetTranslate({ 0.0f, 0.0f, 0.0f });
 
+	// ライトマネージャの初期化
 	LightManager* lightManager = LightManager::GetInstance();
 	lightManager->Initialize(dxBase);
 
@@ -137,17 +141,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 3Dモデルマネージャの初期化
 	modelManager->Initialize(dxBase);
 
-	Object3dCommon* object3dCommon = nullptr;
 	// 3Dオブジェクト共通部の初期化
-	object3dCommon = new Object3dCommon();
+	Object3dCommon* object3dCommon = new Object3dCommon();
 	object3dCommon->Initialize(dxBase);
 
 	// .objファイルからモデルを読み込む
 	ModelManager::GetInstance()->LoadModel("terrain.obj");
 
 	// 3dオブジェクトの初期化
-	Object3d* terrain;
-	terrain = new Object3d();
+	Object3d* terrain = new Object3d();
 	terrain->Initialize(object3dCommon);
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
@@ -158,15 +160,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ParticleManager* particleManager = ParticleManager::GetInstance();
 	particleManager->Initialize(dxBase, srvManager, camera);
 
+	// 円のパーティクルグループを作成
 	particleManager->CreateParticleGroup("circle", "resources/circle.png");
 
 	Transform particleTransform;
 	particleTransform.translate = { 0.0f, 0.0f, 0.0f };
 	ParticleEmitter* particleEmitter = new ParticleEmitter("circle", particleTransform, 30, 1.0f);
 
+	// 球の初期化
 	Sphere* sphere = new Sphere();
 	sphere->Initialize(object3dCommon, "resources/monsterBall.png");
 	sphere->SetCamera(camera);
+
+	// スカイボックス共通部の初期化
+	SkyboxCommon* skyboxCommon = new SkyboxCommon();
+	skyboxCommon->Initialize(dxBase);
+
+	// スカイボックスの初期化
+	Skybox* skybox = new Skybox();
+	skybox->Initialize(skyboxCommon, "resources/rostock_laage_airport_4k.dds");
+	skybox->SetCamera(camera);
 
 	ImGuiManager* imGuiManager = new ImGuiManager();
 	imGuiManager->Initialize(winApp, dxBase);
@@ -200,9 +213,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// カメラの更新
 		camera->Update();
 
+		// スカイボックスの更新
+		skybox->Update();
+
 		// 3Dオブジェクトの更新
 		terrain->Update();
-		//fence->Update();
 
 		particleManager->Update();
 
@@ -231,6 +246,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Vector3 spherePos = sphere->GetTranslate();
 		ImGui::DragFloat3("spherePos", &spherePos.x, 0.01f);
 		sphere->SetTranslate(spherePos);
+		Vector3 skyboxPos = skybox->GetTranslate();
+		ImGui::DragFloat3("skyboxPos", &skyboxPos.x, 0.01f);
+		skybox->SetTranslate(skyboxPos);
 		lightManager->DebugPointLight();
 		ImGui::End();
 #endif
@@ -242,13 +260,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		srvManager->PreDraw();
 
+		skyboxCommon->DrawSetting();
+
+		skybox->Draw();
+
 		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3dCommon->DrawSetting();
 
 		// 3Dオブジェクトの描画
 		terrain->Draw();
-
-		//fence->Draw();
 
 		// 球の描画
 		sphere->Draw();
@@ -286,6 +306,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// 3dオブジェクト共通部の解放
 	delete object3dCommon;
+
+	// スカイボックスの解放
+	delete skybox;
+
+	// スカイボックス共通部の初期化
+	delete skyboxCommon;
 
 	// テクスチャマネージャの終了
 	textureManager->Finalize();

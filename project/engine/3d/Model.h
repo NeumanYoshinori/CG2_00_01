@@ -1,4 +1,5 @@
 #pragma once
+#include "ModelCommon.h"
 #include "MathFunction.h"
 #include <string>
 #include <vector>
@@ -6,8 +7,6 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
-class ModelCommon;
 
 // 3Dモデル
 class Model {

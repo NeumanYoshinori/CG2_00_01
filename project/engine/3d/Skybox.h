@@ -9,18 +9,15 @@
 #include "Model.h"
 #include "ModelManager.h"
 #include "Camera.h"
-#include "LightManager.h"
 
-class Object3dCommon;
+class SkyboxCommon;
 
-// 球
-class Sphere {
-public: // メンバ関数
+// スカイボックス
+class Skybox {
+public:
 	// 頂点データ
 	struct VertexData {
 		Vector4 position;
-		Vector2 texcoord;
-		Vector3 normal;
 	};
 
 	// マテリアルデータ
@@ -45,13 +42,8 @@ public: // メンバ関数
 		uint32_t textureIndex = 0;
 	};
 
-	// カメラ
-	struct CameraForGPU {
-		Vector3 worldPosition;
-	};
-
 	// 初期化
-	void Initialize(Object3dCommon* object3dCommon, std::string textureFilePath);
+	void Initialize(SkyboxCommon* skyboxCommon, std::string textureFilePath);
 
 	// 更新
 	void Update();
@@ -82,11 +74,8 @@ private:
 	// 座標変換行列データ作成
 	void CreateTransformationMatrixData();
 
-	// カメラデータ作成
-	void CreateCameraData();
-
 	// Object3DCommonのポインタ
-	Object3dCommon* object3dCommon_ = nullptr;
+	SkyboxCommon* skyboxCommon_ = nullptr;
 
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
@@ -115,11 +104,6 @@ private:
 	// バッファリソース内のデータを指すポインタ
 	TransformationMatrix* transformationMatrixData = nullptr;
 
-	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource = nullptr;
-	// バッファリソース内のデータを指すポインタ
-	CameraForGPU* cameraData = nullptr;
-
 	// Transform
 	Transform transform;
 
@@ -132,9 +116,5 @@ private:
 	uint32_t textureIndex;
 	// ファイルパス
 	std::string filePath;
-
-	const uint32_t kSubdivision = 16; // 分割数
-
-	LightManager* lightManager_ = LightManager::GetInstance();
 };
 
