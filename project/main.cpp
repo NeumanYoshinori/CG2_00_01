@@ -268,10 +268,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		object3dCommon->DrawSetting();
 
 		// 3Dオブジェクトの描画
-		terrain->Draw();
+		//terrain->Draw();
 
 		// 球の描画
-		sphere->Draw();
+		//sphere->Draw();
 
 		//particleManager->Draw();
 
