@@ -4,7 +4,7 @@
 using namespace std;
 
 namespace StringUtility {
-	wstring StringUtility::ConvertString(const string& str) {
+	wstring ConvertString(const string& str) {
 		if (str.empty()) {
 			return wstring();
 		}
@@ -18,7 +18,7 @@ namespace StringUtility {
 		return result;
 	}
 
-	string StringUtility::ConvertString(const wstring& str) {
+	string ConvertString(const wstring& str) {
 		if (str.empty()) {
 			return string();
 		}

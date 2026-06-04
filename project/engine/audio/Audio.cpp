@@ -1,4 +1,4 @@
-#include "AudioManager.h"
+#include "Audio.h"
 #include <cassert>
 #include <mfapi.h>
 #include <mfidl.h>
@@ -12,7 +12,7 @@
 using namespace std;
 using namespace Microsoft::WRL;
 
-void AudioManager::Initialize() {
+void Audio::Initialize() {
 	HRESULT result; // 他と使いまわし可能
 
 	// Windows Media Foundationの初期化（ローカルファイル版）
@@ -26,7 +26,7 @@ void AudioManager::Initialize() {
 	result = xAudio2->CreateMasteringVoice(&masterVoice);
 }
 
-AudioManager::SoundData AudioManager::SoundLoadFile(const string& filename) {
+Audio::SoundData Audio::SoundLoadFile(const string& filename) {
 	// フルパスをワイド文字列に変換
 	wstring filePathW = StringUtility::ConvertString(filename);
 	HRESULT result;
@@ -87,13 +87,13 @@ AudioManager::SoundData AudioManager::SoundLoadFile(const string& filename) {
 }
 
 // 音声データ解放
-void AudioManager::SoundUnload(SoundData* soundData) {
+void Audio::SoundUnload(SoundData* soundData) {
 	// バッファのメモリを解放
 	soundData->buffer.clear();
 	soundData->wfex = {};
 }
 
-void AudioManager::SoundPlayWave(const SoundData& soundData) {
+void Audio::SoundPlayWave(const SoundData& soundData, bool loop) {
 	HRESULT result;
 
 	// 波形フォーマットを基にSourceVoiceの生成
@@ -107,12 +107,18 @@ void AudioManager::SoundPlayWave(const SoundData& soundData) {
 	buf.AudioBytes = static_cast<UINT32>(soundData.buffer.size());
 	buf.Flags = XAUDIO2_END_OF_STREAM;
 
+	if (loop) {
+		buf.LoopBegin = 0;
+		buf.LoopLength = buf.PlayLength;
+		buf.LoopCount = XAUDIO2_LOOP_INFINITE;
+	}
+
 	// 波形データの再生
 	result = pSourceVoice->SubmitSourceBuffer(&buf);
 	result = pSourceVoice->Start();
 }
 
-void AudioManager::Finalize() {
+void Audio::Finalize() {
 	HRESULT result; // 他と使いまわし可能
 
 	// Windows Media Foundationの終了

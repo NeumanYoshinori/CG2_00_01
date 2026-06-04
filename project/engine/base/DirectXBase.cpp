@@ -41,7 +41,7 @@ void DirectXBase::Initialize(WinApp* winApp) {
 	// ビューポート矩形の初期化
 	ViewportInitialize();
 	// シザー矩形の初期化
-	ScissorInitalize();
+	ScissorInitialize();
 	// DXCコンパイラの作成
 	CreateDxcCompiler();
 }
@@ -409,7 +409,7 @@ void DirectXBase::ViewportInitialize() {
 	viewport.MaxDepth = 1.0f;
 }
 
-void DirectXBase::ScissorInitalize() {
+void DirectXBase::ScissorInitialize() {
 	// 基本的にビューポートと同じ矩形が構成されるようにする
 	scissorRect.left = 0;
 	scissorRect.right = WinApp::kClientWidth;

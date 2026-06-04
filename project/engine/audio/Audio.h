@@ -7,7 +7,7 @@
 
 #pragma comment(lib, "xaudio2.lib")
 
-class AudioManager {
+class Audio {
 private:
 	// チャンクヘッダー
 	struct ChunkHeader {
@@ -52,6 +52,6 @@ public:
 	void SoundUnload(SoundData* soundData);
 
 	// 音声再生
-	void SoundPlayWave(const SoundData& soundData);
+	void SoundPlayWave(const SoundData& soundData, bool loop);
 };
 

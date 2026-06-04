@@ -93,7 +93,7 @@ private:
 	void ViewportInitialize();
 
 	// シザー矩形の初期化
-	void ScissorInitalize();
+	void ScissorInitialize();
 
 	// DXCコンパイラの生成
 	void CreateDxcCompiler();
