@@ -19,6 +19,12 @@
 // DirectX基盤
 class DirectXBase {
 public:
+	// シングルトンインスタンスの取得
+	static DirectXBase* GetInstance();
+
+	// 終了
+	void Finalize();
+
 	// 初期化
 	void Initialize(WinApp* winApp);
 
@@ -103,6 +109,9 @@ private:
 	// FPS固定更新
 	void UpdateFixFPS();
 
+	// インスタンス
+	static DirectXBase* instance;
+
 	// DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	// DXGIファクトリ
@@ -185,5 +194,10 @@ private:
 
 	// 記録時間
 	std::chrono::steady_clock::time_point reference_;
+
+	DirectXBase() = default;
+	~DirectXBase() = default;
+	DirectXBase(const DirectXBase&) = delete;
+	const DirectXBase& operator=(const DirectXBase&) = delete;
 };
 

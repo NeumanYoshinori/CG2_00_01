@@ -4,6 +4,20 @@
 using namespace Microsoft::WRL;
 using namespace Logger;
 
+SpriteCommon* SpriteCommon::instance = nullptr;
+
+SpriteCommon* SpriteCommon::GetInstance() {
+	if (instance == nullptr) {
+		instance = new SpriteCommon;
+	}
+	return instance;
+}
+
+void SpriteCommon::Finalize() {
+	delete instance;
+	instance = nullptr;
+}
+
 void SpriteCommon::Initialize(DirectXBase* dxBase) {
 	// 引数で受け取ってメンバ変数に記録する
 	dxBase_ = dxBase;

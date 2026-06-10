@@ -12,6 +12,20 @@ using namespace StringUtility;
 using namespace DirectX;
 using namespace chrono;
 
+DirectXBase* DirectXBase::instance = nullptr;
+
+DirectXBase* DirectXBase::GetInstance() {
+	if (instance == nullptr) {
+		instance = new DirectXBase;
+	}
+	return instance;
+}
+
+void DirectXBase::Finalize() {
+	delete instance;
+	instance = nullptr;
+}
+
 void DirectXBase::Initialize(WinApp* winApp) {
 	// NULL検出
 	assert(winApp);

@@ -12,6 +12,20 @@
 using namespace std;
 using namespace Microsoft::WRL;
 
+Audio* Audio::instance = nullptr;
+
+Audio* Audio::GetInstance() {
+	if (instance == nullptr) {
+		instance = new Audio;
+	}
+	return instance;
+}
+
+void Audio::Finalize() {
+	delete instance;
+	instance = nullptr;
+}
+
 void Audio::Initialize() {
 	HRESULT result; // 他と使いまわし可能
 
@@ -118,7 +132,7 @@ void Audio::SoundPlayWave(const SoundData& soundData, bool loop) {
 	result = pSourceVoice->Start();
 }
 
-void Audio::Finalize() {
+void Audio::Release() {
 	HRESULT result; // 他と使いまわし可能
 
 	// Windows Media Foundationの終了

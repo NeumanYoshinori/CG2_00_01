@@ -27,8 +27,16 @@ private:
 		WAVEFORMATEX fmt; // 波形フォーマット
 	};
 
+	// インスタンス
+	static Audio* instance;
+
 	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
 	IXAudio2MasteringVoice* masterVoice;
+
+	Audio() = default;
+	~Audio() = default;
+	Audio(Audio&) = delete;
+	Audio& operator=(Audio&) = delete;
 
 public:
 	// サウンドデータ
@@ -39,11 +47,17 @@ public:
 		std::vector<BYTE> buffer;
 	};
 
+	// シングルトンインスタンスの取得
+	static Audio* GetInstance();
+
+	// 終了
+	void Finalize();
+
 	// 初期化
 	void Initialize();
 
 	// 後始末
-	void Finalize();
+	void Release();
 
 	// 音声ファイル読み込み
 	SoundData SoundLoadFile(const std::string& filename);

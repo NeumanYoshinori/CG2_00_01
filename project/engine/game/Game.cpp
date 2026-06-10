@@ -3,31 +3,18 @@
 #include "Logger.h"
 
 void Game::Initialize() {
-	// 誰も補足しなかった場合に(Unhandled)、補足する関数を登録
-	SetUnhandledExceptionFilter(CrashHandler::ExportDump);
+	// 規定クラスの初期化処理
+	Framework::Initialize();
 
-	// ログの生成
-	Logger::GenerateLog();
+	winApp_ = WinApp::GetInstance();
 
-	// WindowsAPIの初期化
-	winApp_ = new WinApp();
-	winApp_->Initialize();
+	dxBase_ = DirectXBase::GetInstance();
 
-	// DirectXの初期化
-	dxBase_ = new DirectXBase();
-	dxBase_->Initialize(winApp_);
+	input_ = Input::GetInstance();
 
-	// 入力の初期化
-	input_ = new Input();
-	input_->Initialize(winApp_);
-
-	// SRVマネージャの初期化
 	srvManager_ = SrvManager::GetInstance();
-	srvManager_->Initialize(dxBase_);
 
-	// テクスチャマネージャの初期化
 	textureManager_ = TextureManager::GetInstance();
-	textureManager_->Initialize(dxBase_, srvManager_);
 
 	// テクスチャを読み込む
 	textureManager_->LoadTexture("resources/uvChecker.png");
@@ -37,10 +24,7 @@ void Game::Initialize() {
 	// ファイルパス
 	std::string filePath[2] = { "resources/uvChecker.png", "resources/monsterBall.png" };
 
-	spriteCommon_ = new SpriteCommon();
-	// スプライト共通部の初期化
-	spriteCommon_->Initialize(dxBase_);
-
+	spriteCommon_ = SpriteCommon::GetInstance();
 	// スプライトの初期化
 	sprite_ = new Sprite();
 	sprite_->Initialize(spriteCommon_, "resources/uvChecker.png");
@@ -50,18 +34,9 @@ void Game::Initialize() {
 	camera_->SetRotate({ 0.0f, 1.75f, 0.0f });
 	camera_->SetTranslate({ 0.0f, 0.0f, 0.0f });
 
-	// ライトマネージャの初期化
-	lightManager_ = LightManager::GetInstance();
-	lightManager_->Initialize(dxBase_);
-
-	// モデルマネージャー
 	modelManager_ = ModelManager::GetInstance();
-	// 3Dモデルマネージャの初期化
-	modelManager_->Initialize(dxBase_);
 
-	object3dCommon_ = new Object3dCommon();
-	// 3Dオブジェクト共通部の初期化
-	object3dCommon_->Initialize(dxBase_);
+	object3dCommon_ = Object3dCommon::GetInstance();
 
 	// .objファイルからモデルを読み込む
 	modelManager_->LoadModel("terrain.obj");
@@ -102,10 +77,7 @@ void Game::Initialize() {
 	imGuiManager_ = new ImGuiManager();
 	imGuiManager_->Initialize(winApp_, dxBase_);
 
-	// オーディオ初期化
-	audio_ = new Audio();
-	audio_->Initialize();
-
+	audio_ = Audio::GetInstance();
 	// 音声読み込み
 	soundData1 = audio_->SoundLoadFile("resources/Alarm01.wav");
 	soundData2 = audio_->SoundLoadFile("resources/The_maze_of_aqua.mp3");
@@ -114,12 +86,8 @@ void Game::Initialize() {
 }
 
 void Game::Update() {
-	if (winApp_->ProcessMessage()) {
-		endRequest_ = true;
-	}
-
-	// キー入力の更新
-	input_->Update();
+	// 基底クラスの更新処理
+	Framework::Update();
 
 	// 0キーを押したときコンソールにHit 0と表示する
 	if (input_->ReleaseKey(DIK_0)) {
@@ -165,7 +133,7 @@ void Game::Update() {
 	Vector3 skyboxPos = skybox_->GetTranslate();
 	ImGui::DragFloat3("skyboxPos", &skyboxPos.x, 0.01f);
 	skybox_->SetTranslate(skyboxPos);
-	lightManager_->DebugPointLight();
+	LightManager::GetInstance()->DebugPointLight();
 	ImGui::End();
 #endif
 
@@ -206,43 +174,36 @@ void Game::Draw() {
 }
 
 void Game::Finalize() {
-	CloseHandle(dxBase_->GetFenceEvent());
-
-	// キー入力処理解放
-	delete input_;
-
 	// スプライトの解放
 	delete sprite_;
-
-	// スプライト共通部の解放
-	delete spriteCommon_;
+	sprite_ = nullptr;
 
 	// 3dオブジェクトの解放
 	delete terrain_;
+	terrain_ = nullptr;
 
 	// 球の解放
 	delete sphere_;
-
-	// 3dオブジェクト共通部の解放
-	delete object3dCommon_;
+	sphere_ = nullptr;
 
 	// スカイボックスの解放
 	delete skybox_;
+	skybox_ = nullptr;
 
-	// スカイボックス共通部の初期化
+	// スカイボックス共通部の解放
 	delete skyboxCommon_;
+	skyboxCommon_ = nullptr;
 
-	// テクスチャマネージャの終了
-	textureManager_->Finalize();
-
-	// 3Dモデルマネージャの終了
-	modelManager_->Finalize();
+	// パーティクルエミッターの解放
+	delete particleEmitter_;
+	particleEmitter_ = nullptr;
 
 	// パーティクルマネージャの終了
 	particleManager_->Finalize();
 
-	// SRVマネージャの解放
-	srvManager_->Finalize();
+	// カメラの解放
+	delete camera_;
+	camera_ = nullptr;
 
 	// ImGuiマネージャの終了処理
 	imGuiManager_->Finalize();
@@ -251,27 +212,13 @@ void Game::Finalize() {
 	delete imGuiManager_;
 	imGuiManager_ = nullptr;
 
-	// ライトマネージャの解放
-	lightManager_->Finalize();
+	audio_->Release();
 
-	// DirectX解放
-	delete dxBase_;
-
-	// WindowsAPIの終了処理
-	winApp_->Finalize();
-
-	// WindowsAPI解放
-	delete winApp_;
-	winApp_ = nullptr;
-
-	// XAudio2解放
-	audio_->Finalize();
 	// 音声データ開放
 	audio_->SoundUnload(&soundData1);
 	audio_->SoundUnload(&soundData2);
 
-	// オーディオマネジャーの解放
-	audio_ = nullptr;
-	delete audio_;
+	// 基底クラスの終了処理
+	Framework::Finalize();
 }
 

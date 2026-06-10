@@ -4,6 +4,20 @@
 using namespace Microsoft::WRL;
 using namespace Logger;
 
+Object3dCommon* Object3dCommon::instance = nullptr;
+
+Object3dCommon* Object3dCommon::GetInstance() {
+	if (instance == nullptr) {
+		instance = new Object3dCommon;
+	}
+	return instance;
+}
+
+void Object3dCommon::Finalize() {
+	delete instance;
+	instance = nullptr;
+}
+
 void Object3dCommon::Initialize(DirectXBase* dxBase) {
 	// 引数で受け取ってメンバ変数に記録する
 	dxBase_ = dxBase;

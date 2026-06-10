@@ -45,14 +45,19 @@ public:
 		std::array<SpotLight, kMaxSpotLights> spotLights_;
 	};
 
+	// シングルトンインスタンスの取得
 	static LightManager* GetInstance();
 
-	void Initialize(DirectXBase* dxBase);
-
-	void Draw();
-
+	// 終了
 	void Finalize();
 
+	// 初期化
+	void Initialize(DirectXBase* dxBase);
+
+	// 描画
+	void Draw();
+
+	// デバッグ
 	void DebugPointLight();
 
 private:

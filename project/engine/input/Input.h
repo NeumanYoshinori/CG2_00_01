@@ -7,6 +7,12 @@
 
 class Input {
 public:
+	// シングルトンインスタンスの取得
+	static Input* GetInstance();
+
+	// 終了
+	void Finalize();
+
 	// 初期化
 	void Initialize(WinApp* winApp);
 
@@ -26,6 +32,9 @@ public:
 	bool ReleaseKey(BYTE keyNumber);
 
 private:
+	// インスタンス
+	static Input* instance;
+
 	// キーボード
 	ComPtr<IDirectInputDevice8> keyboard;
 
@@ -38,4 +47,9 @@ private:
 
 	// WindowsAPI
 	WinApp* winApp_ = nullptr;
+
+	Input() = default;
+	~Input() = default;
+	Input(Input&) = delete;
+	Input& operator=(Input&) = delete;
 };

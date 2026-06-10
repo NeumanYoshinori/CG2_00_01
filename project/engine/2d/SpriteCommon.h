@@ -6,6 +6,12 @@
 // スプライト共通部
 class SpriteCommon {
 public: // メンバ関数
+	// インスタンスの取得
+	static SpriteCommon* GetInstance();
+
+	// 終了
+	void Finalize();
+
 	// 初期化
 	void Initialize(DirectXBase* dxBase);
 
@@ -21,6 +27,9 @@ private:
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeLine();
 
+	// インスタンス
+	static SpriteCommon* instance;
+
 	// DirectXBase
 	DirectXBase* dxBase_;
 
@@ -32,5 +41,10 @@ private:
 
 	// グラフィックスパイプラインステート
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+
+	SpriteCommon() = default;
+	~SpriteCommon() = default;
+	SpriteCommon(SpriteCommon&) = delete;
+	SpriteCommon& operator=(SpriteCommon&) = delete;
 };
 

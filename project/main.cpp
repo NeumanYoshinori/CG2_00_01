@@ -1,24 +1,13 @@
+#include "Framework.h"
 #include "Game.h"
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-	Game game;
+	Framework* game = new Game();
 
-	// ゲームの初期化
-	game.Initialize();
+	game->Run();
 
-	while (true) { // ゲームループ
-		// 毎フレーム更新
-		game.Update();
-		// 終了リクエストが来たら抜ける
-		if (game.IsEndRequest()) {
-			break;
-		}
-		// 描画
-		game.Draw();
-	}
-	// ゲームの終了
-	game.Finalize();
+	delete game;
 
 	return 0;
 }

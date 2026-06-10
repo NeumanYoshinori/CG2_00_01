@@ -25,6 +25,12 @@ public: // メンバ関数
 		kCountOfBlendMode,
 	};
 
+	// シングルトンインスタンスの取得
+	static Object3dCommon* GetInstance();
+
+	// 終了
+	void Finalize();
+
 	// 初期化
 	void Initialize(DirectXBase* dxBase);
 
@@ -45,6 +51,9 @@ private:
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeLine();
 
+	// インスタンス
+	static Object3dCommon* instance;
+
 	// DirectXBase
 	DirectXBase* dxBase_;
 
@@ -64,5 +73,10 @@ private:
 
 	// デフォルトカメラ
 	Camera* defaultCamera_ = nullptr;
+
+	Object3dCommon() = default;
+	~Object3dCommon() = default;
+	Object3dCommon(Object3dCommon&) = delete;
+	Object3dCommon& operator=(Object3dCommon&) = delete;
 };
 

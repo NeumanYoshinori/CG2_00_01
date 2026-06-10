@@ -1,10 +1,8 @@
 #pragma once
 #include "Input.h"
 #include "WinApp.h"
-#include "D3DResourceLeakChecker.h"
 #include "SpriteCommon.h"
 #include "Sprite.h"
-#include "MathFunction.h"
 #include "TextureManager.h"
 #include "Object3dCommon.h"
 #include "Object3d.h"
@@ -17,29 +15,24 @@
 #include "Sphere.h"
 #include "SkyboxCommon.h"
 #include "Skybox.h"
+#include "Framework.h"
 
 // ゲーム全体
-class Game {
+class Game : public Framework {
 public: // メンバ関数
 	// 初期化
-	void Initialize();
-
-	// 毎フレーム更新
-	void Update();
-
-	// 描画
-	void Draw();
+	void Initialize() override;
 
 	// 終了
-	void Finalize();
+	void Finalize() override;
 
-	// 終了フラグのチェック
-	bool IsEndRequest() const { return endRequest_; }
+	// 毎フレーム更新
+	void Update() override;
+
+	// 描画
+	void Draw() override;
 
 private:
-	D3DResourceLeakChecker leakCheck;
-	Microsoft::WRL::ComPtr<IDXGIFactory7> dcgiFactory;
-
 	// WindowsAPI
 	WinApp* winApp_ = nullptr;
 
@@ -70,9 +63,6 @@ private:
 	// オブジェクト3D共通部
 	Object3dCommon* object3dCommon_ = nullptr;
 
-	// ライトマネージャ
-	LightManager* lightManager_ = nullptr;
-
 	// 地面
 	Object3d* terrain_ = nullptr;
 
@@ -96,9 +86,6 @@ private:
 
 	// オーディオ
 	Audio* audio_ = nullptr;
-
-	// ゲーム終了フラグ
-	bool endRequest_ = false;
 
 	Audio::SoundData soundData1;
 	Audio::SoundData soundData2;
