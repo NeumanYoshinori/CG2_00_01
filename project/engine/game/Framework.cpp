@@ -78,8 +78,6 @@ void Framework::Finalize() {
 	// WindowsAPIの終了処理
 	winApp_->Finalize();
 
-	winApp_->End();
-
 	// オーディオマネジャーの解放
 	Audio::GetInstance()->Finalize();
 }

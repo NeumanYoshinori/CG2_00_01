@@ -19,11 +19,6 @@ WinApp* WinApp::GetInstance() {
 	return instance;
 }
 
-void WinApp::End() {
-	delete instance;
-	instance = nullptr;
-}
-
 // ウィンドウプロシージャ
 LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg,
 	WPARAM wparam, LPARAM lparam) {
@@ -105,4 +100,7 @@ bool WinApp::ProcessMessage() {
 void WinApp::Finalize() {
 	CloseWindow(hwnd);
 	CoUninitialize();
+
+	delete instance;
+	instance = nullptr;
 }
