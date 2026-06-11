@@ -1,10 +1,12 @@
 #pragma once
+#include "ModelCommon.h"
 #include "MathFunction.h"
 #include <string>
 #include <vector>
 #include "DirectXBase.h"
-
-class ModelCommon;
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 // 3Dモデル
 class Model {
@@ -22,6 +24,7 @@ public:
 		int32_t enableLighting;
 		float padding[3];
 		Matrix4x4 uvTransform;
+		float shininess;
 	};
 
 	// マテリアルデータ
@@ -30,10 +33,18 @@ public:
 		uint32_t textureIndex = 0;
 	};
 
+	// ノード
+	struct Node {
+		Matrix4x4 localMatrix;
+		std::string name;
+		std::vector<Node> children;
+	};
+
 	// モデルデータ
 	struct ModelData {
-		std::vector<VertexData> verticles;
+		std::vector<VertexData> vertices;
 		MaterialData material;
+		Node rootNode;
 	};
 
 	// 初期化
@@ -42,10 +53,12 @@ public:
 	// 描画
 	void Draw();
 
-	// .mtlファイルの読み取り
-	static MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 	// .objファイルの読み取り
-	static ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
+	static ModelData LoadModelFile(const std::string& directoryPath, const std::string& filename);
+
+	static Node ReadNode(aiNode* node);
+
+	ModelData GetModelData() const { return modelData; }
 
 private:
 	// 頂点データ作成
@@ -68,6 +81,11 @@ private:
 	VertexData* vertexData = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource = nullptr;
+	uint32_t* indexData = nullptr;
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr; // マテリアルリソース

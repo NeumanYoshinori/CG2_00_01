@@ -5,6 +5,12 @@
 // WindowsAPI
 class WinApp {
 public:
+	// シングルトンインスタンスの取得
+	static WinApp* GetInstance();
+
+	// 終了
+	void End();
+
 	// ウィンドウプロシージャ
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -26,10 +32,18 @@ public:
 	void Finalize();
 
 private:
+	// インスタンス
+	static WinApp* instance;
+
 	// ウィンドウハンドル
 	HWND hwnd = nullptr;
 
 	// ウィンドウクラスの設定
 	WNDCLASS wc{};
+
+	WinApp() = default;
+	~WinApp() = default;
+	WinApp(const WinApp&) = delete;
+	const WinApp& operator=(const WinApp&) = delete;
 };
 

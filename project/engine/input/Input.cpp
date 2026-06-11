@@ -6,6 +6,20 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 
+Input* Input::instance = nullptr;
+
+Input* Input::GetInstance() {
+	if (instance == nullptr) {
+		instance = new Input;
+	}
+	return instance;
+}
+
+void Input::Finalize() {
+	delete instance;
+	instance = nullptr;
+}
+
 void Input::Initialize(WinApp* winApp) {
 	HRESULT result;
 	result = DirectInput8Create(winApp->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);

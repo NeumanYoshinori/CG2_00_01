@@ -22,9 +22,6 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, string textureFilePath) {
 	// 座標交換行列作成
 	CreateTransformationMatrixData();
 
-	// テクスチャ番号の検索と記録
-	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
-
 	filePath = textureFilePath;
 	AdjustTextureSize();
 }
@@ -142,7 +139,6 @@ void Sprite::CreateMaterialData() {
 
 	// マテリアルデータの初期値を書き込む
 	materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData->enableLighting = false;
 	materialData->uvTransform = MakeIdentity4x4();
 }
 

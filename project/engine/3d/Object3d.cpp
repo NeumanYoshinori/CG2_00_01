@@ -1,5 +1,6 @@
 #include "Object3d.h"
 #include "Object3dCommon.h"
+#include "ImGuiManager.h"
 
 using namespace std;
 using namespace MathFunction;
@@ -13,14 +14,14 @@ void Object3d::Initialize(Object3dCommon* object3dCommon) {
 	// 座標変換行列データ作成
 	CreateTransformationMatrixData();
 
-	// 平行光源データ作成
-	CreateDirectionalLight();
-
 	// Transform変数を作る
 	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 	
 	// デフォルトカメラをセットする
 	camera_ = object3dCommon_->GetDefaultCamera();
+
+	// カメラデータ作成
+	CreateCameraData();
 }
 
 void Object3d::Update() {
@@ -33,8 +34,11 @@ void Object3d::Update() {
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
-	transformationMatrixData->WVP = worldViewProjectionMatrix;
-	transformationMatrixData->World = worldMatrix;
+	transformationMatrixData->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
+	transformationMatrixData->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
+
+	Matrix4x4 worldInverseMatrix = Inverse(worldMatrix);
+	transformationMatrixData->WorldInverseTranspose = Transpose(worldInverseMatrix);
 }
 
 void Object3d::Draw() {
@@ -43,8 +47,12 @@ void Object3d::Draw() {
 
 	// wvp用のCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-	// 平行光源CBufferの場所を設定
-	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+
+	// ライトのcbufferの場所を設定
+	lightManager_->Draw();
+
+	// カメラのCBufferの場所を設定
+	commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
 
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {
@@ -67,17 +75,17 @@ void Object3d::CreateTransformationMatrixData() {
 	// 単位行列を書き込んでおく
 	transformationMatrixData->WVP = MakeIdentity4x4();
 	transformationMatrixData->World = MakeIdentity4x4();
+	transformationMatrixData->WorldInverseTranspose = MakeIdentity4x4();
 }
 
-void Object3d::CreateDirectionalLight() {
-	// 平行光源リソースを作る
-	directionalLightResource = dxBase_->CreateBufferResource(sizeof(DirectionalLight));
+void Object3d::CreateCameraData() {
+	// カメラリソースを作る
+	cameraResource = dxBase_->CreateBufferResource(sizeof(CameraForGPU));
 
-	// 平行光源リソースにデータを書き込むためのアドレスを取得して平行光源構造体のポインタに割り当てる
-	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
+	// 書き込むためのアドレスを作る
+	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraData));
 
-	// デフォルト値はとりあえず以下のようにしておく
-	directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
-	directionalLightData->intensity = 1.0f;
+	if (camera_) {
+		cameraData->worldPosition = camera_->GetTranslate();
+	}
 }

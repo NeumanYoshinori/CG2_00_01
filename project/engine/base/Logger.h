@@ -5,5 +5,8 @@
 namespace Logger {
 	void Log(const std::string& message);
 	void Log(std::ostream& os, const std::string& message);
+
+	// ログの生成
+	void GenerateLog();
 }
 

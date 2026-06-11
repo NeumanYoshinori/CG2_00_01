@@ -9,6 +9,7 @@
 #include "Model.h"
 #include "ModelManager.h"
 #include "Camera.h"
+#include "LightManager.h"
 
 class Object3dCommon;
 
@@ -19,13 +20,12 @@ public: // メンバ関数
 	struct TransformationMatrix {
 		Matrix4x4 WVP;
 		Matrix4x4 World;
+		Matrix4x4 WorldInverseTranspose;
 	};
 
-	// 平行光源
-	struct DirectionalLight {
-		Vector4 color;
-		Vector3 direction;
-		float intensity;
+	// カメラ
+	struct CameraForGPU {
+		Vector3 worldPosition;
 	};
 
 	// 初期化
@@ -60,8 +60,8 @@ private:
 	// 座標変換行列データ作成
 	void CreateTransformationMatrixData();
 
-	// 平行光源データ作成
-	void CreateDirectionalLight();
+	// カメラデータ作成
+	void CreateCameraData();
 
 	// Object3DCommonのポインタ
 	Object3dCommon* object3dCommon_ = nullptr;
@@ -75,9 +75,9 @@ private:
 	TransformationMatrix* transformationMatrixData = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource = nullptr;
 	// バッファリソース内のデータを指すポインタ
-	DirectionalLight* directionalLightData = nullptr;
+	CameraForGPU* cameraData = nullptr;
 
 	// Transform
 	Transform transform;
@@ -90,5 +90,7 @@ private:
 
 	// カメラ
 	Camera* camera_ = nullptr;
+
+	LightManager* lightManager_ = LightManager::GetInstance();
 };
 

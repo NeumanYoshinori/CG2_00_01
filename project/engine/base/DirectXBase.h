@@ -19,6 +19,12 @@
 // DirectX基盤
 class DirectXBase {
 public:
+	// シングルトンインスタンスの取得
+	static DirectXBase* GetInstance();
+
+	// 終了
+	void Finalize();
+
 	// 初期化
 	void Initialize(WinApp* winApp);
 
@@ -93,7 +99,7 @@ private:
 	void ViewportInitialize();
 
 	// シザー矩形の初期化
-	void ScissorInitalize();
+	void ScissorInitialize();
 
 	// DXCコンパイラの生成
 	void CreateDxcCompiler();
@@ -103,20 +109,23 @@ private:
 	// FPS固定更新
 	void UpdateFixFPS();
 
+	// インスタンス
+	static DirectXBase* instance;
+
 	// DirectX12デバイス
-	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	// DXGIファクトリ
-	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
+	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
 
 	// コマンドアロケータ
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
 	// コマンドリスト
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
 	// コマンドキュー
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
 
 	// スワップチェーン
-	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = nullptr;
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain;
 
 	// スワップチェーンデスク
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
@@ -136,10 +145,10 @@ private:
 	uint32_t descriptorSizeDSV = 0;
 
 	// RTV用のヒープ
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
 
 	// DSV用のヒープ
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;
 
 	// rtvデスク
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
@@ -148,7 +157,7 @@ private:
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	
 	// フェンス
-	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 
 	// ビューポート
 	D3D12_VIEWPORT viewport{};
@@ -181,9 +190,14 @@ private:
 	uint64_t fenceVal = 0;
 
 	// resourceの生成
-	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource;
 
 	// 記録時間
 	std::chrono::steady_clock::time_point reference_;
+
+	DirectXBase() = default;
+	~DirectXBase() = default;
+	DirectXBase(const DirectXBase&) = delete;
+	const DirectXBase& operator=(const DirectXBase&) = delete;
 };
 
