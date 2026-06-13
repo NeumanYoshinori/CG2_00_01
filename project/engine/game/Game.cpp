@@ -7,7 +7,7 @@ void Game::Initialize() {
 	Framework::Initialize();
 
 	// ゲームプレイシーンの生成
-	scene_ = new GamePlayScene();
+	scene_ = new TitleScene();
 	// ゲームプレイシーンの初期化
 	scene_->Initialize();
 }

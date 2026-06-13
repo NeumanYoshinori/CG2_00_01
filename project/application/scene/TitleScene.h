@@ -9,15 +9,12 @@
 #include "SrvManager.h"
 #include "ParticleManager.h"
 #include "ParticleEmitter.h"
-#include "ImGuiManager.h"
 #include "Audio.h"
 #include "Sphere.h"
-#include "SkyboxCommon.h"
-#include "Skybox.h"
 #include "BaseScene.h"
 
 // ゲームプレイシーン
-class GamePlayScene : public BaseScene {
+class TitleScene : public BaseScene {
 public:
 	// 初期化
 	void Initialize() override;
@@ -59,33 +56,14 @@ private:
 	// モデルマネージャ
 	ModelManager* modelManager_ = nullptr;
 
-	// オブジェクト3D共通部
-	Object3dCommon* object3dCommon_ = nullptr;
-
-	// 地面
-	Object3d* terrain_ = nullptr;
-
 	// パーティクルマネージャ
 	ParticleManager* particleManager_ = nullptr;
 
 	// パーティクルエミッター
 	ParticleEmitter* particleEmitter_ = nullptr;
 
-	// 球
-	Sphere* sphere_ = nullptr;
-
-	// スカイボックス共通部
-	SkyboxCommon* skyboxCommon_ = nullptr;
-
-	// スカイボックス
-	Skybox* skybox_ = nullptr;
-
-	// ImGuiマネジャー
-	ImGuiManager* imGuiManager_ = nullptr;
-
 	// オーディオ
 	Audio* audio_ = nullptr;
 
-	Audio::SoundData soundData2;
+	Audio::SoundData soundData1;
 };
-

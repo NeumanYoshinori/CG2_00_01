@@ -174,6 +174,12 @@
     <ClCompile Include="engine\2d\TextureManager.cpp">
       <Filter>ソース ファイル\engine\2d</Filter>
     </ClCompile>
+    <ClCompile Include="application\scene\TitleScene.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\game\BaseScene.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\base\Logger.h">
@@ -277,6 +283,12 @@
     </ClInclude>
     <ClInclude Include="engine\game\Game.h">
       <Filter>ヘッダー ファイル\engine\game</Filter>
+    </ClInclude>
+    <ClInclude Include="application\scene\TitleScene.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\game\BaseScene.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

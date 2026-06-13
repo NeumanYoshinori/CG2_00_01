@@ -1,6 +1,6 @@
 #pragma once
 #include "Framework.h"
-#include "GamePlayScene.h"
+#include "TitleScene.h"
 
 // ゲーム全体
 class Game : public Framework {
@@ -19,6 +19,6 @@ public: // メンバ関数
 
 private:
 	// シーン
-	GamePlayScene* scene_ = nullptr;
+	TitleScene* scene_ = nullptr;
 };
 

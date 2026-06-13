@@ -71,7 +71,6 @@ void GamePlayScene::Initialize() {
 
 	audio_ = Audio::GetInstance();
 	// 音声読み込み
-	soundData1 = audio_->SoundLoadFile("resources/Alarm01.wav");
 	soundData2 = audio_->SoundLoadFile("resources/The_maze_of_aqua.mp3");
 	// 音声再生
 	audio_->SoundPlayWave(soundData2, true);
@@ -119,7 +118,6 @@ void GamePlayScene::Finalize() {
 	audio_->Release();
 
 	// 音声データ開放
-	audio_->SoundUnload(&soundData1);
 	audio_->SoundUnload(&soundData2);
 }
 
