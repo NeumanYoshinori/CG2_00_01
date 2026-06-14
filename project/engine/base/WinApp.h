@@ -8,9 +8,6 @@ public:
 	// シングルトンインスタンスの取得
 	static WinApp* GetInstance();
 
-	// 終了
-	void End();
-
 	// ウィンドウプロシージャ
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
