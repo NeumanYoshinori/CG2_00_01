@@ -13,6 +13,7 @@
 #include "Sphere.h"
 #include "BaseScene.h"
 
+// 前方宣言
 class SceneManager;
 
 // ゲームプレイシーン

@@ -1,6 +1,7 @@
 #pragma once
 #include "Framework.h"
 
+// 前方宣言
 class SceneFactory;
 
 // ゲーム全体
