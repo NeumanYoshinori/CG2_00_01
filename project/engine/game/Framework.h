@@ -5,6 +5,7 @@
 #include "SrvManager.h"
 #include "Audio.h"
 #include "SceneManager.h"
+#include "AbstractSceneFactory.h"
 
 // ゲーム全体
 class Framework {
@@ -47,5 +48,8 @@ private:
 
 	// シーンマネージャ
 	SceneManager* sceneManager_ = nullptr;
+
+	// シーンファクトリー
+	AbstractSceneFactory* sceneFactory_ = nullptr;
 };
 

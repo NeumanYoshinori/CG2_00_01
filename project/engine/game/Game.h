@@ -1,6 +1,7 @@
 #pragma once
 #include "Framework.h"
-#include "TitleScene.h"
+
+class SceneFactory;
 
 // ゲーム全体
 class Game : public Framework {
@@ -18,6 +19,7 @@ public: // メンバ関数
 	void Draw() override;
 
 private:
-	SceneManager* sceneManager_ = nullptr;
+	// シーンファクトリー
+	SceneFactory* sceneFactory_ = nullptr;
 };
 

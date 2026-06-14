@@ -74,6 +74,7 @@ private:
 	// オーディオ
 	Audio* audio_ = nullptr;
 
+	// サウンドデータ2
 	Audio::SoundData soundData2;
 };
 

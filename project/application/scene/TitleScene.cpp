@@ -1,11 +1,8 @@
 #include "TitleScene.h"
-#include "GamePlayScene.h"
 #include "SceneManager.h"
 
 void TitleScene::Initialize() {
 	// インスタンス取得
-	winApp_ = WinApp::GetInstance();
-
 	dxBase_ = DirectXBase::GetInstance();
 
 	input_ = Input::GetInstance();
@@ -94,10 +91,8 @@ void TitleScene::Update() {
 
 	// ENTERキーを押したら
 	if (input_->TriggerKey(DIK_RETURN)) {
-		// ゲームプレイシーン（次シーン）を生成
-		BaseScene* scene = new GamePlayScene();
-		// シーン切り替え依頼
-		sceneManager_->SetNextScene(scene);
+		// シーン切り替え
+		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 	}
 }
 

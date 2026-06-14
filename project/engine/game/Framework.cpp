@@ -83,6 +83,9 @@ void Framework::Finalize() {
 
 	// オーディオマネジャーの解放
 	Audio::GetInstance()->Finalize();
+
+	// シーンファクトリ解放
+	delete sceneFactory_;
 }
 
 void Framework::Update() {
