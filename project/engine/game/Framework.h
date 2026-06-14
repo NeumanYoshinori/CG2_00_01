@@ -4,6 +4,7 @@
 #include "D3DResourceLeakChecker.h"
 #include "SrvManager.h"
 #include "Audio.h"
+#include "SceneManager.h"
 
 // ゲーム全体
 class Framework {
@@ -43,5 +44,8 @@ private:
 	SrvManager* srvManager_ = nullptr;
 
 	bool endRequest_ = false;
+
+	// シーンマネージャ
+	SceneManager* sceneManager_ = nullptr;
 };
 

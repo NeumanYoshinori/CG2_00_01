@@ -47,12 +47,6 @@ private:
 	// テクスチャマネージャ
 	TextureManager* textureManager_ = nullptr;
 
-	// スプライト共通部
-	SpriteCommon* spriteCommon_ = nullptr;
-
-	// スプライト
-	Sprite* sprite_ = nullptr;
-
 	// カメラ
 	Camera* camera_ = nullptr;
 
@@ -64,12 +58,6 @@ private:
 
 	// 地面
 	Object3d* terrain_ = nullptr;
-
-	// パーティクルマネージャ
-	ParticleManager* particleManager_ = nullptr;
-
-	// パーティクルエミッター
-	ParticleEmitter* particleEmitter_ = nullptr;
 
 	// 球
 	Sphere* sphere_ = nullptr;

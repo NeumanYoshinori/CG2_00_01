@@ -1,6 +1,9 @@
 #include "TitleScene.h"
+#include "GamePlayScene.h"
+#include "SceneManager.h"
 
 void TitleScene::Initialize() {
+	// インスタンス取得
 	winApp_ = WinApp::GetInstance();
 
 	dxBase_ = DirectXBase::GetInstance();
@@ -31,15 +34,21 @@ void TitleScene::Initialize() {
 	// 円のパーティクルグループを作成
 	particleManager_->CreateParticleGroup("circle", "resources/circle.png");
 
+	// パーティクルエミッターの初期化
 	Transform particleTransform;
 	particleTransform.translate = { 0.0f, 0.0f, 0.0f };
 	particleEmitter_ = new ParticleEmitter("circle", particleTransform, 30, 1.0f);
 
+	// オーディオの初期化
 	audio_ = Audio::GetInstance();
+	audio_->Initialize();
 	// 音声読み込み
 	soundData1 = audio_->SoundLoadFile("resources/Alarm01.wav");
 	// 音声再生
 	audio_->SoundPlayWave(soundData1, true);
+
+	// シーンマネージャのインスタンス取得
+	sceneManager_ = SceneManager::GetInstance();
 }
 
 void TitleScene::Finalize() {
@@ -58,6 +67,7 @@ void TitleScene::Finalize() {
 	delete camera_;
 	camera_ = nullptr;
 
+	// オーディオの終了
 	audio_->Release();
 
 	// 音声データ開放
@@ -81,11 +91,21 @@ void TitleScene::Update() {
 
 	// スプライトの更新
 	sprite_->Update();
+
+	// ENTERキーを押したら
+	if (input_->TriggerKey(DIK_RETURN)) {
+		// ゲームプレイシーン（次シーン）を生成
+		BaseScene* scene = new GamePlayScene();
+		// シーン切り替え依頼
+		sceneManager_->SetNextScene(scene);
+	}
 }
 
 void TitleScene::Draw() {
+	// SRVマネージャ描画前処理
 	srvManager_->PreDraw();
 
+	// パーティクルマネージャ描画
 	particleManager_->Draw();
 
 	// 共通描画設定

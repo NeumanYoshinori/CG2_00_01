@@ -1,6 +1,7 @@
 #include "GamePlayScene.h"
 
 void GamePlayScene::Initialize() {
+	// インスタンス取得
 	winApp_ = WinApp::GetInstance();
 
 	dxBase_ = DirectXBase::GetInstance();
@@ -16,18 +17,15 @@ void GamePlayScene::Initialize() {
 	textureManager_->LoadTexture("resources/monsterBall.png");
 	textureManager_->LoadTexture("resources/rostock_laage_airport_4k.dds");
 
-	spriteCommon_ = SpriteCommon::GetInstance();
-	// スプライトの初期化
-	sprite_ = new Sprite();
-	sprite_->Initialize(spriteCommon_, "resources/uvChecker.png");
-
 	// カメラの初期化
 	camera_ = new Camera();
 	camera_->SetRotate({ 0.0f, 1.75f, 0.0f });
 	camera_->SetTranslate({ 0.0f, 0.0f, 0.0f });
 
+	// モデルマネージャのインスタンス取得
 	modelManager_ = ModelManager::GetInstance();
 
+	// 3Dオブジェクト基盤部分のインスタンス取得
 	object3dCommon_ = Object3dCommon::GetInstance();
 
 	// .objファイルからモデルを読み込む
@@ -40,17 +38,6 @@ void GamePlayScene::Initialize() {
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	terrain_->SetModel("terrain.obj");
 	terrain_->SetCamera(camera_);
-
-	// パーティクルマネージャ
-	particleManager_ = ParticleManager::GetInstance();
-	particleManager_->Initialize(dxBase_, srvManager_, camera_);
-
-	// 円のパーティクルグループを作成
-	particleManager_->CreateParticleGroup("circle", "resources/circle.png");
-
-	Transform particleTransform;
-	particleTransform.translate = { 0.0f, 0.0f, 0.0f };
-	particleEmitter_ = new ParticleEmitter("circle", particleTransform, 30, 1.0f);
 
 	// 球の初期化
 	sphere_ = new Sphere();
@@ -66,10 +53,13 @@ void GamePlayScene::Initialize() {
 	skybox_->Initialize(skyboxCommon_, "resources/rostock_laage_airport_4k.dds");
 	skybox_->SetCamera(camera_);
 
+	// ImGuiマネージャの初期化
 	imGuiManager_ = new ImGuiManager();
 	imGuiManager_->Initialize(winApp_, dxBase_);
 
+	// オーディオの初期化
 	audio_ = Audio::GetInstance();
+	audio_->Initialize();
 	// 音声読み込み
 	soundData2 = audio_->SoundLoadFile("resources/The_maze_of_aqua.mp3");
 	// 音声再生
@@ -77,10 +67,6 @@ void GamePlayScene::Initialize() {
 }
 
 void GamePlayScene::Finalize() {
-	// スプライトの解放
-	delete sprite_;
-	sprite_ = nullptr;
-
 	// 3dオブジェクトの解放
 	delete terrain_;
 	terrain_ = nullptr;
@@ -97,13 +83,6 @@ void GamePlayScene::Finalize() {
 	delete skyboxCommon_;
 	skyboxCommon_ = nullptr;
 
-	// パーティクルエミッターの解放
-	delete particleEmitter_;
-	particleEmitter_ = nullptr;
-
-	// パーティクルマネージャの終了
-	particleManager_->Finalize();
-
 	// カメラの解放
 	delete camera_;
 	camera_ = nullptr;
@@ -115,6 +94,7 @@ void GamePlayScene::Finalize() {
 	delete imGuiManager_;
 	imGuiManager_ = nullptr;
 
+	// オーディオの終了
 	audio_->Release();
 
 	// 音声データ開放
@@ -136,18 +116,10 @@ void GamePlayScene::Update() {
 	// 3Dオブジェクトの更新
 	terrain_->Update();
 
-	// パーティクルマネージャの更新
-	particleManager_->Update();
-
-	// パーティクルエミッターの更新
-	particleEmitter_->Update();
-
 	// 球の更新
 	sphere_->Update();
 
-	// スプライトの更新
-	sprite_->Update();
-
+	// ImGui受付開始
 	imGuiManager_->Begin();
 
 #ifdef USE_IMGUI
@@ -172,14 +144,18 @@ void GamePlayScene::Update() {
 	ImGui::End();
 #endif
 
+	// ImGui受付終了
 	imGuiManager_->End();
 }
 
 void GamePlayScene::Draw() {
+	// SRVマネージャの描画前処理
 	srvManager_->PreDraw();
 
+	// スカイボックスの描画準備
 	skyboxCommon_->DrawSetting();
 
+	// スカイボックスの描画
 	skybox_->Draw();
 
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
@@ -191,13 +167,6 @@ void GamePlayScene::Draw() {
 	// 球の描画
 	//sphere->Draw();
 
-	//particleManager->Draw();
-
-	// 共通描画設定
-	spriteCommon_->DrawSetting();
-
-	// スプライトの描画
-	//sprite->Draw();
-
+	// ImGuiの描画
 	imGuiManager_->Draw();
 }

@@ -22,7 +22,6 @@ private:
 	// マテリアルデータ
 	struct Material {
 		Vector4 color;
-		float padding[3];
 		Matrix4x4 uvTransform;
 	};
 

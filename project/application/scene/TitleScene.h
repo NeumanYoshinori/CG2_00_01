@@ -13,6 +13,8 @@
 #include "Sphere.h"
 #include "BaseScene.h"
 
+class SceneManager;
+
 // ゲームプレイシーン
 class TitleScene : public BaseScene {
 public:
@@ -66,4 +68,7 @@ private:
 	Audio* audio_ = nullptr;
 
 	Audio::SoundData soundData1;
+
+	// シーンマネージャ
+	SceneManager* sceneManager_ = nullptr;
 };

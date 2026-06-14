@@ -193,6 +193,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\3d\Skybox.cpp" />
     <ClCompile Include="engine\3d\SkyboxCommon.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
+    <ClCompile Include="engine\game\SceneManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\GamePlayScene.h" />
@@ -231,6 +232,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\game\Game.h" />
     <ClInclude Include="engine\game\Framework.h" />
     <ClInclude Include="application\scene\TitleScene.h" />
+    <ClInclude Include="engine\game\SceneManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\Object3d.hlsli">

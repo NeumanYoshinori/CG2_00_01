@@ -1,5 +1,8 @@
 #pragma once
 
+// 前方宣言
+class SceneManager;
+
 // シーン基底クラス
 class BaseScene {
 public: // メンバ関数
@@ -15,7 +18,13 @@ public: // メンバ関数
 	// 描画
 	virtual void Draw();
 
+	// setter
+	virtual void SetSceneManager(SceneManager* sceneManager) { sceneManager = sceneManager_; }
+
 	// 仮想デストラクタ
 	virtual ~BaseScene() = default;
+
+private:
+	SceneManager* sceneManager_ = nullptr;
 };
 

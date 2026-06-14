@@ -18,7 +18,6 @@ public: // メンバ関数
 	void Draw() override;
 
 private:
-	// シーン
-	TitleScene* scene_ = nullptr;
+	SceneManager* sceneManager_ = nullptr;
 };
 

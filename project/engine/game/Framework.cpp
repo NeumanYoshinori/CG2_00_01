@@ -44,8 +44,8 @@ void Framework::Initialize() {
 	// 3Dオブジェクト共通部の初期化
 	Object3dCommon::GetInstance()->Initialize(dxBase_);
 
-	// オーディオ初期化
-	Audio::GetInstance()->Initialize();
+	// シーンマネージャのインスタンス取得
+	sceneManager_ = SceneManager::GetInstance();
 }
 
 void Framework::Finalize() {
@@ -78,6 +78,9 @@ void Framework::Finalize() {
 	// WindowsAPIの終了処理
 	winApp_->Finalize();
 
+	// シーンマネージャの解放
+	sceneManager_->Finalize();
+
 	// オーディオマネジャーの解放
 	Audio::GetInstance()->Finalize();
 }
@@ -89,6 +92,9 @@ void Framework::Update() {
 
 	// キー入力の更新
 	Input::GetInstance()->Update();
+
+	// シーンマネージャの更新
+	sceneManager_->Update();
 }
 
 void Framework::Run() {
