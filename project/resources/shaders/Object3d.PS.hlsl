@@ -5,6 +5,7 @@ struct Material {
     int32_t enableLighting;
     float32_t4x4 uvTransform;
     float32_t shininess;
+    float32_t environmentCoefficient;
 };
 
 static const int kNumDirectionalLight = 1;
@@ -55,6 +56,7 @@ cbuffer lightGroup : register(b1) {
     SpotLight spotLights[kNumSpotLight];
 }
 ConstantBuffer<Camera> gCamera : register(b2);
+TextureCube<float32_t4> gEnvironmentTexture : register(t1);
 
 PixelShaderOutput main(VertexShaderOutput input) {
     PixelShaderOutput output;
@@ -79,6 +81,12 @@ PixelShaderOutput main(VertexShaderOutput input) {
     if (gMaterial.enableLighting != 0) {
         float32_t3 color = { 0.0f, 0.0f, 0.0f };
         
+        float32_t3 cameraToPosition = normalize(input.worldPosition - gCamera.worldPosition);
+        float32_t3 reflectedVector = reflect(cameraToPosition, normalize(input.normal));
+        float32_t4 environmentColor = gEnvironmentTexture.Sample(gSampler, reflectedVector);
+        
+        color += environmentColor.rgb * gMaterial.environmentCoefficient;
+        
         float32_t3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
         
         for (int i = 0; i < kNumDirectionalLight; i++) {
@@ -89,13 +97,13 @@ PixelShaderOutput main(VertexShaderOutput input) {
             float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
 
             // 拡散反射
-            float32_t3 diffuseDirectionalLight =
+            float32_t3 diffuse =
             gMaterial.color.rgb * textureColor.rgb * directionalLights[i].color.rgb * cos * directionalLights[i].intensity;
             // 鏡面反射
-            float32_t3 specularDirectionalLight =
+            float32_t3 specular =
             directionalLights[i].color.rgb * directionalLights[i].intensity * specularPow * directionalLights[i].color.rgb;
             // 拡散・鏡面反射
-            color += diffuseDirectionalLight + specularDirectionalLight;
+            color += diffuse + specular;
         }
         
         for (int j = 0; j < kNumPointLight; j++) {

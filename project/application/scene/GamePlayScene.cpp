@@ -22,6 +22,15 @@ void GamePlayScene::Initialize() {
 	camera_->SetRotate({ 0.0f, 1.75f, 0.0f });
 	camera_->SetTranslate({ 0.0f, 0.0f, 0.0f });
 
+	// スカイボックス共通部の初期化
+	skyboxCommon_ = new SkyboxCommon();
+	skyboxCommon_->Initialize(dxBase_);
+
+	// スカイボックスの初期化
+	skybox_ = new Skybox();
+	skybox_->Initialize(skyboxCommon_, "resources/rostock_laage_airport_4k.dds");
+	skybox_->SetCamera(camera_);
+
 	// モデルマネージャのインスタンス取得
 	modelManager_ = ModelManager::GetInstance();
 
@@ -38,20 +47,13 @@ void GamePlayScene::Initialize() {
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	terrain_->SetModel("terrain.obj");
 	terrain_->SetCamera(camera_);
+	terrain_->SetSkybox(skybox_);
 
 	// 球の初期化
 	sphere_ = new Sphere();
 	sphere_->Initialize(object3dCommon_, "resources/monsterBall.png");
 	sphere_->SetCamera(camera_);
-
-	// スカイボックス共通部の初期化
-	skyboxCommon_ = new SkyboxCommon();
-	skyboxCommon_->Initialize(dxBase_);
-
-	// スカイボックスの初期化
-	skybox_ = new Skybox();
-	skybox_->Initialize(skyboxCommon_, "resources/rostock_laage_airport_4k.dds");
-	skybox_->SetCamera(camera_);
+	sphere_->SetSkybox(skybox_);
 
 	// ImGuiマネージャの初期化
 	imGuiManager_ = new ImGuiManager();
@@ -141,6 +143,9 @@ void GamePlayScene::Update() {
 	ImGui::DragFloat3("skyboxPos", &skyboxPos.x, 0.01f);
 	skybox_->SetTranslate(skyboxPos);
 	LightManager::GetInstance()->DebugPointLight();
+	float environmentCoefficient = sphere_->GetEnvironmentCoefficient();
+	ImGui::DragFloat("environmentCoefficient", &environmentCoefficient, 0.01f);
+	sphere_->SetEnvironmentCoefficient(environmentCoefficient);
 	ImGui::End();
 #endif
 
@@ -162,10 +167,10 @@ void GamePlayScene::Draw() {
 	object3dCommon_->DrawSetting();
 
 	// 3Dオブジェクトの描画
-	//terrain->Draw();
+	//terrain_->Draw();
 
 	// 球の描画
-	//sphere->Draw();
+	sphere_->Draw();
 
 	// ImGuiの描画
 	imGuiManager_->Draw();

@@ -10,6 +10,7 @@
 #include "ModelManager.h"
 #include "Camera.h"
 #include "LightManager.h"
+#include "Skybox.h"
 
 class Object3dCommon;
 
@@ -30,6 +31,8 @@ public: // メンバ関数
 		float padding[3];
 		Matrix4x4 uvTransform;
 		float shininess;
+		float environmentCoefficient;
+		float padding2[2];
 	};
 
 	// 座標変換用行列
@@ -71,6 +74,12 @@ public: // メンバ関数
 
 	// setter
 	void SetCamera(Camera* camera) { camera_ = camera; }
+
+	// setter
+	void SetSkybox(Skybox* skybox) { skybox_ = skybox; }
+
+	float GetEnvironmentCoefficient() { return materialData->environmentCoefficient; }
+	void SetEnvironmentCoefficient(float environmentCoefficient) { materialData->environmentCoefficient = environmentCoefficient; }
 
 private:
 	// 頂点データ作成
@@ -136,5 +145,8 @@ private:
 	const uint32_t kSubdivision = 16; // 分割数
 
 	LightManager* lightManager_ = LightManager::GetInstance();
+
+	// スカイボックス
+	Skybox* skybox_ = nullptr;
 };
 

@@ -25,6 +25,8 @@ public:
 		float padding[3];
 		Matrix4x4 uvTransform;
 		float shininess;
+		float environmentCoefficient;
+		float padding2[2];
 	};
 
 	// マテリアルデータ
@@ -59,6 +61,9 @@ public:
 	static Node ReadNode(aiNode* node);
 
 	ModelData GetModelData() const { return modelData; }
+
+	float GetEnvironmentCoefficient() { return materialData->environmentCoefficient; }
+	void SetEnvironmentCoefficient(float environmentCoefficient) { materialData->environmentCoefficient = environmentCoefficient; }
 
 private:
 	// 頂点データ作成

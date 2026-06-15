@@ -64,6 +64,9 @@ public:
 	// setter
 	void SetCamera(Camera* camera) { camera_ = camera; }
 
+	// ファイルパス取得
+	std::string GetFilePath() { return filePath; }
+
 private:
 	// 頂点データ作成
 	void CreateVertexData();

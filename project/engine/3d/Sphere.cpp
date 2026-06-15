@@ -2,6 +2,7 @@
 #include "Object3dCommon.h"
 #include <numbers>
 #include "TextureManager.h"
+#include "Skybox.h"
 
 using namespace std;
 using namespace MathFunction;
@@ -22,7 +23,7 @@ void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath) 
 	CreateTransformationMatrixData();
 
 	// Transform変数を作る
-	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, -1.5f, 0.0f}, {0.0f, 0.0f, 2.0f} };
+	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, -1.5f, 0.0f}, {10.0f, 0.0f, 2.0f} };
 
 	// デフォルトカメラをセットする
 	camera_ = object3dCommon_->GetDefaultCamera();
@@ -69,6 +70,8 @@ void Sphere::Draw() {
 	lightManager_->Draw();
 	// カメラのCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
+	// SRVのDescriptorTableの先頭を設定
+	commandList->SetGraphicsRootDescriptorTable(5, TextureManager::GetInstance()->GetSrvHandleGPU(skybox_->GetFilePath()));
 	// 描画
 	commandList->DrawIndexedInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0, 0);
 }
@@ -158,6 +161,7 @@ void Sphere::CreateMaterialData() {
 	materialData->enableLighting = true;
 	materialData->uvTransform = MakeIdentity4x4();
 	materialData->shininess = 10.0f;
+	materialData->environmentCoefficient = 1.0f;
 }
 
 void Sphere::CreateTransformationMatrixData() {

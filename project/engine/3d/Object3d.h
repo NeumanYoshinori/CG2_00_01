@@ -10,6 +10,7 @@
 #include "ModelManager.h"
 #include "Camera.h"
 #include "LightManager.h"
+#include "Skybox.h"
 
 class Object3dCommon;
 
@@ -38,9 +39,6 @@ public: // メンバ関数
 	void Draw();
 
 	// setter
-	void SetModel(Model* model) { model_ = model; }
-
-	// setter
 	void SetScale(const Vector3& scale) { transform.scale = scale; }
 	void SetRotate(const Vector3& rotate) { transform.rotate = rotate; }
 	void SetTranslate(const Vector3& translate) { transform.translate = translate; }
@@ -55,6 +53,11 @@ public: // メンバ関数
 
 	// setter
 	void SetCamera(Camera* camera) { camera_ = camera; }
+	
+	// setter
+	void SetSkybox(Skybox* skybox) { skybox_ = skybox; }
+
+	Model* GetModel() { return model_; }
 
 private:
 	// 座標変換行列データ作成
@@ -92,5 +95,8 @@ private:
 	Camera* camera_ = nullptr;
 
 	LightManager* lightManager_ = LightManager::GetInstance();
+
+	// スカイボックス
+	Skybox* skybox_ = nullptr;
 };
 

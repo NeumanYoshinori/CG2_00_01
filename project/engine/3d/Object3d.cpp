@@ -1,6 +1,7 @@
 #include "Object3d.h"
 #include "Object3dCommon.h"
 #include "ImGuiManager.h"
+#include "TextureManager.h"
 
 using namespace std;
 using namespace MathFunction;
@@ -53,6 +54,9 @@ void Object3d::Draw() {
 
 	// カメラのCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
+
+	// SRVのDescriptorTableの先頭を設定。5はrootParameter[5]である。
+	commandList->SetGraphicsRootDescriptorTable(5, TextureManager::GetInstance()->GetSrvHandleGPU(skybox_->GetFilePath()));
 
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {
