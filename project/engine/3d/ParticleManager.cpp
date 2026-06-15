@@ -58,10 +58,10 @@ void ParticleManager::Update() {
 	Matrix4x4 projectionMatrix = camera_->GetProjectionMatrix();
 
 	// 場
-	AccelerationField accelerationField;
+	/*AccelerationField accelerationField;
 	accelerationField.acceleration = { 15.0f, 0.0f, 0.0f };
 	accelerationField.area.min = { -1.0f, -1.0f, -1.0f };
-	accelerationField.area.max = { 1.0f, 1.0f, 1.0f };
+	accelerationField.area.max = { 1.0f, 1.0f, 1.0f };*/
 
 	// Δtを設定
 	const float kDeltaTime = 1.0f / 60.0f;
@@ -76,9 +76,9 @@ void ParticleManager::Update() {
 			}
 
 			// Fieldの範囲内位のParticleには加速度を適用する
-			if (IsCollision(accelerationField.area, (*particleIterator).transform.translate)) {
+			/*if (IsCollision(accelerationField.area, (*particleIterator).transform.translate)) {
 				(*particleIterator).velocity += accelerationField.acceleration * kDeltaTime;
-			}
+			}*/
 			// 速度を適用
 			(*particleIterator).transform.translate += (*particleIterator).velocity * kDeltaTime;
 
@@ -86,8 +86,11 @@ void ParticleManager::Update() {
 			(*particleIterator).currentTime += kDeltaTime;
 
 			Matrix4x4 scaleMatrix = MakeScaleMatrix((*particleIterator).transform.scale);
+			Matrix4x4 rotateXMatrix = MakeRotateXMatrix((*particleIterator).transform.rotate.x);
+			Matrix4x4 rotateYMatrix = MakeRotateYMatrix((*particleIterator).transform.rotate.y);
+			Matrix4x4 rotateZMatrix = MakeRotateZMatrix((*particleIterator).transform.rotate.z);
 			Matrix4x4 translateMatrix = MakeTranslateMatrix((*particleIterator).transform.translate);
-			Matrix4x4 worldMatrix = scaleMatrix * billboardMatrix * translateMatrix;
+			Matrix4x4 worldMatrix = scaleMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * billboardMatrix * translateMatrix;
 
 			Matrix4x4 worldViewProjectionMatrix = worldMatrix * viewMatrix * projectionMatrix;
 
@@ -145,17 +148,15 @@ void ParticleManager::CreateParticleGroup(const string name, const string textur
 
 // パーティクル生成関数
 ParticleManager::Particle MakeNewParticle(mt19937& randomEngine, const Vector3& translate) {
-	uniform_real_distribution<float> distribution(-1.0f, 1.0f);
-	uniform_real_distribution<float> distColor(0.0f, 1.0f);
-	uniform_real_distribution<float> distTime(1.0f, 3.0f);
+	uniform_real_distribution<float> distRotate(-pi_v<float>, pi_v<float>);
+	uniform_real_distribution<float> distScale(0.4f, 1.5f);
 	ParticleManager::Particle particle;
-	particle.transform.scale = { 1.0f, 1.0f, 1.0f };
-	particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
-	Vector3 randomTranslate{ distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
-	particle.transform.translate = translate + randomTranslate;
-	particle.velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
-	particle.color = { distColor(randomEngine), distColor(randomEngine), distColor(randomEngine), 1.0f };
-	particle.lifeTime = distTime(randomEngine);
+	particle.transform.scale = { 0.05f, distScale(randomEngine), 1.0f }; // 横に潰す
+	particle.transform.rotate = { 0.0f, 0.0f, distRotate(randomEngine) };
+	particle.transform.translate = translate;
+	particle.velocity = { 0.0f, 0.0f, 0.0f }; // 動かない
+	particle.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	particle.lifeTime = 1.0f; // 1秒で消える
 	particle.currentTime = 0;
 	return particle;
 }

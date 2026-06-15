@@ -55,6 +55,18 @@ void GamePlayScene::Initialize() {
 	sphere_->SetCamera(camera_);
 	sphere_->SetSkybox(skybox_);
 
+	// パーティクルマネージャ
+	particleManager_ = ParticleManager::GetInstance();
+	particleManager_->Initialize(dxBase_, srvManager_, camera_);
+
+	// 円のパーティクルグループを作成
+	particleManager_->CreateParticleGroup("circle2", "resources/circle2.png");
+
+	// パーティクルエミッターの初期化
+	Transform particleTransform;
+	particleTransform.translate = { 5.0f, 0.0f, 0.0f };
+	particleEmitter_ = new ParticleEmitter("circle2", particleTransform, 8, 1.0f);
+
 	// ImGuiマネージャの初期化
 	imGuiManager_ = new ImGuiManager();
 	imGuiManager_->Initialize(winApp_, dxBase_);
@@ -76,6 +88,13 @@ void GamePlayScene::Finalize() {
 	// 球の解放
 	delete sphere_;
 	sphere_ = nullptr;
+
+	// パーティクルエミッターの解放
+	delete particleEmitter_;
+	particleEmitter_ = nullptr;
+
+	// パーティクルマネージャの終了
+	particleManager_->Finalize();
 
 	// スカイボックスの解放
 	delete skybox_;
@@ -117,6 +136,12 @@ void GamePlayScene::Update() {
 
 	// 3Dオブジェクトの更新
 	terrain_->Update();
+
+	// パーティクルマネージャの更新
+	particleManager_->Update();
+
+	// パーティクルエミッターの更新
+	particleEmitter_->Update();
 
 	// 球の更新
 	sphere_->Update();
@@ -161,16 +186,19 @@ void GamePlayScene::Draw() {
 	skyboxCommon_->DrawSetting();
 
 	// スカイボックスの描画
-	skybox_->Draw();
+	//skybox_->Draw();
 
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	object3dCommon_->DrawSetting();
 
 	// 3Dオブジェクトの描画
-	//terrain_->Draw();
+	terrain_->Draw();
 
 	// 球の描画
-	sphere_->Draw();
+	//sphere_->Draw();
+
+	// パーティクルマネージャ描画
+	particleManager_->Draw();
 
 	// ImGuiの描画
 	imGuiManager_->Draw();

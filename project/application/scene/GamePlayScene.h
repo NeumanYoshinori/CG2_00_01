@@ -62,6 +62,12 @@ private:
 	// 球
 	Sphere* sphere_ = nullptr;
 
+	// パーティクルマネージャ
+	ParticleManager* particleManager_ = nullptr;
+
+	// パーティクルエミッター
+	ParticleEmitter* particleEmitter_ = nullptr;
+
 	// スカイボックス共通部
 	SkyboxCommon* skyboxCommon_ = nullptr;
 
