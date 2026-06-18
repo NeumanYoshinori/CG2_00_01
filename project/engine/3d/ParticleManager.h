@@ -56,6 +56,12 @@ public:
 		AABB area;
 	};
 
+	enum ParticleType {
+		Plane,
+		Ring,
+		kNum
+	};
+
 	struct ParticleGroup {
 		MaterialData materialData;
 		std::list<Particle> particles;
@@ -63,6 +69,7 @@ public:
 		Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource;
 		uint32_t numInstance;
 		ParticleForGPU* instancingData;
+		ParticleType type;
 	};
 
 	// シングルトンインスタンスの取得
@@ -81,10 +88,13 @@ public:
 	void Draw();
 
 	// パーティクルグループの生成
-	void CreateParticleGroup(const std::string name, const std::string textureFilePath);
+	void CreateParticleGroup(ParticleType type, const std::string name, const std::string textureFilePath);
+
+	// パーティクル生成関数
+	Particle MakeNewParticle(const Vector3& scale, const Vector3& rotate, const Vector3& translate, const Vector3& velocity, const Vector4& color);
 
 	// パーティクルの生成
-	void Emit(const std::string name, const Vector3& position, uint32_t count);
+	void Emit(const std::string name, const Vector3& size, const Vector3& angle, const Vector3& position, const Vector3& velocity, const Vector4& color, uint32_t count);
 
 private:
 	// ルートシグネチャの作成
@@ -93,8 +103,11 @@ private:
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeline();
 
-	// 頂点データ作成
-	void CreateVertexData();
+	// planeの頂点データ作成
+	void CreatePlaneVertexData();
+
+	// ringの頂点データ作成
+	void CreateRingVertexData();
 
 	// マテリアルデータ作成
 	void CreateMaterialData();
@@ -108,30 +121,36 @@ private:
 	// SRVマネジャー
 	SrvManager* srvManager_ = nullptr;
 
-	std::random_device seedGenerator_;
-	std::mt19937 randomEngine_;
-
 	// ルートシグネチャ
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
 
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState;
 
 	// パーティクルグループコンテナ
 	std::unordered_map<std::string, ParticleGroup> particleGroups;
 
 	const uint32_t kNumMaxInstance = 100;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
+	// 頂点リソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
 
+	VertexData* vertexData = nullptr;
 	// 頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource;
+	uint32_t* indexData = nullptr;
+	// インデックスバッファビューを作成する
+	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 
 	// カメラ
 	Camera* camera_ = nullptr;
 
 	// マテリアルリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
 	Material* materialData = nullptr;
+
+	const uint32_t kRingDivide = 32;
 
 	ParticleManager() = default;
 	~ParticleManager() = default;

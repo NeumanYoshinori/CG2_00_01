@@ -81,9 +81,6 @@ private:
 	// サイズ
 	Vector2 size = { 640.0f, 360.0f };
 
-	// テクスチャ番号
-	uint32_t textureIndex = 0;
-
 	// アンカーポイント
 	Vector2 anchorPoint_ = { 0.0f, 0.0f };
 

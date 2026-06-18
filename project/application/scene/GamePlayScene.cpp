@@ -1,4 +1,9 @@
 #include "GamePlayScene.h"
+#include <random>
+#include <numbers>
+
+using namespace std;
+using namespace numbers;
 
 void GamePlayScene::Initialize() {
 	// インスタンス取得
@@ -55,17 +60,26 @@ void GamePlayScene::Initialize() {
 	sphere_->SetCamera(camera_);
 	sphere_->SetSkybox(skybox_);
 
+	// 乱数生成器の初期化
+	randomEngine_ = mt19937(seedGenerator_());
+
 	// パーティクルマネージャ
 	particleManager_ = ParticleManager::GetInstance();
 	particleManager_->Initialize(dxBase_, srvManager_, camera_);
 
 	// 円のパーティクルグループを作成
-	particleManager_->CreateParticleGroup("circle2", "resources/circle2.png");
+	particleManager_->CreateParticleGroup(ParticleManager::Ring, "gradationLine", "resources/gradationLine.png");
+
+	uniform_real_distribution<float> distScale(0.4f, 1.5f);
+	uniform_real_distribution<float> distRotate(-pi_v<float>, pi_v<float>);
 
 	// パーティクルエミッターの初期化
-	Transform particleTransform;
+	particleTransform.scale = { 1.0f, 1.0f, 1.0f}; // 横に潰す
+	particleTransform.rotate = { 0.0f, 0.0f, 0.0f};
 	particleTransform.translate = { 5.0f, 0.0f, 0.0f };
-	particleEmitter_ = new ParticleEmitter("circle2", particleTransform, 8, 1.0f);
+	Vector3 particleVelocity = { 0.0f, 0.0f, 0.0f }; // 動かない
+	Vector4 particleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	particleEmitter_ = new ParticleEmitter("gradationLine", particleTransform, particleVelocity, particleColor, 8, 1.0f);
 
 	// ImGuiマネージャの初期化
 	imGuiManager_ = new ImGuiManager();
@@ -192,7 +206,7 @@ void GamePlayScene::Draw() {
 	object3dCommon_->DrawSetting();
 
 	// 3Dオブジェクトの描画
-	terrain_->Draw();
+	//terrain_->Draw();
 
 	// 球の描画
 	//sphere_->Draw();

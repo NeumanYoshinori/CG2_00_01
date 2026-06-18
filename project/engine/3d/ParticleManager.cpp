@@ -31,14 +31,8 @@ void ParticleManager::Initialize(DirectXBase* dxBase, SrvManager* srvManager, Ca
 	srvManager_ = srvManager;
 	camera_ = camera;
 
-	// 乱数生成器の初期化
-	randomEngine_ = mt19937(seedGenerator_());
-
 	// グラフィックスパイプライン生成
 	GenerateGraphicsPipeline();
-
-	// 頂点データ作成
-	CreateVertexData();
 
 	// マテリアルデータ作成
 	CreateMaterialData();
@@ -57,12 +51,6 @@ void ParticleManager::Update() {
 	// プロジェクション行列
 	Matrix4x4 projectionMatrix = camera_->GetProjectionMatrix();
 
-	// 場
-	/*AccelerationField accelerationField;
-	accelerationField.acceleration = { 15.0f, 0.0f, 0.0f };
-	accelerationField.area.min = { -1.0f, -1.0f, -1.0f };
-	accelerationField.area.max = { 1.0f, 1.0f, 1.0f };*/
-
 	// Δtを設定
 	const float kDeltaTime = 1.0f / 60.0f;
 
@@ -75,10 +63,6 @@ void ParticleManager::Update() {
 				continue;
 			}
 
-			// Fieldの範囲内位のParticleには加速度を適用する
-			/*if (IsCollision(accelerationField.area, (*particleIterator).transform.translate)) {
-				(*particleIterator).velocity += accelerationField.acceleration * kDeltaTime;
-			}*/
 			// 速度を適用
 			(*particleIterator).transform.translate += (*particleIterator).velocity * kDeltaTime;
 
@@ -114,7 +98,11 @@ void ParticleManager::Draw() {
 	commandList->SetPipelineState(graphicsPipelineState.Get());
 	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// VertexBufferViewを設定
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+	// IndexBufferViewを設定
+	commandList->IASetIndexBuffer(&indexBufferView);
+	// マテリアルCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	for (auto& [name, particleGroup] : particleGroups) {
 		if (particleGroup.numInstance == 0) {
@@ -122,13 +110,25 @@ void ParticleManager::Draw() {
 		}
 		srvManager_->SetGraphicsRootDescriptorTable(2, particleGroup.materialData.textureIndex);
 		srvManager_->SetGraphicsRootDescriptorTable(1, particleGroup.srvIndex);
-		commandList->DrawInstanced(6, particleGroup.numInstance, 0, 0);
+		if (particleGroup.type == Plane) {
+			commandList->DrawInstanced(6, particleGroup.numInstance, 0, 0);
+		} else if (particleGroup.type == Ring) {
+			commandList->DrawIndexedInstanced(kRingDivide * 6, particleGroup.numInstance, 0, 0, 0);
+		}
 	}
 }
 
-void ParticleManager::CreateParticleGroup(const string name, const string textureFilePath) {
+void ParticleManager::CreateParticleGroup(ParticleType type, const string name, const string textureFilePath) {
 	// 登録済みの名前かチェックしてassert
 	assert(!particleGroups.contains(name));
+
+	// 頂点データ作成
+	if (type == ParticleType::Plane) {
+		CreatePlaneVertexData();
+	}
+	else if (type == ParticleType::Ring) {
+		CreateRingVertexData();
+	}
 
 	ParticleGroup& particleGroup = particleGroups[name];
 	// マテリアルデータにテクスチャファイルパスを設定
@@ -142,31 +142,30 @@ void ParticleManager::CreateParticleGroup(const string name, const string textur
 	particleGroup.instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&particleGroup.instancingData));
 	// インスタンシング用にSRVを確保してSRVインデックスを記録
 	particleGroup.srvIndex = srvManager_->Allocate();
+	particleGroup.type = type;
 	// SRV生成（StructuredBuffer用設定）
 	srvManager_->CreateSRVforStructuredBuffer(particleGroup.srvIndex, particleGroup.instancingResource.Get(), kNumMaxInstance, sizeof(ParticleForGPU));
 }
 
 // パーティクル生成関数
-ParticleManager::Particle MakeNewParticle(mt19937& randomEngine, const Vector3& translate) {
-	uniform_real_distribution<float> distRotate(-pi_v<float>, pi_v<float>);
-	uniform_real_distribution<float> distScale(0.4f, 1.5f);
+ParticleManager::Particle ParticleManager::MakeNewParticle(const Vector3& scale, const Vector3& rotate, const Vector3& translate, const Vector3& velocity, const Vector4& color) {
 	ParticleManager::Particle particle;
-	particle.transform.scale = { 0.05f, distScale(randomEngine), 1.0f }; // 横に潰す
-	particle.transform.rotate = { 0.0f, 0.0f, distRotate(randomEngine) };
+	particle.transform.scale = scale; // 横に潰す
+	particle.transform.rotate = rotate;
 	particle.transform.translate = translate;
-	particle.velocity = { 0.0f, 0.0f, 0.0f }; // 動かない
-	particle.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	particle.velocity = velocity; // 動かない
+	particle.color = color;
 	particle.lifeTime = 1.0f; // 1秒で消える
 	particle.currentTime = 0;
 	return particle;
 }
 
-void ParticleManager::Emit(const std::string name, const Vector3& position, uint32_t count) {
+void ParticleManager::Emit(const std::string name, const Vector3& size, const Vector3& angle, const Vector3& position, const Vector3& velocity, const Vector4& color, uint32_t count) {
 	assert(particleGroups.contains(name));
 	ParticleGroup& particleGroup = particleGroups[name];
 
 	for (uint32_t i = 0; i < count; ++i) {
-		particleGroup.particles.push_back(MakeNewParticle(randomEngine_, position));
+		particleGroup.particles.push_back(MakeNewParticle(size, angle, position, velocity, color));
 	}
 }
 
@@ -194,7 +193,7 @@ void ParticleManager::CreateRootSignature() {
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR; // バイリニアフィルタ
 	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 0~1の範囲外をリピート
-	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER; // 比較しない
 	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX; // ありったけのMipmapを使う
@@ -308,9 +307,7 @@ void ParticleManager::GenerateGraphicsPipeline() {
 	assert(SUCCEEDED(hr));
 }
 
-void ParticleManager::CreateVertexData() {
-	// 頂点リソースにデータを書き込む
-	VertexData* vertexData = nullptr;
+void ParticleManager::CreatePlaneVertexData() {
 	// 頂点リソースを作る
 	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * 6);
 
@@ -347,6 +344,55 @@ void ParticleManager::CreateVertexData() {
 	vertexData[5].position = { -1.0f, -1.0f, 0.0f, 1.0f };
 	vertexData[5].texcoord = { 1.0f, 1.0f };
 	vertexData[5].normal = { 0.0f, 0.0f, 1.0f };
+}
+
+void ParticleManager::CreateRingVertexData() {
+	const float kOuterRadius = 1.0f;
+	const float kInnerRadius = 0.2f;
+	const float radianPerDivide = 2.0f * pi_v<float> / float(kRingDivide);
+
+	// 頂点リソースを作る
+	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * kRingDivide * 4);
+
+	// リソースの先頭のアドレスから使う
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * kRingDivide * 4);
+	// 1頂点あたりのサイズ
+	vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+	// 書き込むためのアドレスを取得
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+
+	for (uint32_t index = 0; index < kRingDivide; ++index) {
+		float sin = std::sin(index * radianPerDivide);
+		float cos = std::cos(index * radianPerDivide);
+		float sinNext = std::sin((index + 1) * radianPerDivide);
+		float cosNext = std::cos((index + 1) * radianPerDivide);
+		float u = float(index) / float(kRingDivide);
+		float uNext = float(index + 1) / float(kRingDivide);
+		// positionとuv。normalは必要なら+zを設定する
+		vertexData[index * 4 + 0] = { {-sin * kOuterRadius, cos * kOuterRadius, 0.0f, 1.0f}, {u, 0.0f} };
+		vertexData[index * 4 + 1] = { {-sinNext * kOuterRadius, cosNext * kOuterRadius, 0.0f, 1.0f}, {uNext, 0.0f} };
+		vertexData[index * 4 + 2] = { {-sin * kInnerRadius, cos * kInnerRadius, 0.0f, 1.0f}, {u, 1.0f} };
+		vertexData[index * 4 + 3] = { {-sinNext * kInnerRadius, cosNext * kInnerRadius, 0.0f, 1.0f}, {uNext, 1.0f} };
+	}
+
+	indexResource = dxBase_->CreateBufferResource(sizeof(uint32_t) * kRingDivide * 6);
+	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+
+	for (uint32_t index = 0; index < kRingDivide; index++) {
+		indexData[index * 6 + 0] = index * 4;
+		indexData[index * 6 + 1] = index * 4 + 1;
+		indexData[index * 6 + 2] = index * 4 + 2;
+		indexData[index * 6 + 3] = index * 4 + 1;
+		indexData[index * 6 + 4] = index * 4 + 3;
+		indexData[index * 6 + 5] = index * 4 + 2;
+	}
+
+	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * kRingDivide * 6;
+	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 }
 
 void ParticleManager::CreateMaterialData() {

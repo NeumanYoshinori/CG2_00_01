@@ -101,31 +101,31 @@ private:
 	DirectXBase* dxBase_ = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr; // 頂点リソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource; // 頂点リソース
 	// バッファリソース内のデータを指すポインタ
 	VertexData* vertexData = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource = nullptr; // インデックスリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource; // インデックスリソース
 	// バッファリソース内のデータを指すポインタ
 	uint32_t* indexData = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr; // マテリアルリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource; // マテリアルリソース
 	// バッファリソース内のデータを指すポインタ
 	Material* materialData = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource = nullptr; // 座標返還行列リソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource; // 座標返還行列リソース
 	// バッファリソース内のデータを指すポインタ
 	TransformationMatrix* transformationMatrixData = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;
 	// バッファリソース内のデータを指すポインタ
 	CameraForGPU* cameraData = nullptr;
 
@@ -133,14 +133,13 @@ private:
 	Transform transform;
 
 	// コマンドリスト
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
 
 	// カメラ
 	Camera* camera_ = nullptr;
 
-	uint32_t textureIndex;
-	// ファイルパス
-	std::string filePath;
+	// マテリアル
+	MaterialData material_;
 
 	const uint32_t kSubdivision = 16; // 分割数
 

@@ -73,12 +73,12 @@ private:
 	DirectXBase* dxBase_ = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource = nullptr; // 座標返還行列リソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource; // 座標返還行列リソース
 	// バッファリソース内のデータを指すポインタ
 	TransformationMatrix* transformationMatrixData = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;
 	// バッファリソース内のデータを指すポインタ
 	CameraForGPU* cameraData = nullptr;
 
@@ -86,7 +86,7 @@ private:
 	Transform transform;
 
 	// コマンドリスト
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
 
 	// モデル
 	Model* model_ = nullptr;

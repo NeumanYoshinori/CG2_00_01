@@ -31,7 +31,10 @@ void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath) 
 	// カメラデータ作成
 	CreateCameraData();
 
-	filePath = textureFilePath;
+	// テクスチャファイル読み込み
+	material_.textureFilePath = textureFilePath;
+	// 読み込んだテクスチャの番号を取得
+	material_.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 }
 
 void Sphere::Update() {
@@ -58,14 +61,14 @@ void Sphere::Draw() {
 
 	// VertexBufferViewを設定
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-	// IndexVufferViewを設定
+	// IndexBufferViewを設定
 	commandList->IASetIndexBuffer(&indexBufferView);
 	// マテリアルCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	// wvp用のCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭を設定
-	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(filePath));
+	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(material_.textureFilePath));
 	// ライトのCBufferの場所を設定
 	lightManager_->Draw();
 	// カメラのCBufferの場所を設定
@@ -103,9 +106,9 @@ void Sphere::CreateVertexData() {
 
 			VertexData vert{
 				{
-					1.0f * cos(lat) * cos(lon),
-					1.0f * sin(lat),
-					1.0f * cos(lat) * sin(lon),
+					cos(lat) * cos(lon),
+					sin(lat),
+					cos(lat) * sin(lon),
 					1.0f
 				},
 				{
@@ -130,8 +133,8 @@ void Sphere::CreateVertexData() {
 		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
 			uint32_t lD = lonIndex + latIndex * (kSubdivision + 1);
 			uint32_t lt = lonIndex + (latIndex + 1) * (kSubdivision + 1);
-			uint32_t rD = (lonIndex + 1) + latIndex * (kSubdivision + 1);
-			uint32_t rt = (lonIndex + 1) + (latIndex + 1) * (kSubdivision + 1);
+			uint32_t rD = lonIndex + 1 + latIndex * (kSubdivision + 1);
+			uint32_t rt = lonIndex + 1 + (latIndex + 1) * (kSubdivision + 1);
 
 			uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
 			indexData[startIndex + 0] = lD;
