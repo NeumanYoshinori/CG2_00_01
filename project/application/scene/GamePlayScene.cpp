@@ -68,7 +68,7 @@ void GamePlayScene::Initialize() {
 	particleManager_->Initialize(dxBase_, srvManager_, camera_);
 
 	// 円のパーティクルグループを作成
-	particleManager_->CreateParticleGroup(ParticleManager::Ring, "gradationLine", "resources/gradationLine.png");
+	particleManager_->CreateParticleGroup(ParticleManager::Cylinder, "gradationLine", "resources/gradationLine.png");
 
 	uniform_real_distribution<float> distScale(0.4f, 1.5f);
 	uniform_real_distribution<float> distRotate(-pi_v<float>, pi_v<float>);
@@ -79,7 +79,7 @@ void GamePlayScene::Initialize() {
 	particleTransform.translate = { 5.0f, 0.0f, 0.0f };
 	Vector3 particleVelocity = { 0.0f, 0.0f, 0.0f }; // 動かない
 	Vector4 particleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-	particleEmitter_ = new ParticleEmitter("gradationLine", particleTransform, particleVelocity, particleColor, 8, 1.0f);
+	particleEmitter_ = new ParticleEmitter("gradationLine", particleTransform, particleVelocity, particleColor, 1, 1.0f);
 
 	// ImGuiマネージャの初期化
 	imGuiManager_ = new ImGuiManager();
@@ -178,6 +178,9 @@ void GamePlayScene::Update() {
 	Vector3 spherePos = sphere_->GetTranslate();
 	ImGui::DragFloat3("spherePos", &spherePos.x, 0.01f);
 	sphere_->SetTranslate(spherePos);
+	Vector3 sphereRot = sphere_->GetRotate();
+	ImGui::DragFloat3("sphereRot", &sphereRot.x, 0.01f);
+	sphere_->SetRotate(sphereRot);
 	Vector3 skyboxPos = skybox_->GetTranslate();
 	ImGui::DragFloat3("skyboxPos", &skyboxPos.x, 0.01f);
 	skybox_->SetTranslate(skyboxPos);
@@ -200,16 +203,16 @@ void GamePlayScene::Draw() {
 	skyboxCommon_->DrawSetting();
 
 	// スカイボックスの描画
-	//skybox_->Draw();
+	skybox_->Draw();
 
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	object3dCommon_->DrawSetting();
 
 	// 3Dオブジェクトの描画
-	//terrain_->Draw();
+	terrain_->Draw();
 
 	// 球の描画
-	//sphere_->Draw();
+	sphere_->Draw();
 
 	// パーティクルマネージャ描画
 	particleManager_->Draw();

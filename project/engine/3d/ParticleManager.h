@@ -36,6 +36,7 @@ public:
 		Vector4 color;
 		float lifeTime;
 		float currentTime;
+		uint32_t numVertices;
 	};
 
 	struct ParticleForGPU {
@@ -59,6 +60,7 @@ public:
 	enum ParticleType {
 		Plane,
 		Ring,
+		Cylinder,
 		kNum
 	};
 
@@ -109,6 +111,9 @@ private:
 	// ringの頂点データ作成
 	void CreateRingVertexData();
 
+	// cylinderの頂点データ作成
+	void CreateCylinderVertexData();
+
 	// マテリアルデータ作成
 	void CreateMaterialData();
 
@@ -151,6 +156,13 @@ private:
 	Material* materialData = nullptr;
 
 	const uint32_t kRingDivide = 32;
+
+	// 頂点数
+	uint32_t numVertex;
+	// インデックス数
+	uint32_t numIndex = 6;
+
+	const uint32_t kCylinderDivide = 32;
 
 	ParticleManager() = default;
 	~ParticleManager() = default;

@@ -111,9 +111,13 @@ void ParticleManager::Draw() {
 		srvManager_->SetGraphicsRootDescriptorTable(2, particleGroup.materialData.textureIndex);
 		srvManager_->SetGraphicsRootDescriptorTable(1, particleGroup.srvIndex);
 		if (particleGroup.type == Plane) {
-			commandList->DrawInstanced(6, particleGroup.numInstance, 0, 0);
-		} else if (particleGroup.type == Ring) {
-			commandList->DrawIndexedInstanced(kRingDivide * 6, particleGroup.numInstance, 0, 0, 0);
+			commandList->DrawInstanced(numVertex, particleGroup.numInstance, 0, 0);
+		}
+		else if (particleGroup.type == Ring) {
+			commandList->DrawIndexedInstanced(kRingDivide * numIndex, particleGroup.numInstance, 0, 0, 0);
+		}
+		else if (particleGroup.type == Cylinder) {
+			commandList->DrawInstanced(kCylinderDivide * numVertex, particleGroup.numInstance, 0, 0);
 		}
 	}
 }
@@ -128,6 +132,9 @@ void ParticleManager::CreateParticleGroup(ParticleType type, const string name, 
 	}
 	else if (type == ParticleType::Ring) {
 		CreateRingVertexData();
+	}
+	else if (type == ParticleType::Cylinder) {
+		CreateCylinderVertexData();
 	}
 
 	ParticleGroup& particleGroup = particleGroups[name];
@@ -308,13 +315,16 @@ void ParticleManager::GenerateGraphicsPipeline() {
 }
 
 void ParticleManager::CreatePlaneVertexData() {
+	// 頂点数を6に設定
+	numVertex = 6;
+
 	// 頂点リソースを作る
-	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * 6);
+	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * numVertex);
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点のサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * numVertex;
 	// 1頂点あたりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -351,13 +361,15 @@ void ParticleManager::CreateRingVertexData() {
 	const float kInnerRadius = 0.2f;
 	const float radianPerDivide = 2.0f * pi_v<float> / float(kRingDivide);
 
+	numVertex = 4;
+
 	// 頂点リソースを作る
-	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * kRingDivide * 4);
+	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * kRingDivide * numVertex);
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * kRingDivide * 4);
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * kRingDivide * numVertex);
 	// 1頂点あたりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -378,7 +390,7 @@ void ParticleManager::CreateRingVertexData() {
 		vertexData[index * 4 + 3] = { {-sinNext * kInnerRadius, cosNext * kInnerRadius, 0.0f, 1.0f}, {uNext, 1.0f} };
 	}
 
-	indexResource = dxBase_->CreateBufferResource(sizeof(uint32_t) * kRingDivide * 6);
+	indexResource = dxBase_->CreateBufferResource(sizeof(uint32_t) * kRingDivide * numIndex);
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 
 	for (uint32_t index = 0; index < kRingDivide; index++) {
@@ -391,8 +403,46 @@ void ParticleManager::CreateRingVertexData() {
 	}
 
 	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
-	indexBufferView.SizeInBytes = sizeof(uint32_t) * kRingDivide * 6;
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * kRingDivide * numIndex;
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+}
+
+void ParticleManager::CreateCylinderVertexData() {
+	const float kTopRadius = 1.0f;
+	const float kBottomRadius = 1.0f;
+	const float kHeight = 3.0f;
+	const float radianPerDivide = 2.0f * pi_v<float> / float(kCylinderDivide);
+
+	numVertex = 6;
+
+	// 頂点リソースを作る
+	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * kCylinderDivide * numVertex);
+
+	// リソースの先頭のアドレスから使う
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * kCylinderDivide * numVertex);
+	// 1頂点あたりのサイズ
+	vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+	// 書き込むためのアドレスを取得
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+
+	for (uint32_t index = 0; index < kCylinderDivide; ++index) {
+		float sin = std::sin(index * radianPerDivide);
+		float cos = std::cos(index * radianPerDivide);
+		float sinNext = std::sin((index + 1) * radianPerDivide);
+		float cosNext = std::cos((index + 1) * radianPerDivide);
+		float u = float(index) / float(kCylinderDivide);
+		float uNext = float(index + 1) / float(kCylinderDivide);
+		// position, texcoord, normal
+		vertexData[index * 6] = { {-sin * kTopRadius, kHeight, cos * kTopRadius, 1.0f}, {u, 0.0f}, {-sin, 0.0f, cos } };
+		vertexData[index * 6 + 1] = { {-sinNext * kTopRadius, kHeight, cosNext * kTopRadius, 1.0f}, {uNext, 0.0f}, {-sinNext, 0.0f, cosNext} };
+		vertexData[index * 6 + 2] = { {-sin * kBottomRadius, 0.0f, cos * kBottomRadius, 1.0f}, {u, 1.0f}, {-sin, 0.0f, cos} };
+		vertexData[index * 6 + 3] = { {-sin * kBottomRadius, 0.0f, cos * kBottomRadius, 1.0f}, {u, 1.0f}, {-sin, 0.0f, cos} };
+		vertexData[index * 6 + 4] = { {-sinNext * kTopRadius, kHeight, cosNext * kTopRadius, 1.0f}, {uNext, 0.0f}, {-sinNext, 0.0f, cosNext} };
+		vertexData[index * 6 + 5] = { {-sinNext * kBottomRadius, 0.0f, cosNext * kBottomRadius, 1.0f}, {uNext, 1.0f}, {-sinNext, 0.0f, cosNext} };
+	}
 }
 
 void ParticleManager::CreateMaterialData() {

@@ -17,7 +17,9 @@ struct VertexShaderInput {
 VertexShaderOutput main(VertexShaderInput input, uint32_t instanceId : SV_InstanceID) {
     VertexShaderOutput output;
     output.position = mul(input.position, gParticle[instanceId].WVP);
-    output.texcoord = input.texcoord;
+    float32_t2 texcoord = input.texcoord;
+    texcoord.y = 1.0f - texcoord.y; // flip v
+    output.texcoord = texcoord;
     output.color = gParticle[instanceId].color;
     return output;
 }
