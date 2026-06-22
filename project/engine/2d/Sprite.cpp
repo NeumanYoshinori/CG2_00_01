@@ -101,26 +101,26 @@ void Sprite::Draw() {
 	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(filePath));
 
 	// 描画！（DrawCall/ドローコール）
-	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+	commandList->DrawIndexedInstanced(kNumIndex, 1, 0, 0, 0);
 }
 
 void Sprite::CreateVertexData() {
 	// Sprite用の頂点リソースを作る
-	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * 6);
+	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * kNumVertices);
 
-	indexResource = dxBase_->CreateBufferResource(sizeof(uint32_t) * 6);
+	indexResource = dxBase_->CreateBufferResource(sizeof(uint32_t) * kNumIndex);
 
 	// Sprite用の頂点リソースを作る
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	// 頂点バッファビューを作成する
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * kNumVertices;
 	// 1頂点あたりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
 	// リソースの先頭のアドレスから使う
 	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
 	// 使用するリソースのサイズはインデックス6つ分のサイズ
-	indexBufferView.SizeInBytes = sizeof(uint32_t) * 6;
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * kNumIndex;
 	// インデックスはuint32_tとする
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 

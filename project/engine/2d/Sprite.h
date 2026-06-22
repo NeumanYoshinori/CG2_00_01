@@ -62,6 +62,11 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	D3D12_INDEX_BUFFER_VIEW indexBufferView;
 
+	// 頂点数
+	const uint32_t kNumVertices = 4;
+	// インデックス数
+	const uint32_t kNumIndex = 6;
+
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
 

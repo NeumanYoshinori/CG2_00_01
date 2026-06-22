@@ -3,6 +3,8 @@
 #include "SpriteCommon.h"
 #include "Sprite.h"
 #include "TextureManager.h"
+#include "SkyboxCommon.h"
+#include "Skybox.h"
 #include "SrvManager.h"
 #include "Audio.h"
 #include "BaseScene.h"
@@ -46,6 +48,15 @@ private:
 
 	// スプライト
 	Sprite* sprite_ = nullptr;
+
+	// カメラ
+	Camera* camera_ = nullptr;
+
+	// スカイボックス共通部
+	SkyboxCommon* skyboxCommon_ = nullptr;
+
+	// スカイボックス
+	Skybox* skybox_ = nullptr;
 
 	// オーディオ
 	Audio* audio_ = nullptr;

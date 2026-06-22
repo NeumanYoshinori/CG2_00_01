@@ -51,6 +51,12 @@ void Framework::Initialize() {
 void Framework::Finalize() {
 	CloseHandle(dxBase_->GetFenceEvent());
 
+	// シーンマネージャの解放
+	sceneManager_->Finalize();
+
+	// シーンファクトリ解放
+	delete sceneFactory_;
+
 	// キー入力処理解放
 	Input::GetInstance()->Finalize();
 
@@ -72,20 +78,14 @@ void Framework::Finalize() {
 	// ライトマネージャの解放
 	LightManager::GetInstance()->Finalize();
 
+	// オーディオマネジャーの解放
+	Audio::GetInstance()->Finalize();
+
 	// DirectX解放
 	dxBase_->Finalize();
 
 	// WindowsAPIの終了処理
 	winApp_->Finalize();
-
-	// シーンマネージャの解放
-	sceneManager_->Finalize();
-
-	// オーディオマネジャーの解放
-	Audio::GetInstance()->Finalize();
-
-	// シーンファクトリ解放
-	delete sceneFactory_;
 }
 
 void Framework::Update() {

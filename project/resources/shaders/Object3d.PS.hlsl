@@ -56,7 +56,7 @@ cbuffer lightGroup : register(b1) {
     SpotLight spotLights[kNumSpotLight];
 }
 ConstantBuffer<Camera> gCamera : register(b2);
-TextureCube<float32_t4> gEnvironmentTexture : register(t1);
+//TextureCube<float32_t4> gEnvironmentTexture : register(t1);
 
 PixelShaderOutput main(VertexShaderOutput input) {
     PixelShaderOutput output;
@@ -83,9 +83,9 @@ PixelShaderOutput main(VertexShaderOutput input) {
         
         float32_t3 cameraToPosition = normalize(input.worldPosition - gCamera.worldPosition);
         float32_t3 reflectedVector = reflect(cameraToPosition, normalize(input.normal));
-        float32_t4 environmentColor = gEnvironmentTexture.Sample(gSampler, reflectedVector);
+        //float32_t4 environmentColor = gEnvironmentTexture.Sample(gSampler, reflectedVector);
         
-        color += environmentColor.rgb * gMaterial.environmentCoefficient;
+        //color += environmentColor.rgb * gMaterial.environmentCoefficient;
         
         float32_t3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
         

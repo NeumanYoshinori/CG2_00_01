@@ -23,7 +23,7 @@ void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath) 
 	CreateTransformationMatrixData();
 
 	// Transform変数を作る
-	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, -1.5f, 0.0f}, {10.0f, 0.0f, 2.0f} };
+	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, -1.5f, 0.0f}, {0.0f, 0.0f, 2.0f} };
 
 	// デフォルトカメラをセットする
 	camera_ = object3dCommon_->GetDefaultCamera();
@@ -58,7 +58,7 @@ void Sphere::Draw() {
 
 	// VertexBufferViewを設定
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-	// IndexVufferViewを設定
+	// IndexBufferViewを設定
 	commandList->IASetIndexBuffer(&indexBufferView);
 	// マテリアルCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
@@ -71,9 +71,9 @@ void Sphere::Draw() {
 	// カメラのCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭を設定
-	commandList->SetGraphicsRootDescriptorTable(5, TextureManager::GetInstance()->GetSrvHandleGPU(skybox_->GetFilePath()));
+	//commandList->SetGraphicsRootDescriptorTable(5, TextureManager::GetInstance()->GetSrvHandleGPU(skybox_->GetFilePath()));
 	// 描画
-	commandList->DrawIndexedInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0, 0);
+	commandList->DrawIndexedInstanced(kNumIndex, 1, 0, 0, 0);
 }
 
 void Sphere::CreateVertexData() {
@@ -83,12 +83,12 @@ void Sphere::CreateVertexData() {
 	const float kLatEvery = pi / float(kSubdivision); // 緯度分割1つ分の角度
 
 	// 頂点リソースを作る
-	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * (kSubdivision + 1) * (kSubdivision + 1));
+	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * kNumVertices);
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * (kSubdivision + 1) * (kSubdivision + 1));
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * kNumVertices);
 	// 1頂点あたりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -123,7 +123,7 @@ void Sphere::CreateVertexData() {
 		}
 	}
 
-	indexResource = dxBase_->CreateBufferResource(sizeof(uint32_t) * kSubdivision * kSubdivision * 6);
+	indexResource = dxBase_->CreateBufferResource(sizeof(uint32_t) * kNumIndex);
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 
 	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
@@ -144,7 +144,7 @@ void Sphere::CreateVertexData() {
 	}
 
 	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
-	indexBufferView.SizeInBytes = sizeof(uint32_t) * kSubdivision * kSubdivision * 6;
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * kNumIndex;
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 }
 

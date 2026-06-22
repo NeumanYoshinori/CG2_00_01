@@ -19,8 +19,8 @@ void GamePlayScene::Initialize() {
 
 	// カメラの初期化
 	camera_ = new Camera();
-	camera_->SetRotate({ 0.0f, 1.75f, 0.0f });
-	camera_->SetTranslate({ 0.0f, 0.0f, 0.0f });
+	camera_->SetRotate({ 0.3f, 0.0f, 0.0f });
+	camera_->SetTranslate({ 0.0f, 4.0f, -10.0f });
 
 	// スカイボックス共通部の初期化
 	skyboxCommon_ = new SkyboxCommon();
@@ -64,7 +64,7 @@ void GamePlayScene::Initialize() {
 
 	// パーティクルエミッターの初期化
 	Transform particleTransform;
-	particleTransform.translate = { 5.0f, 0.0f, 0.0f };
+	particleTransform.translate = { 0.0f, 0.0f, 0.0f };
 	particleEmitter_ = new ParticleEmitter("circle2", particleTransform, 8, 1.0f);
 
 	// ImGuiマネージャの初期化
@@ -186,7 +186,7 @@ void GamePlayScene::Draw() {
 	skyboxCommon_->DrawSetting();
 
 	// スカイボックスの描画
-	//skybox_->Draw();
+	skybox_->Draw();
 
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	object3dCommon_->DrawSetting();
@@ -195,7 +195,7 @@ void GamePlayScene::Draw() {
 	terrain_->Draw();
 
 	// 球の描画
-	//sphere_->Draw();
+	sphere_->Draw();
 
 	// パーティクルマネージャ描画
 	particleManager_->Draw();

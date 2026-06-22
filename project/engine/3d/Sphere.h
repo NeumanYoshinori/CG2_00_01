@@ -100,6 +100,13 @@ private:
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
 
+	const uint32_t kSubdivision = 16; // 分割数
+
+	// 頂点数
+	const uint32_t kNumVertices = (kSubdivision + 1) * (kSubdivision + 1);
+	// インデックス数
+	const uint32_t kNumIndex = kSubdivision * kSubdivision * 6;
+
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr; // 頂点リソース
 	// バッファリソース内のデータを指すポインタ
@@ -141,8 +148,6 @@ private:
 	uint32_t textureIndex;
 	// ファイルパス
 	std::string filePath;
-
-	const uint32_t kSubdivision = 16; // 分割数
 
 	LightManager* lightManager_ = LightManager::GetInstance();
 

@@ -52,7 +52,7 @@ void Object3dCommon::CreateRootSignature() {
 	descriptorRangeEnv[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算
 
 	// RootParameter作成
-	D3D12_ROOT_PARAMETER rootParameters[6] = {};
+	D3D12_ROOT_PARAMETER rootParameters[5] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
 	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
@@ -69,10 +69,10 @@ void Object3dCommon::CreateRootSignature() {
 	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
 	rootParameters[4].Descriptor.ShaderRegister = 2; // レジスタ番号2を使う
-	rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使う
-	rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
-	rootParameters[5].DescriptorTable.pDescriptorRanges = descriptorRangeEnv; // Tableの中身の配列を指定
-	rootParameters[5].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeEnv); // Tableで利用する数
+	//rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使う
+	//rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
+	//rootParameters[5].DescriptorTable.pDescriptorRanges = descriptorRangeEnv; // Tableの中身の配列を指定
+	//rootParameters[5].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeEnv); // Tableで利用する数
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
 

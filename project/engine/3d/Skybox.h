@@ -90,12 +90,18 @@ private:
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 
+	// 頂点数
+	const uint32_t kNumVertices = 24;
+
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource = nullptr; // インデックスリソース
 	// バッファリソース内のデータを指すポインタ
 	uint32_t* indexData = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
+
+	// インデックス数
+	const uint32_t kNumIndex = 36;
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr; // マテリアルリソース

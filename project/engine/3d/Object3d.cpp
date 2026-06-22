@@ -56,7 +56,7 @@ void Object3d::Draw() {
 	commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
 
 	// SRVのDescriptorTableの先頭を設定。5はrootParameter[5]である。
-	commandList->SetGraphicsRootDescriptorTable(5, TextureManager::GetInstance()->GetSrvHandleGPU(skybox_->GetFilePath()));
+	//commandList->SetGraphicsRootDescriptorTable(5, TextureManager::GetInstance()->GetSrvHandleGPU(skybox_->GetFilePath()));
 
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {

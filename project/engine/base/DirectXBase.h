@@ -189,9 +189,6 @@ private:
 	// フェンス値
 	uint64_t fenceVal = 0;
 
-	// resourceの生成
-	Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-
 	// 記録時間
 	std::chrono::steady_clock::time_point reference_;
 
