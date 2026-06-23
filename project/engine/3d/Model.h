@@ -25,6 +25,9 @@ public:
 		float padding[3];
 		Matrix4x4 uvTransform;
 		float shininess;
+		float environmentCoefficient;
+		float alphaReference;
+		float padding2;
 	};
 
 	// マテリアルデータ
@@ -60,6 +63,9 @@ public:
 
 	ModelData GetModelData() const { return modelData; }
 
+	float GetEnvironmentCoefficient() { return materialData->environmentCoefficient; }
+	void SetEnvironmentCoefficient(float environmentCoefficient) { materialData->environmentCoefficient = environmentCoefficient; }
+
 private:
 	// 頂点データ作成
 	void CreateVertexData();
@@ -76,23 +82,25 @@ private:
 	DirectXBase* dxBase_ = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr; // 頂点リソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource; // 頂点リソース
 	// バッファリソース内のデータを指すポインタ
 	VertexData* vertexData = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource = nullptr;
+	// バッファリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource;
+	// バッファリソース内のデータを指すポインタ
 	uint32_t* indexData = nullptr;
-
+	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr; // マテリアルリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource; // マテリアルリソース
 	// バッファリソース内のデータを指すポインタ
 	Material* materialData = nullptr;
 
 	// コマンドリスト
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
 };
 

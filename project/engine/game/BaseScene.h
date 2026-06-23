@@ -19,7 +19,7 @@ public: // メンバ関数
 	virtual void Draw() = 0;
 
 	// setter
-	virtual void SetSceneManager(SceneManager* sceneManager) { sceneManager = sceneManager_; }
+	virtual void SetSceneManager(SceneManager* sceneManager) { sceneManager_ = sceneManager; }
 
 	// 仮想デストラクタ
 	virtual ~BaseScene() = default;

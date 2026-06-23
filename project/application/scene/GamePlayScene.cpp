@@ -1,4 +1,9 @@
 #include "GamePlayScene.h"
+#include <random>
+#include <numbers>
+
+using namespace std;
+using namespace numbers;
 
 void GamePlayScene::Initialize() {
 	// インスタンス取得
@@ -22,6 +27,15 @@ void GamePlayScene::Initialize() {
 	camera_->SetRotate({ 0.0f, 1.75f, 0.0f });
 	camera_->SetTranslate({ 0.0f, 0.0f, 0.0f });
 
+	// スカイボックス共通部の初期化
+	skyboxCommon_ = new SkyboxCommon();
+	skyboxCommon_->Initialize(dxBase_);
+
+	// スカイボックスの初期化
+	skybox_ = new Skybox();
+	skybox_->Initialize(skyboxCommon_, "resources/rostock_laage_airport_4k.dds");
+	skybox_->SetCamera(camera_);
+
 	// モデルマネージャのインスタンス取得
 	modelManager_ = ModelManager::GetInstance();
 
@@ -38,20 +52,34 @@ void GamePlayScene::Initialize() {
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	terrain_->SetModel("terrain.obj");
 	terrain_->SetCamera(camera_);
+	terrain_->SetSkybox(skybox_);
 
 	// 球の初期化
 	sphere_ = new Sphere();
 	sphere_->Initialize(object3dCommon_, "resources/monsterBall.png");
 	sphere_->SetCamera(camera_);
+	sphere_->SetSkybox(skybox_);
 
-	// スカイボックス共通部の初期化
-	skyboxCommon_ = new SkyboxCommon();
-	skyboxCommon_->Initialize(dxBase_);
+	// 乱数生成器の初期化
+	randomEngine_ = mt19937(seedGenerator_());
 
-	// スカイボックスの初期化
-	skybox_ = new Skybox();
-	skybox_->Initialize(skyboxCommon_, "resources/rostock_laage_airport_4k.dds");
-	skybox_->SetCamera(camera_);
+	// パーティクルマネージャ
+	particleManager_ = ParticleManager::GetInstance();
+	particleManager_->Initialize(dxBase_, srvManager_, camera_);
+
+	// 円のパーティクルグループを作成
+	particleManager_->CreateParticleGroup(ParticleManager::Cylinder, "gradationLine", "resources/gradationLine.png");
+
+	uniform_real_distribution<float> distScale(0.4f, 1.5f);
+	uniform_real_distribution<float> distRotate(-pi_v<float>, pi_v<float>);
+
+	// パーティクルエミッターの初期化
+	particleTransform.scale = { 1.0f, 1.0f, 1.0f}; // 横に潰す
+	particleTransform.rotate = { 0.0f, 0.0f, 0.0f};
+	particleTransform.translate = { 5.0f, 0.0f, 0.0f };
+	Vector3 particleVelocity = { 0.0f, 0.0f, 0.0f }; // 動かない
+	Vector4 particleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	particleEmitter_ = new ParticleEmitter("gradationLine", particleTransform, particleVelocity, particleColor, 1, 1.0f);
 
 	// ImGuiマネージャの初期化
 	imGuiManager_ = new ImGuiManager();
@@ -74,6 +102,13 @@ void GamePlayScene::Finalize() {
 	// 球の解放
 	delete sphere_;
 	sphere_ = nullptr;
+
+	// パーティクルエミッターの解放
+	delete particleEmitter_;
+	particleEmitter_ = nullptr;
+
+	// パーティクルマネージャの終了
+	particleManager_->Finalize();
 
 	// スカイボックスの解放
 	delete skybox_;
@@ -116,6 +151,12 @@ void GamePlayScene::Update() {
 	// 3Dオブジェクトの更新
 	terrain_->Update();
 
+	// パーティクルマネージャの更新
+	particleManager_->Update();
+
+	// パーティクルエミッターの更新
+	particleEmitter_->Update();
+
 	// 球の更新
 	sphere_->Update();
 
@@ -137,10 +178,16 @@ void GamePlayScene::Update() {
 	Vector3 spherePos = sphere_->GetTranslate();
 	ImGui::DragFloat3("spherePos", &spherePos.x, 0.01f);
 	sphere_->SetTranslate(spherePos);
+	Vector3 sphereRot = sphere_->GetRotate();
+	ImGui::DragFloat3("sphereRot", &sphereRot.x, 0.01f);
+	sphere_->SetRotate(sphereRot);
 	Vector3 skyboxPos = skybox_->GetTranslate();
 	ImGui::DragFloat3("skyboxPos", &skyboxPos.x, 0.01f);
 	skybox_->SetTranslate(skyboxPos);
 	LightManager::GetInstance()->DebugPointLight();
+	float environmentCoefficient = sphere_->GetEnvironmentCoefficient();
+	ImGui::DragFloat("environmentCoefficient", &environmentCoefficient, 0.01f);
+	sphere_->SetEnvironmentCoefficient(environmentCoefficient);
 	ImGui::End();
 #endif
 
@@ -162,10 +209,13 @@ void GamePlayScene::Draw() {
 	object3dCommon_->DrawSetting();
 
 	// 3Dオブジェクトの描画
-	//terrain->Draw();
+	terrain_->Draw();
 
 	// 球の描画
-	//sphere->Draw();
+	sphere_->Draw();
+
+	// パーティクルマネージャ描画
+	particleManager_->Draw();
 
 	// ImGuiの描画
 	imGuiManager_->Draw();

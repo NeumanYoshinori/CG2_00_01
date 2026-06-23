@@ -15,6 +15,8 @@
 #include "SkyboxCommon.h"
 #include "Skybox.h"
 #include "BaseScene.h"
+#include <random>
+#include <numbers>
 
 // ゲームプレイシーン
 class GamePlayScene : public BaseScene {
@@ -61,6 +63,17 @@ private:
 
 	// 球
 	Sphere* sphere_ = nullptr;
+
+	std::random_device seedGenerator_;
+	std::mt19937 randomEngine_;
+
+	Transform particleTransform;
+
+	// パーティクルマネージャ
+	ParticleManager* particleManager_ = nullptr;
+
+	// パーティクルエミッター
+	ParticleEmitter* particleEmitter_ = nullptr;
 
 	// スカイボックス共通部
 	SkyboxCommon* skyboxCommon_ = nullptr;

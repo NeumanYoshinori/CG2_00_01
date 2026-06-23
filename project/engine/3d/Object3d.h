@@ -10,6 +10,7 @@
 #include "ModelManager.h"
 #include "Camera.h"
 #include "LightManager.h"
+#include "Skybox.h"
 
 class Object3dCommon;
 
@@ -38,9 +39,6 @@ public: // メンバ関数
 	void Draw();
 
 	// setter
-	void SetModel(Model* model) { model_ = model; }
-
-	// setter
 	void SetScale(const Vector3& scale) { transform.scale = scale; }
 	void SetRotate(const Vector3& rotate) { transform.rotate = rotate; }
 	void SetTranslate(const Vector3& translate) { transform.translate = translate; }
@@ -55,6 +53,11 @@ public: // メンバ関数
 
 	// setter
 	void SetCamera(Camera* camera) { camera_ = camera; }
+	
+	// setter
+	void SetSkybox(Skybox* skybox) { skybox_ = skybox; }
+
+	Model* GetModel() { return model_; }
 
 private:
 	// 座標変換行列データ作成
@@ -70,12 +73,12 @@ private:
 	DirectXBase* dxBase_ = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource = nullptr; // 座標返還行列リソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource; // 座標返還行列リソース
 	// バッファリソース内のデータを指すポインタ
 	TransformationMatrix* transformationMatrixData = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;
 	// バッファリソース内のデータを指すポインタ
 	CameraForGPU* cameraData = nullptr;
 
@@ -83,7 +86,7 @@ private:
 	Transform transform;
 
 	// コマンドリスト
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
 
 	// モデル
 	Model* model_ = nullptr;
@@ -92,5 +95,8 @@ private:
 	Camera* camera_ = nullptr;
 
 	LightManager* lightManager_ = LightManager::GetInstance();
+
+	// スカイボックス
+	Skybox* skybox_ = nullptr;
 };
 

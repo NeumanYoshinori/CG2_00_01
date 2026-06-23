@@ -3,14 +3,8 @@
 #include "SpriteCommon.h"
 #include "Sprite.h"
 #include "TextureManager.h"
-#include "Object3dCommon.h"
-#include "Object3d.h"
-#include "ModelManager.h"
 #include "SrvManager.h"
-#include "ParticleManager.h"
-#include "ParticleEmitter.h"
 #include "Audio.h"
-#include "Sphere.h"
 #include "BaseScene.h"
 
 // 前方宣言
@@ -52,18 +46,6 @@ private:
 
 	// スプライト
 	Sprite* sprite_ = nullptr;
-
-	// カメラ
-	Camera* camera_ = nullptr;
-
-	// モデルマネージャ
-	ModelManager* modelManager_ = nullptr;
-
-	// パーティクルマネージャ
-	ParticleManager* particleManager_ = nullptr;
-
-	// パーティクルエミッター
-	ParticleEmitter* particleEmitter_ = nullptr;
 
 	// オーディオ
 	Audio* audio_ = nullptr;

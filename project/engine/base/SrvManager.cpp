@@ -10,7 +10,6 @@ SrvManager* SrvManager::GetInstance() {
 	if (instance == nullptr) {
 		instance = new SrvManager();
 	}
-
 	return instance;
 }
 
