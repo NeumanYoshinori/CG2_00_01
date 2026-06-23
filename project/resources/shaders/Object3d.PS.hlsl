@@ -6,6 +6,7 @@ struct Material {
     float32_t4x4 uvTransform;
     float32_t shininess;
     float32_t environmentCoefficient;
+    float32_t alphaReference;
 };
 
 static const int kNumDirectionalLight = 1;
@@ -63,13 +64,13 @@ PixelShaderOutput main(VertexShaderOutput input) {
     float4 transformedUV = mul(float32_t4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float32_t4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
     
-    // textureのα値が0のときにPixelを棄却
-    if (textureColor.a == 0.0) {
+    // textureのα値が0.5以下のときにPixelを棄却
+    if (textureColor.a <= gMaterial.alphaReference) {
         discard;
     }
     
     // output.colorの値が0の時にPixelを棄却
-    if (output.color.a == 0.0) {
+    if (output.color.a <= gMaterial.alphaReference) {
         discard;
     }
     

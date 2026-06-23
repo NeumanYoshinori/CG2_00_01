@@ -26,7 +26,8 @@ public:
 		Matrix4x4 uvTransform;
 		float shininess;
 		float environmentCoefficient;
-		float padding2[2];
+		float alphaReference;
+		float padding2;
 	};
 
 	// マテリアルデータ
