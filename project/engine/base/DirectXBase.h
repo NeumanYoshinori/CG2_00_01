@@ -46,6 +46,7 @@ public:
 	D3D12_DEPTH_STENCIL_VIEW_DESC GetDsvDesc() const { return dsvDesc; }
 	// スワップチェーンリソースの数を取得
 	size_t GetSwapChainResourcesNum() const { return swapChainResources.size(); }
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDsvDescriptorHeap() { return dsvDescriptorHeap; }
 
 	// シェーダーのコンパイル
 	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);

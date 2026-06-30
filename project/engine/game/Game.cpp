@@ -2,6 +2,8 @@
 #include "CrashHandler.h"
 #include "Logger.h"
 #include "SceneFactory.h"
+#include "RenderTextureCommon.h"
+#include "PostEffect.h"
 
 void Game::Initialize() {
 	// 基底クラスの初期化処理
@@ -21,10 +23,22 @@ void Game::Update() {
 
 void Game::Draw() {
 	// 描画前処理
-	DirectXBase::GetInstance()->PreDraw();
+	RenderTextureCommon::GetInstance()->PreDraw();
 
 	// シーン描画
 	SceneManager::GetInstance()->Draw();
+
+	// 描画後処理
+	RenderTextureCommon::GetInstance()->PostDraw();
+
+	// 描画前処理
+	DirectXBase::GetInstance()->PreDraw();
+	
+	// ポストエフェクト描画
+	PostEffect::GetInstance()->Draw();
+
+	// ImGui描画
+	SceneManager::GetInstance()->ImGuiDraw();
 
 	// 描画後処理
 	DirectXBase::GetInstance()->PostDraw();

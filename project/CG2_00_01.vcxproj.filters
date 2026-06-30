@@ -82,6 +82,9 @@
     <Filter Include="ヘッダー ファイル\engine\game">
       <UniqueIdentifier>{ae25f978-2abe-488a-aca4-f291ee18ec77}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\engine\postEffect">
+      <UniqueIdentifier>{f0306934-68cf-4d0c-9aec-89618bd58352}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -182,6 +185,12 @@
     </ClCompile>
     <ClCompile Include="engine\game\SceneManager.cpp">
       <Filter>ソース ファイル\engine\game</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\postEffect\RenderTextureCommon.cpp">
+      <Filter>ソース ファイル\engine\postEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\postEffect\PostEffect.cpp">
+      <Filter>ソース ファイル\engine\postEffect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -301,6 +310,12 @@
     </ClInclude>
     <ClInclude Include="engine\game\SceneManager.h">
       <Filter>ヘッダー ファイル\engine\game</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\postEffect\RenderTextureCommon.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\postEffect\PostEffect.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

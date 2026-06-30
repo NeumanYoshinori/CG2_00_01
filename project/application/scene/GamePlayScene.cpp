@@ -216,7 +216,9 @@ void GamePlayScene::Draw() {
 
 	// パーティクルマネージャ描画
 	particleManager_->Draw();
+}
 
+void GamePlayScene::ImGuiDraw() {
 	// ImGuiの描画
 	imGuiManager_->Draw();
 }

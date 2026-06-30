@@ -18,6 +18,9 @@ public: // メンバ関数
 	// 描画
 	virtual void Draw() = 0;
 
+	// ImGui描画
+	virtual void ImGuiDraw() = 0;
+
 	// setter
 	virtual void SetSceneManager(SceneManager* sceneManager) { sceneManager_ = sceneManager; }
 

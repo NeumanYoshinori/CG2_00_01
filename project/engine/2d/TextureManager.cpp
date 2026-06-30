@@ -103,7 +103,7 @@ void TextureManager::LoadTexture(const string& filePath) {
 	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
 	commandQueue->Signal(fence.Get(), fenceVal);
 
-	// Fenceの値が指定したSinal値にたどり着いているか確認する
+	// Fenceの値が指定したSignal値にたどり着いているか確認する
 	// GetCompleteValueの初期値はFence作成時に渡した初期値
 	if (fence->GetCompletedValue() < fenceVal) {
 		// 指定したSignalにたどり着いていないので、たどり着くまで待つようイベントを設定する

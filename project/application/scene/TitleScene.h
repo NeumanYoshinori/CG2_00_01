@@ -25,6 +25,9 @@ public:
 	// 描画
 	void Draw() override;
 
+	// ImGui描画
+	void ImGuiDraw() override;
+
 private:
 	// WindowsAPI
 	WinApp* winApp_ = nullptr;

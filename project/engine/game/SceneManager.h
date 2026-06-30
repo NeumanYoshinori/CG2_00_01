@@ -23,6 +23,9 @@ public:
 	// 描画
 	void Draw();
 
+	// ImGui描画
+	void ImGuiDraw();
+
 	// シーンファクトリーのsetter
 	void SetSceneFactory(AbstractSceneFactory* sceneFactory) { sceneFactory_ = sceneFactory; }
 

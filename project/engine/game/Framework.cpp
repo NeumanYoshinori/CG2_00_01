@@ -5,6 +5,8 @@
 #include "Object3dCommon.h"
 #include "ModelManager.h"
 #include "LightManager.h"
+#include "RenderTextureCommon.h"
+#include "PostEffect.h"
 
 void Framework::Initialize() {
 	// 誰も補足しなかった場合に(Unhandled)、補足する関数を登録
@@ -44,6 +46,12 @@ void Framework::Initialize() {
 	// 3Dオブジェクト共通部の初期化
 	Object3dCommon::GetInstance()->Initialize(dxBase_);
 
+	// レンダーテクスチャ基盤部分の初期化
+	RenderTextureCommon::GetInstance()->Initialize(dxBase_);
+
+	// ポストエフェクトの初期化
+	PostEffect::GetInstance()->Initialize(dxBase_);
+
 	// シーンマネージャのインスタンス取得
 	sceneManager_ = SceneManager::GetInstance();
 }
@@ -65,6 +73,12 @@ void Framework::Finalize() {
 
 	// 3Dモデルマネージャの終了
 	ModelManager::GetInstance()->Finalize();
+
+	// ポストエフェクトの解放
+	PostEffect::GetInstance()->Finalize();
+
+	// レンダーテクスチャ基盤部分の解放
+	RenderTextureCommon::GetInstance()->Finalize();
 
 	// SRVマネージャの解放
 	srvManager_->Finalize();

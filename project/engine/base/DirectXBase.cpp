@@ -82,7 +82,7 @@ void DirectXBase::PreDraw() {
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 
 	// 指定した色で画面全体をクリアする
-	float clearColor[] = { 0.1f, 0.25f, 0.5f, 0.5f, 1.0f };
+	float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f };
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 	// 画面全体の深度をクリア
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
@@ -122,7 +122,7 @@ void DirectXBase::PostDraw() {
 	swapChain->Present(1, 0);
 	assert(SUCCEEDED(hr));
 
-	// Fenceの値が指定したSinal値にたどり着いているか確認する
+	// Fenceの値が指定したSignal値にたどり着いているか確認する
 	// GetCompleteValueの初期値はFence作成時に渡した初期値
 	if (fence->GetCompletedValue() < fenceVal) {
 		// 指定したSignalにたどり着いていないので、たどり着くまで待つようイベントを設定する
