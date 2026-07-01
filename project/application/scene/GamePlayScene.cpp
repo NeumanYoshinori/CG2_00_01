@@ -190,7 +190,7 @@ void GamePlayScene::Update() {
 	ImGui::DragFloat("environmentCoefficient", &environmentCoefficient, 0.01f);
 	sphere_->SetEnvironmentCoefficient(environmentCoefficient);
 	static PostEffect::PostEffectType currentPostEffect = PostEffect::PostEffectType::FullScreen;
-	const char* postEffect[] = { "FullScreen", "Grayscale" };
+	const char* postEffect[] = { "FullScreen", "Grayscale", "Vignette" };
 	if (ImGui::BeginCombo("PostEffect", postEffect[static_cast<int>(currentPostEffect)])) {
 		for (uint32_t i = 0; i < size(postEffect); ++i) {
 			const bool isSelected = (static_cast<int>(currentPostEffect) == i);

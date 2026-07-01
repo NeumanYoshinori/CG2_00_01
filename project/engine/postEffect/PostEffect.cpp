@@ -30,6 +30,7 @@ void PostEffect::Initialize(DirectXBase* dxBase) {
 
 	GenerateGraphicsPipeline(L"resources/shaders/FullScreen.PS.hlsl", PostEffectType::FullScreen);
 	GenerateGraphicsPipeline(L"resources/shaders/Grayscale.PS.hlsl", PostEffectType::Grayscale);
+	GenerateGraphicsPipeline(L"resources/shaders/Vignette.PS.hlsl", PostEffectType::Vignette);
 
 	CreateMaterialData();
 }

@@ -8,6 +8,7 @@ public:
 	enum struct PostEffectType {
 		FullScreen,
 		Grayscale,
+		Vignette,
 	};
 
 	// シングルトンインスタンスの取得
@@ -54,7 +55,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
 
 	// グラフィックスパイプライン
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_[2];
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_[3];
 
 	// SRVインデックス
 	uint32_t srvIndex_;
