@@ -23,8 +23,6 @@ void RenderTextureCommon::Initialize(DirectXBase* dxBase) {
 
 	device_ = dxBase_->GetDevice();
 
-	commandList_ = dxBase_->GetCommandList();
-
 	// 深度バッファの作成
 	CreateDepthBuffer();
 
@@ -54,6 +52,10 @@ void RenderTextureCommon::PreDraw() {
 	// 遷移後のResourceState
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	// コマンドリストを取得
+	commandList_ = dxBase_->GetCommandList();
+
 	// TransitionBarrierを張る
 	commandList_->ResourceBarrier(1, &barrier);
 
@@ -82,6 +84,9 @@ void RenderTextureCommon::PostDraw() {
 	// 遷移後のResourceState
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	// コマンドリストを取得
+	commandList_ = dxBase_->GetCommandList();
 	// TransitionBarrierを張る
 	commandList_->ResourceBarrier(1, &barrier);
 }

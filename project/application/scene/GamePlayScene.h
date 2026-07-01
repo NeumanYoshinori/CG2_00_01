@@ -92,5 +92,9 @@ private:
 
 	// サウンドデータ2
 	Audio::SoundData soundData2;
+
+	float rgb[3] = { 1.0f, 1.0f, 1.0f };
+
+	bool useSepia = false;
 };
 

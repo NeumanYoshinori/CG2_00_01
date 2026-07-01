@@ -7,6 +7,7 @@ PostEffect* PostEffect::instance = nullptr;
 
 using namespace Microsoft::WRL;
 using namespace Logger;
+using namespace std;
 
 PostEffect* PostEffect::GetInstance() {
 	if (instance == nullptr) {
@@ -27,18 +28,21 @@ void PostEffect::Initialize(DirectXBase* dxBase) {
 	srvIndex_ = SrvManager::GetInstance()->Allocate();
 	SrvManager::GetInstance()->CreateSRVforTexture2D(srvIndex_, renderTextureResource_.Get(), DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, false);
 
-	GenerateGraphicsPipeline();
+	GenerateGraphicsPipeline(L"resources/shaders/FullScreen.PS.hlsl", PostEffectType::FullScreen);
+	GenerateGraphicsPipeline(L"resources/shaders/Grayscale.PS.hlsl", PostEffectType::Grayscale);
+
+	CreateMaterialData();
 }
 
 void PostEffect::Draw() {
 	ComPtr<ID3D12GraphicsCommandList> commandList = dxBase_->GetCommandList();
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
-	commandList->SetPipelineState(graphicsPipelineState_.Get());
+	commandList->SetPipelineState(graphicsPipelineState_[static_cast<int>(postEffectType_)].Get());
 	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	ID3D12DescriptorHeap* descriptorHeaps[] = { SrvManager::GetInstance()->GetDescriptorHeap().Get() };
-	commandList->SetDescriptorHeaps(1, descriptorHeaps);
-	commandList->SetGraphicsRootDescriptorTable(0, SrvManager::GetInstance()->GetGPUDescriptorHandle(srvIndex_));
+	// マテリアルCBufferの場所を設定
+	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootDescriptorTable(1, SrvManager::GetInstance()->GetGPUDescriptorHandle(srvIndex_));
 	commandList->DrawInstanced(3, 1, 0, 0);
 }
 
@@ -50,11 +54,14 @@ void PostEffect::CreateRootSignature() {
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameter作成
-	D3D12_ROOT_PARAMETER rootParameters[1] = {};
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使う
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
-	rootParameters[0].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定
-	rootParameters[0].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数
+	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使う
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
+	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定
+	rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数
 
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR; // バイリニアフィルタ
@@ -91,7 +98,7 @@ void PostEffect::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
-void PostEffect::GenerateGraphicsPipeline() {
+void PostEffect::GenerateGraphicsPipeline(wstring psName, PostEffectType postEffectType) {
 	CreateRootSignature();
 
 	// BlendStateの設定
@@ -111,7 +118,7 @@ void PostEffect::GenerateGraphicsPipeline() {
 		L"vs_6_0");
 	assert(vertexShaderBlob != nullptr);
 
-	ComPtr<IDxcBlob> pixelShaderBlob = dxBase_->CompileShader(L"resources/shaders/FullScreen.PS.hlsl",
+	ComPtr<IDxcBlob> pixelShaderBlob = dxBase_->CompileShader(psName,
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
@@ -140,6 +147,19 @@ void PostEffect::GenerateGraphicsPipeline() {
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	// 実際に生成
 	HRESULT hr = dxBase_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&graphicsPipelineState_));
+		IID_PPV_ARGS(&graphicsPipelineState_[static_cast<int>(postEffectType)]));
 	assert(SUCCEEDED(hr));
+}
+
+void PostEffect::CreateMaterialData() {
+	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
+	materialResource_ = dxBase_->CreateBufferResource(sizeof(Material));
+
+	// マテリアルにデータを書き込む
+	// 書き込むためのアドレスを取得
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+
+	// マテリアルデータの初期値を書き込む
+	materialData_->color = { 1.0f, 1.0f, 1.0f };
+	materialData_->useSepia = false;
 }
