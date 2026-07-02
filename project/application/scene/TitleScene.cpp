@@ -69,3 +69,7 @@ void TitleScene::Draw() {
 	// スプライトの描画
 	sprite_->Draw();
 }
+
+void TitleScene::ImGuiDraw() {
+	return;
+}

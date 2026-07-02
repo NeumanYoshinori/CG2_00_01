@@ -55,3 +55,8 @@ void SceneManager::Draw() {
 	// シーンの描画呼び出し
 	scene_->Draw();
 }
+
+void SceneManager::ImGuiDraw() {
+	// シーンの描画呼び出し
+	scene_->ImGuiDraw();
+}

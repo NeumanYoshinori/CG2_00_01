@@ -1,6 +1,7 @@
 #include "GamePlayScene.h"
 #include <random>
 #include <numbers>
+#include "PostEffect.h"
 
 using namespace std;
 using namespace numbers;
@@ -188,6 +189,28 @@ void GamePlayScene::Update() {
 	float environmentCoefficient = sphere_->GetEnvironmentCoefficient();
 	ImGui::DragFloat("environmentCoefficient", &environmentCoefficient, 0.01f);
 	sphere_->SetEnvironmentCoefficient(environmentCoefficient);
+	static PostEffect::PostEffectType currentPostEffect = PostEffect::PostEffectType::FullScreen;
+	const char* postEffect[] = { "FullScreen", "Grayscale", "Vignette" };
+	if (ImGui::BeginCombo("PostEffect", postEffect[static_cast<int>(currentPostEffect)])) {
+		for (uint32_t i = 0; i < size(postEffect); ++i) {
+			const bool isSelected = (static_cast<int>(currentPostEffect) == i);
+			if (ImGui::Selectable(postEffect[i], isSelected)) {
+				currentPostEffect = static_cast<PostEffect::PostEffectType>(i);
+
+				PostEffect::GetInstance()->SetPostEffect(currentPostEffect);
+
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::Checkbox("useSepia", &useSepia);
+	PostEffect::GetInstance()->UseSepia(useSepia);
+	if (ImGui::InputFloat3("GrayscaleRGB", rgb)) {
+		PostEffect::GetInstance()->SetColor(Vector3(rgb[0], rgb[1], rgb[2]));
+	}
 	ImGui::End();
 #endif
 
@@ -216,7 +239,9 @@ void GamePlayScene::Draw() {
 
 	// パーティクルマネージャ描画
 	particleManager_->Draw();
+}
 
+void GamePlayScene::ImGuiDraw() {
 	// ImGuiの描画
 	imGuiManager_->Draw();
 }

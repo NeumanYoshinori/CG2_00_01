@@ -33,6 +33,9 @@ public:
 	// 描画
 	void Draw() override;
 
+	// ImGui描画
+	void ImGuiDraw() override;
+
 private:
 	// WindowsAPI
 	WinApp* winApp_ = nullptr;
@@ -89,5 +92,9 @@ private:
 
 	// サウンドデータ2
 	Audio::SoundData soundData2;
+
+	float rgb[3] = { 1.0f, 1.0f, 1.0f };
+
+	bool useSepia = false;
 };
 
