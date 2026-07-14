@@ -18,9 +18,5 @@ public: // メンバ関数
 
 	// 描画
 	void Draw() override;
-
-private:
-	// シーンファクトリー
-	SceneFactory* sceneFactory_ = nullptr;
 };
 

@@ -5,7 +5,6 @@
 #include "externals/imgui/imgui_impl_win32.h"
 #endif
 #include "DirectXBase.h"
-#include "SrvManager.h"
 #include "WinApp.h"
 
 // ImGUIの管理
@@ -38,7 +37,7 @@ public:
 
 private:
 	// DirectXBase
-	DirectXBase* dxBase_;
+	DirectXBase* dxBase_ = nullptr;
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap_ = nullptr;
 };

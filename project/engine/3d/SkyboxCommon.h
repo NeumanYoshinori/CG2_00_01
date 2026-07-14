@@ -7,6 +7,12 @@
 // スカイボックス共通部
 class SkyboxCommon {
 public: // メンバ関数
+	// シングルトンインスタンスの取得
+	static SkyboxCommon* GetInstance();
+
+	// 解放.
+	void Finalize();
+
 	// 初期化
 	void Initialize(DirectXBase* dxBase);
 
@@ -21,14 +27,27 @@ public: // メンバ関数
 	// getter
 	Camera* GetDefaultCamera() const { return defaultCamera_; }
 
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class SkyboxCommon;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit SkyboxCommon(ConstructorKey) {}
+
 private:
 	// ルートシグネチャの作成
 	void CreateRootSignature();
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeLine();
 
+	// シングルトンインスタンス
+	static std::unique_ptr<SkyboxCommon> instance_;
+
 	// DirectXBase
-	DirectXBase* dxBase_;
+	DirectXBase* dxBase_ = nullptr;
 
 	// コマンドリストを生成する
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
@@ -46,4 +65,11 @@ private:
 
 	// デフォルトカメラ
 	Camera* defaultCamera_ = nullptr;
+
+	~SkyboxCommon() = default;
+	SkyboxCommon(SkyboxCommon&) = delete;
+	SkyboxCommon& operator=(SkyboxCommon&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<SkyboxCommon>;
 };

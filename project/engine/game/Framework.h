@@ -3,7 +3,6 @@
 #include "WinApp.h"
 #include "D3DResourceLeakChecker.h"
 #include "SrvManager.h"
-#include "Audio.h"
 #include "SceneManager.h"
 #include "AbstractSceneFactory.h"
 
@@ -38,7 +37,6 @@ private:
 	// WindowsAPI
 	WinApp* winApp_ = nullptr;
 
-	// DirectX基盤部分
 	DirectXBase* dxBase_ = nullptr;
 
 	// SRVマネージャ
@@ -49,7 +47,8 @@ private:
 	// シーンマネージャ
 	SceneManager* sceneManager_ = nullptr;
 
+protected:
 	// シーンファクトリー
-	AbstractSceneFactory* sceneFactory_ = nullptr;
+	std::unique_ptr<AbstractSceneFactory> sceneFactory_;
 };
 

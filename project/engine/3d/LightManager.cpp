@@ -7,18 +7,17 @@ using namespace std;
 using namespace Microsoft::WRL;
 using namespace MathFunction;
 
-LightManager* LightManager::instance = nullptr;
+unique_ptr<LightManager> LightManager::instance_ = nullptr;
 
 LightManager* LightManager::GetInstance() {
-	if (instance == nullptr) {
-		instance = new LightManager;
+	if (instance_ == nullptr) {
+		instance_ = make_unique<LightManager>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
 void LightManager::Finalize() {
-	delete instance;
-	instance = nullptr;
+	instance_.reset();
 }
 
 void LightManager::DebugPointLight() {
@@ -62,13 +61,13 @@ void LightManager::Initialize(DirectXBase* dxBase) {
 	constBuff_ = dxBase_->CreateBufferResource(sizeof(ConstBufferData));
 	constBuff_->Map(0, nullptr, reinterpret_cast<void**>(&constMap_));
 
-	for (int i = 0; i < kMaxDirectionalLights; i++) {
+	for (int i = 0; i < kMaxDirectionalLights_; i++) {
 		constMap_->directionalLights_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		constMap_->directionalLights_[i].direction = Normalize({ 0.0f, -1.0f, 0.0f });
 		constMap_->directionalLights_[i].intensity = 0.0f;
 	}
 
-	for (int i = 0; i < kMaxPointLights; i ++) {
+	for (int i = 0; i < kMaxPointLights_; i ++) {
 		constMap_->pointLights_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		constMap_->pointLights_[i].position = { 0.0f, 0.0f, 0.0f };
 		constMap_->pointLights_[i].intensity = 1.0f;
@@ -77,7 +76,7 @@ void LightManager::Initialize(DirectXBase* dxBase) {
 		constMap_->pointLights_[i].isActive = false;
 	}
 
-	for (int i = 0; i < kMaxSpotLights; i++) {
+	for (int i = 0; i < kMaxSpotLights_; i++) {
 		constMap_->spotLights_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		constMap_->spotLights_[i].position = { 2.0f, 1.25f, 0.0f };
 		constMap_->spotLights_[i].distance = 7.0f;

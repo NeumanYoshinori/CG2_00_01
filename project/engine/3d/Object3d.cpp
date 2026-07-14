@@ -1,7 +1,7 @@
 #include "Object3d.h"
 #include "Object3dCommon.h"
-#include "ImGuiManager.h"
 #include "TextureManager.h"
+#include "ModelManager.h"
 
 using namespace std;
 using namespace MathFunction;

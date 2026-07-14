@@ -1,10 +1,10 @@
 #include "Model.h"
 #include "ModelCommon.h"
-#include <fstream>
 #include <sstream>
 #include <cassert>
 #include "TextureManager.h"
-#include <numbers>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 
 using namespace std;
 using namespace MathFunction;

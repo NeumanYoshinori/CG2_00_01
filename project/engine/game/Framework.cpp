@@ -4,9 +4,12 @@
 #include "TextureManager.h"
 #include "Object3dCommon.h"
 #include "ModelManager.h"
+#include "Audio.h"
 #include "LightManager.h"
 #include "RenderTextureCommon.h"
 #include "PostEffect.h"
+#include "Logger.h"
+#include "SkyboxCommon.h"
 
 void Framework::Initialize() {
 	// 誰も補足しなかった場合に(Unhandled)、補足する関数を登録
@@ -46,11 +49,16 @@ void Framework::Initialize() {
 	// 3Dオブジェクト共通部の初期化
 	Object3dCommon::GetInstance()->Initialize(dxBase_);
 
+	// スカイボックス共通部の初期化
+	SkyboxCommon::GetInstance()->Initialize(dxBase_);
+
 	// レンダーテクスチャ基盤部分の初期化
 	RenderTextureCommon::GetInstance()->Initialize(dxBase_);
 
 	// ポストエフェクトの初期化
 	PostEffect::GetInstance()->Initialize(dxBase_);
+
+	Audio::GetInstance()->Initialize();
 
 	// シーンマネージャのインスタンス取得
 	sceneManager_ = SceneManager::GetInstance();
@@ -58,9 +66,6 @@ void Framework::Initialize() {
 
 void Framework::Finalize() {
 	CloseHandle(dxBase_->GetFenceEvent());
-
-	// キー入力処理解放
-	Input::GetInstance()->Finalize();
 
 	// スプライト共通部の解放
 	SpriteCommon::GetInstance()->Finalize();
@@ -86,20 +91,20 @@ void Framework::Finalize() {
 	// ライトマネージャの解放
 	LightManager::GetInstance()->Finalize();
 
+	// スカイボックス共通部の解放
+	SkyboxCommon::GetInstance()->Finalize();
+
+	// シーンマネージャの解放
+	sceneManager_->Finalize();
+
 	// DirectX解放
 	dxBase_->Finalize();
 
 	// WindowsAPIの終了処理
 	winApp_->Finalize();
 
-	// シーンマネージャの解放
-	sceneManager_->Finalize();
-
 	// オーディオマネジャーの解放
 	Audio::GetInstance()->Finalize();
-
-	// シーンファクトリ解放
-	delete sceneFactory_;
 }
 
 void Framework::Update() {

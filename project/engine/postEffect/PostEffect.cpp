@@ -1,24 +1,23 @@
 #include "PostEffect.h"
 #include "SrvManager.h"
 #include "RenderTextureCommon.h"
-#include "TextureManager.h"
-
-PostEffect* PostEffect::instance = nullptr;
+#include "Logger.h"
 
 using namespace Microsoft::WRL;
 using namespace Logger;
 using namespace std;
 
+unique_ptr<PostEffect> PostEffect::instance_ = nullptr;
+
 PostEffect* PostEffect::GetInstance() {
-	if (instance == nullptr) {
-		instance = new PostEffect;
+	if (instance_ == nullptr) {
+		instance_ = make_unique<PostEffect>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
 void PostEffect::Finalize() {
-	delete instance;
-	instance = nullptr;
+	instance_.reset();
 }
 
 void PostEffect::Initialize(DirectXBase* dxBase) {

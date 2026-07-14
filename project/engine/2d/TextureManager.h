@@ -13,6 +13,7 @@ class TextureManager {
 public:
 	// シングルトンインスタンスの取得
 	static TextureManager* GetInstance();
+
 	// 終了
 	void Finalize();
 
@@ -32,27 +33,37 @@ public:
 	// テクスチャ番号からCPUハンドルを取得
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(const std::string& filePath);
 
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class TextureManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit TextureManager(ConstructorKey) {}
+
 private:
 	// テクスチャ1枚分のデータ
 	struct TextureData {
-		DirectX::TexMetadata metadata;
+		DirectX::TexMetadata metadata{};
 		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-		uint32_t srvIndex;
-		D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU;
-		D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU;
+		uint32_t srvIndex = 0;
+		D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU{};
+		D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU{};
 	};
 
 	// インスタンス
-	static TextureManager* instance;
+	static std::unique_ptr<TextureManager> instance_;
 
 	// テクスチャデータ
-	std::unordered_map<std::string, TextureData> textureDatas;
+	std::unordered_map<std::string, TextureData> textureDatas_;
 
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
 
 	// SRVインデックスの開始番号
-	static uint32_t kSRVIndexTop;
+	static uint32_t kSRVIndexTop_;
 
 	// SRVマネージャ
 	SrvManager* srvManager_ = nullptr;
@@ -60,9 +71,11 @@ private:
 	// フェンス値
 	uint64_t fenceVal = 0;
 
-	TextureManager() = default;
 	~TextureManager() = default;
 	TextureManager(TextureManager&) = delete;
 	TextureManager& operator=(TextureManager&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<TextureManager>;
 };
 

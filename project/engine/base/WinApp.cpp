@@ -1,8 +1,6 @@
 #include "WinApp.h"
 #ifdef USE_IMGUI
 #include "externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HwND, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif
 
@@ -10,13 +8,14 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND HwND, UINT msg
 
 using namespace std;
 
-WinApp* WinApp::instance = nullptr;
+unique_ptr<WinApp> WinApp::instance_ = nullptr;
 
 WinApp* WinApp::GetInstance() {
-	if (instance == nullptr) {
-		instance = new WinApp;
+	if (instance_ == nullptr) {
+		// PassKeyを渡してインスタンス生成
+		instance_ = make_unique<WinApp>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
 // ウィンドウプロシージャ
@@ -43,16 +42,16 @@ void WinApp::Initialize() {
 	HRESULT hr = CoInitializeEx(0, COINITBASE_MULTITHREADED);
 
 	// ウィンドウプロシージャ
-	wc.lpfnWndProc = WindowProc;
+	wc_.lpfnWndProc = WindowProc;
 	// ウィンドウクラス名
-	wc.lpszClassName = L"CG2WindowClass";
+	wc_.lpszClassName = L"CG2WindowClass";
 	// インスタンスハンドル
-	wc.hInstance = GetModuleHandle(nullptr);
+	wc_.hInstance = GetModuleHandle(nullptr);
 	// カーソル
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wc_.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
 	// ウィンドウクラスを登録する
-	RegisterClass(&wc);
+	RegisterClass(&wc_);
 
 	// ウィンドウサイズを表す構造体にクライアント領域を入れる
 	RECT wrc = { 0, 0, kClientWidth, kClientHeight };
@@ -60,8 +59,8 @@ void WinApp::Initialize() {
 	// クライアント領域をもとに実際のサイズにwrcを変更してもらう
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
-	hwnd = CreateWindow(
-		wc.lpszClassName,		// 利用するクラス名
+	hwnd_ = CreateWindow(
+		wc_.lpszClassName,		// 利用するクラス名
 		L"CG2",					// タイトルバーバーの文字
 		WS_OVERLAPPEDWINDOW,	// よく見るウィンドウスタイル
 		CW_USEDEFAULT,			// 表示X座標
@@ -70,11 +69,11 @@ void WinApp::Initialize() {
 		wrc.bottom - wrc.top,	// ウィンドウ縦幅
 		nullptr,				// 親ウィンドウハンドル
 		nullptr,				// メニューハンドル
-		wc.hInstance,			// インスタントハンドル
+		wc_.hInstance,			// インスタントハンドル
 		nullptr);				// オプション
 
 	// ウィンドウを表示する
-	ShowWindow(hwnd, SW_SHOW);
+	ShowWindow(hwnd_, SW_SHOW);
 
 	// システムタイマーの分解能を上げる
 	timeBeginPeriod(1);
@@ -98,9 +97,6 @@ bool WinApp::ProcessMessage() {
 }
 
 void WinApp::Finalize() {
-	CloseWindow(hwnd);
+	CloseWindow(hwnd_);
 	CoUninitialize();
-
-	delete instance;
-	instance = nullptr;
 }

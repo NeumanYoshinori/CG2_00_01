@@ -48,13 +48,15 @@ private:
 	SpriteCommon* spriteCommon_ = nullptr;
 
 	// スプライト
-	Sprite* sprite_ = nullptr;
+	std::unique_ptr<Sprite> sprite_;
 
 	// オーディオ
 	Audio* audio_ = nullptr;
 
 	// サウンドデータ1
 	Audio::SoundData soundData1;
+
+	IXAudio2SourceVoice* bgmVoice_ = nullptr;
 
 	// シーンマネージャ
 	SceneManager* sceneManager_ = nullptr;

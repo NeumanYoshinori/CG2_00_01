@@ -30,17 +30,30 @@ public:
 	/// <returns></returns>
 	Model* FindModel(const std::string& filePath);
 
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class ModelManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit ModelManager(ConstructorKey) {}
+
 private:
 	// インスタンス
-	static ModelManager* instance;
+	static std::unique_ptr<ModelManager> instance_;
 
 	// モデルデータ
-	std::map<std::string, std::unique_ptr<Model>> models;
+	std::map<std::string, std::unique_ptr<Model>> models_;
 
-	ModelCommon* modelCommon = nullptr;
+	// モデル共通部
+	std::unique_ptr<ModelCommon> modelCommon_;
 
-	ModelManager() = default;
 	~ModelManager() = default;
 	ModelManager(ModelManager&) = delete;
 	ModelManager& operator=(ModelManager&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<ModelManager>;
 };

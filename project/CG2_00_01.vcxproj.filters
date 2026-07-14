@@ -85,6 +85,9 @@
     <Filter Include="ソース ファイル\engine\postEffect">
       <UniqueIdentifier>{f0306934-68cf-4d0c-9aec-89618bd58352}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\engine\postEffect">
+      <UniqueIdentifier>{18bf212b-445b-43a2-86ba-c81717e875e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -311,11 +314,11 @@
     <ClInclude Include="engine\game\SceneManager.h">
       <Filter>ヘッダー ファイル\engine\game</Filter>
     </ClInclude>
-    <ClInclude Include="engine\postEffect\RenderTextureCommon.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="engine\postEffect\PostEffect.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\engine\postEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\postEffect\RenderTextureCommon.h">
+      <Filter>ヘッダー ファイル\engine\postEffect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -323,6 +326,15 @@
       <Filter>シェーダーファイル</Filter>
     </None>
     <None Include="resources\shaders\Particle.hlsli">
+      <Filter>シェーダーファイル</Filter>
+    </None>
+    <None Include="resources\shaders\FullScreen.hlsli">
+      <Filter>シェーダーファイル</Filter>
+    </None>
+    <None Include="resources\shaders\Skybox.hlsli">
+      <Filter>シェーダーファイル</Filter>
+    </None>
+    <None Include="resources\shaders\Sprite.hlsli">
       <Filter>シェーダーファイル</Filter>
     </None>
   </ItemGroup>
@@ -337,6 +349,30 @@
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
     <FxCompile Include="resources\shaders\Particle.VS.hlsl">
+      <Filter>シェーダーファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\FullScreen.PS.hlsl">
+      <Filter>シェーダーファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\FullScreen.VS.hlsl">
+      <Filter>シェーダーファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\Grayscale.PS.hlsl">
+      <Filter>シェーダーファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\Skybox.PS.hlsl">
+      <Filter>シェーダーファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\Skybox.VS.hlsl">
+      <Filter>シェーダーファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\Sprite.PS.hlsl">
+      <Filter>シェーダーファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\Sprite.VS.hlsl">
+      <Filter>シェーダーファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\Vignette.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
   </ItemGroup>

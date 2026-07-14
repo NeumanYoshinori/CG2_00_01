@@ -5,13 +5,10 @@
 #include <dinput.h>
 #include "WinApp.h"
 
-class Input {
+class Input {	
 public:
 	// シングルトンインスタンスの取得
 	static Input* GetInstance();
-
-	// 終了
-	void Finalize();
 
 	// 初期化
 	void Initialize(WinApp* winApp);
@@ -31,9 +28,19 @@ public:
 	// 離した瞬間の処理
 	bool ReleaseKey(BYTE keyNumber);
 
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class Input;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit Input(ConstructorKey) {}
+
 private:
 	// インスタンス
-	static Input* instance;
+	static std::unique_ptr<Input> instance_;
 
 	// キーボード
 	ComPtr<IDirectInputDevice8> keyboard;
@@ -48,8 +55,10 @@ private:
 	// WindowsAPI
 	WinApp* winApp_ = nullptr;
 
-	Input() = default;
 	~Input() = default;
 	Input(Input&) = delete;
 	Input& operator=(Input&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<Input>;
 };

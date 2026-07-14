@@ -1,6 +1,8 @@
 #include "TitleScene.h"
 #include "SceneManager.h"
 
+using namespace std;
+
 void TitleScene::Initialize() {
 	// インスタンス取得
 	dxBase_ = DirectXBase::GetInstance();
@@ -16,28 +18,23 @@ void TitleScene::Initialize() {
 
 	spriteCommon_ = SpriteCommon::GetInstance();
 	// スプライトの初期化
-	sprite_ = new Sprite();
+	sprite_ = make_unique<Sprite>();
 	sprite_->Initialize(spriteCommon_, "resources/uvChecker.png");
 
 	// オーディオの初期化
 	audio_ = Audio::GetInstance();
-	audio_->Initialize();
 	// 音声読み込み
-	soundData1 = audio_->SoundLoadFile("resources/Alarm01.wav");
+	soundData1 = audio_->SoundLoadFile("resources/audios/Alarm01.wav");
+
 	// 音声再生
-	audio_->SoundPlayWave(soundData1, true);
+	bgmVoice_ = audio_->SoundPlayWave(soundData1, true);
 
 	// シーンマネージャのインスタンス取得
 	sceneManager_ = SceneManager::GetInstance();
 }
 
 void TitleScene::Finalize() {
-	// スプライトの解放
-	delete sprite_;
-	sprite_ = nullptr;
-
-	// オーディオの終了
-	audio_->Release();
+	audio_->SoundStopWave(bgmVoice_);
 
 	// 音声データ開放
 	audio_->SoundUnload(&soundData1);

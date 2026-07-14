@@ -2,43 +2,42 @@
 
 using namespace std;
 
-ModelManager* ModelManager::instance = nullptr;
+unique_ptr<ModelManager> ModelManager::instance_ = nullptr;
 
 ModelManager* ModelManager::GetInstance() {
-	if (instance == nullptr) {
-		instance = new ModelManager;
+	if (instance_ == nullptr) {
+		instance_ = make_unique<ModelManager>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
 void ModelManager::Finalize() {
-	delete instance;
-	instance = nullptr;
+	instance_.reset();
 }
 
 void ModelManager::Initialize(DirectXBase* dxBase) {
-	modelCommon = new ModelCommon;
-	modelCommon->Initialize(dxBase);
+	modelCommon_ = make_unique<ModelCommon>();
+	modelCommon_->Initialize(dxBase);
 }
 void ModelManager::LoadModel(const std::string& filePath) {
 	// 読み込み済みモデルを検索
-	if (models.contains(filePath)) {
+	if (models_.contains(filePath)) {
 		// 読み込み済みなら早期return
 		return;
 	}
 
 	// モデルの生成とファイル読み込み、初期化
 	unique_ptr<Model> model = make_unique<Model>();
-	model->Initialize(modelCommon, "resources", filePath);
+	model->Initialize(modelCommon_.get(), "resources", filePath);
 
 	// モデルをmapコンテナに格納する
-	models.insert(make_pair(filePath, move(model)));
+	models_.insert(make_pair(filePath, move(model)));
 }
 
 Model* ModelManager::FindModel(const string& filePath) {
 	// 読み込み済みモデルを検索
-	if (models.contains(filePath)) {
-		return models.at(filePath).get();
+	if (models_.contains(filePath)) {
+		return models_.at(filePath).get();
 	}
 
 	// ファイル名一致なし

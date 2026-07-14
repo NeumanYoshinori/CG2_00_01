@@ -1,23 +1,18 @@
 #include "Input.h"
 #include <cassert>
-#include <cstdint>
 
-#pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 
-Input* Input::instance = nullptr;
+using namespace std;
+
+unique_ptr<Input> Input::instance_ = nullptr;
 
 Input* Input::GetInstance() {
-	if (instance == nullptr) {
-		instance = new Input;
+	if (instance_ == nullptr) {
+		instance_ = make_unique<Input>(ConstructorKey());
 	}
-	return instance;
-}
-
-void Input::Finalize() {
-	delete instance;
-	instance = nullptr;
+	return instance_.get();
 }
 
 void Input::Initialize(WinApp* winApp) {

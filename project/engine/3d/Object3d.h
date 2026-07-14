@@ -1,13 +1,11 @@
 #pragma once
 #include <string>
-#include <vector>
 #include <MathFunction.h>
 #include <Transform.h>
 #include <wrl.h>
 #include <d3d12.h>
 #include "DirectXBase.h"
 #include "Model.h"
-#include "ModelManager.h"
 #include "Camera.h"
 #include "LightManager.h"
 #include "Skybox.h"
@@ -17,18 +15,6 @@ class Object3dCommon;
 // 3Dオブジェクト
 class Object3d {
 public: // メンバ関数
-	// 座標変換用行列
-	struct TransformationMatrix {
-		Matrix4x4 WVP;
-		Matrix4x4 World;
-		Matrix4x4 WorldInverseTranspose;
-	};
-
-	// カメラ
-	struct CameraForGPU {
-		Vector3 worldPosition;
-	};
-
 	// 初期化
 	void Initialize(Object3dCommon* object3dCommon);
 
@@ -60,6 +46,18 @@ public: // メンバ関数
 	Model* GetModel() { return model_; }
 
 private:
+	// 座標変換用行列
+	struct TransformationMatrix {
+		Matrix4x4 WVP;
+		Matrix4x4 World;
+		Matrix4x4 WorldInverseTranspose;
+	};
+
+	// カメラ
+	struct CameraForGPU {
+		Vector3 worldPosition;
+	};
+
 	// 座標変換行列データ作成
 	void CreateTransformationMatrixData();
 
@@ -83,7 +81,7 @@ private:
 	CameraForGPU* cameraData = nullptr;
 
 	// Transform
-	Transform transform;
+	Transform transform{};
 
 	// コマンドリスト
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
@@ -94,6 +92,7 @@ private:
 	// カメラ
 	Camera* camera_ = nullptr;
 
+	// ライトマネージャ
 	LightManager* lightManager_ = LightManager::GetInstance();
 
 	// スカイボックス

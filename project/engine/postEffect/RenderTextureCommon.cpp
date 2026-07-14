@@ -4,18 +4,17 @@
 using namespace std;
 using namespace Microsoft::WRL;
 
-RenderTextureCommon* RenderTextureCommon::instance = nullptr;
+unique_ptr<RenderTextureCommon> RenderTextureCommon::instance_ = nullptr;
 
 RenderTextureCommon* RenderTextureCommon::GetInstance() {
-	if (instance == nullptr) {
-		instance = new RenderTextureCommon;
+	if (instance_ == nullptr) {
+		instance_ = make_unique<RenderTextureCommon>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
 void RenderTextureCommon::Finalize() {
-	delete instance;
-	instance = nullptr;
+	instance_.reset();
 }
 
 void RenderTextureCommon::Initialize(DirectXBase* dxBase) {

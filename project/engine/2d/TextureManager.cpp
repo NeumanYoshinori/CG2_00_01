@@ -7,26 +7,25 @@ using namespace std;
 using namespace StringUtility;
 using namespace Microsoft::WRL;
 
-TextureManager* TextureManager::instance = nullptr;
+unique_ptr<TextureManager> TextureManager::instance_ = nullptr;
 
 // ImGuiで0番を使用するため、1番から使用
-uint32_t TextureManager::kSRVIndexTop = 1;
+uint32_t TextureManager::kSRVIndexTop_ = 1;
 
 TextureManager* TextureManager::GetInstance() {
-	if (instance == nullptr) {
-		instance = new TextureManager;
+	if (instance_ == nullptr) {
+		instance_ = make_unique<TextureManager>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
 void TextureManager::Finalize() {
-	delete instance;
-	instance = nullptr;
+	instance_.reset();
 }
 
 void TextureManager::Initialize(DirectXBase* dxBase, SrvManager* srvManager) {
 	// SRVの数と同数
-	textureDatas.reserve(SrvManager::kMaxSRVCount);
+	textureDatas_.reserve(SrvManager::kMaxSRVCount_);
 
 	// メンバ変数に記録
 	dxBase_ = dxBase;
@@ -36,7 +35,7 @@ void TextureManager::Initialize(DirectXBase* dxBase, SrvManager* srvManager) {
 
 void TextureManager::LoadTexture(const string& filePath) {
 	// 読み込み済みテクスチャを検索
-	if (textureDatas.contains(filePath)) {
+	if (textureDatas_.contains(filePath)) {
 		return;
 	}
 
@@ -65,7 +64,7 @@ void TextureManager::LoadTexture(const string& filePath) {
 	assert(SUCCEEDED(hr));
 
 	// テクスチャデータを追加して書き込む
-	TextureData& textureData = textureDatas[filePath];
+	TextureData& textureData = textureDatas_[filePath];
 	textureData.metadata = mipImages.GetMetadata();
 	textureData.resource = dxBase_->CreateTextureResource(textureData.metadata);
 	// SRV確保
@@ -121,8 +120,8 @@ void TextureManager::LoadTexture(const string& filePath) {
 
 uint32_t TextureManager::GetTextureIndexByFilePath(const string& filePath) {
 	// 読み込み済みテクスチャを検索
-	if (textureDatas.contains(filePath)) {
-		return textureDatas.at(filePath).srvIndex;
+	if (textureDatas_.contains(filePath)) {
+		return textureDatas_.at(filePath).srvIndex;
 	}
 
 	assert(0);
@@ -131,24 +130,24 @@ uint32_t TextureManager::GetTextureIndexByFilePath(const string& filePath) {
 
 D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(const string& filePath) {
 	// 範囲外指定違反チェック
-	assert(textureDatas.contains(filePath));
+	assert(textureDatas_.contains(filePath));
 
-	TextureData& textureData = textureDatas[filePath];
+	TextureData& textureData = textureDatas_[filePath];
 	return textureData.srvHandleGPU;
 }
 
 const TexMetadata& TextureManager::GetMetaData(const string& filePath) {
 	// 範囲外指定違反チェック
-	assert(textureDatas.contains(filePath));
+	assert(textureDatas_.contains(filePath));
 
-	TextureData& textureData = textureDatas[filePath];
+	TextureData& textureData = textureDatas_[filePath];
 	return textureData.metadata;
 }
 
 uint32_t TextureManager::GetSrvIndex(const std::string& filePath) {
 	// 範囲外指定違反チェック
-	assert(textureDatas.contains(filePath));
+	assert(textureDatas_.contains(filePath));
 
-	TextureData& textureData = textureDatas[filePath];
+	TextureData& textureData = textureDatas_[filePath];
 	return textureData.srvIndex;
 }

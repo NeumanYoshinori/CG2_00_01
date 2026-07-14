@@ -1,15 +1,23 @@
 #include "SkyboxCommon.h"
-#include <wrl.h>
 #include "Logger.h"
-#include "TextureManager.h"
-#include "MathFunction.h"
-#include <numbers>
 
 using namespace std;
 using namespace Microsoft::WRL;
 using namespace Logger;
 using namespace MathFunction;
-using namespace numbers;
+
+unique_ptr<SkyboxCommon> SkyboxCommon::instance_ = nullptr;
+
+SkyboxCommon* SkyboxCommon::GetInstance() {
+	if (instance_ == nullptr) {
+		instance_ = make_unique<SkyboxCommon>(ConstructorKey());
+	}
+	return instance_.get();
+}
+
+void SkyboxCommon::Finalize() {
+	instance_.reset();
+}
 
 void SkyboxCommon::Initialize(DirectXBase* dxBase) {
 	// 引数で受け取ってメンバ変数に記録する

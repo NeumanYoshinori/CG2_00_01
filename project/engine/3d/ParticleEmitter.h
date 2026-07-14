@@ -2,7 +2,7 @@
 #include "Transform.h"
 #include <cstdint>
 #include <string>
-#include "MathFunction.h"
+#include "Vector4.h"
 
 class ParticleEmitter {
 public:

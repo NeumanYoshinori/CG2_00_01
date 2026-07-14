@@ -242,7 +242,7 @@ namespace MathFunction {
     }
 
     Matrix4x4 Transpose(const Matrix4x4& m) {
-        Matrix4x4 result{};
+        Matrix4x4 result = {};
 
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {

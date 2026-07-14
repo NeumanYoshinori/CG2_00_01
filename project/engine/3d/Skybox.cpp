@@ -1,6 +1,5 @@
 #include "Skybox.h"
 #include "SkyboxCommon.h"
-#include <numbers>
 #include "TextureManager.h"
 
 using namespace std;
@@ -62,17 +61,21 @@ void Skybox::Draw() {
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭を設定
 	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(filePath));
-	commandList->DrawIndexedInstanced(36, 1, 0, 0, 0);
+	commandList->DrawIndexedInstanced(kNumIndex, 1, 0, 0, 0);
 }
 
 void Skybox::CreateVertexData() {
+	assert(dxBase_);
+	assert(dxBase_->GetDevice());
+
 	// 頂点リソースを作る
-	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * 24);
+	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * kNumVertex);
+	assert(vertexResource);
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * 24);
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * kNumVertex);
 	// 1頂点あたりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -111,7 +114,7 @@ void Skybox::CreateVertexData() {
 	vertexData[23].position = { 1.0f, -1.0f, -1.0f, 1.0f };
 
 	// インデックスリソースを作る
-	indexResource = dxBase_->CreateBufferResource(sizeof(uint32_t) * 36);
+	indexResource = dxBase_->CreateBufferResource(sizeof(uint32_t) * kNumIndex);
 	// 書き込むためのアドレスを取得
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 
@@ -137,7 +140,7 @@ void Skybox::CreateVertexData() {
 	// リソースの先頭のアドレスから使う
 	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
 	// 使用するリソースのサイズはインデックス6つ分のサイズ
-	indexBufferView.SizeInBytes = sizeof(uint32_t) * 36;
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * kNumIndex;
 	// インデックスはuint32_tとする
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 }
