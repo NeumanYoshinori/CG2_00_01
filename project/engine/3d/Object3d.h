@@ -10,13 +10,11 @@
 #include "LightManager.h"
 #include "Skybox.h"
 
-class Object3dCommon;
-
 // 3Dオブジェクト
 class Object3d {
 public: // メンバ関数
 	// 初期化
-	void Initialize(Object3dCommon* object3dCommon);
+	void Initialize();
 
 	// 更新
 	void Update();
@@ -63,9 +61,6 @@ private:
 
 	// カメラデータ作成
 	void CreateCameraData();
-
-	// Object3DCommonのポインタ
-	Object3dCommon* object3dCommon_ = nullptr;
 
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;

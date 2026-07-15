@@ -5,15 +5,17 @@
 #include "externals/imgui/imgui_impl_win32.h"
 #endif
 #include "DirectXBase.h"
-#include "WinApp.h"
 
 // ImGUIの管理
 class ImGuiManager {
 public:
+	// シングルトンインスタンスの取得
+	static ImGuiManager* GetInstance();
+	
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(WinApp* winApp, DirectXBase* dxBase);
+	void Initialize();
 
 	/// <summary>
 	/// ImGui受付開始
@@ -35,10 +37,31 @@ public:
 	/// </summary>
 	void Finalize();
 
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class ImGuiManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit ImGuiManager(ConstructorKey) {}
+
 private:
+	// シングルトンインスタンス
+	static std::unique_ptr<ImGuiManager> instance_;
+
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap_ = nullptr;
+	// SRVヒープ
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap_;
+
+	~ImGuiManager() = default;
+	ImGuiManager(ImGuiManager&) = delete;
+	ImGuiManager& operator=(ImGuiManager&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<ImGuiManager>;
 };
 

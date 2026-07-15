@@ -14,13 +14,10 @@ public: // メンバ関数
 	void Finalize();
 
 	// 初期化
-	void Initialize(DirectXBase* dxBase);
+	void Initialize();
 
 	// 共通描画設定
 	void DrawSetting();
-
-	// DxBaseのgetter
-	DirectXBase* GetDxBase() const { return dxBase_; }
 
 	// setter
 	void SetDefaultCamera(Camera* camera) { defaultCamera_ = camera; }

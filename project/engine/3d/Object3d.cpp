@@ -6,11 +6,8 @@
 using namespace std;
 using namespace MathFunction;
 
-void Object3d::Initialize(Object3dCommon* object3dCommon) {
-	// 引数で受け取ってメンバ変数に記録する
-	object3dCommon_ = object3dCommon;
-
-	dxBase_ = object3dCommon_->GetDxBase();
+void Object3d::Initialize() {
+	dxBase_ = DirectXBase::GetInstance();
 
 	// 座標変換行列データ作成
 	CreateTransformationMatrixData();
@@ -19,7 +16,7 @@ void Object3d::Initialize(Object3dCommon* object3dCommon) {
 	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 	
 	// デフォルトカメラをセットする
-	camera_ = object3dCommon_->GetDefaultCamera();
+	camera_ = Object3dCommon::GetInstance()->GetDefaultCamera();
 
 	// カメラデータ作成
 	CreateCameraData();

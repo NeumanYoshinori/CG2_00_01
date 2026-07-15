@@ -1,5 +1,4 @@
 #pragma once
-#include "ModelCommon.h"
 #include "MathFunction.h"
 #include <string>
 #include <vector>
@@ -50,7 +49,7 @@ private:
 
 public:
 	// 初期化
-	void Initialize(ModelCommon* modelCommon, const std::string& directorypath, const std::string& filename);
+	void Initialize(const std::string& directorypath, const std::string& filename);
 
 	// 描画
 	void Draw();
@@ -71,9 +70,6 @@ private:
 
 	// マテリアルデータ作成
 	void CreateMaterialData();
-
-	// ModelCommonのポインタ
-	ModelCommon* modelCommon_ = nullptr;
 
 	// objファイルのデータ
 	ModelData modelData;

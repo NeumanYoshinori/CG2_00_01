@@ -27,7 +27,7 @@ public:
 	void Finalize();
 
 	// 初期化
-	void Initialize(DirectXBase* dxBase, SrvManager* srvManager, Camera* camera);
+	void Initialize();
 
 	// 更新
 	void Update();
@@ -40,6 +40,9 @@ public:
 
 	// パーティクルの生成
 	void Emit(const std::string name, const Vector3& size, const Vector3& angle, const Vector3& position, const Vector3& velocity, const Vector4& color, uint32_t count);
+
+	// カメラをセット
+	void SetCamera(Camera* camera) { camera_ = camera; }
 
 	// namespace省略
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;

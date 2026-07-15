@@ -15,10 +15,6 @@ void ModelManager::Finalize() {
 	instance_.reset();
 }
 
-void ModelManager::Initialize(DirectXBase* dxBase) {
-	modelCommon_ = make_unique<ModelCommon>();
-	modelCommon_->Initialize(dxBase);
-}
 void ModelManager::LoadModel(const std::string& filePath) {
 	// 読み込み済みモデルを検索
 	if (models_.contains(filePath)) {
@@ -28,7 +24,7 @@ void ModelManager::LoadModel(const std::string& filePath) {
 
 	// モデルの生成とファイル読み込み、初期化
 	unique_ptr<Model> model = make_unique<Model>();
-	model->Initialize(modelCommon_.get(), "resources", filePath);
+	model->Initialize("resources", filePath);
 
 	// モデルをmapコンテナに格納する
 	models_.insert(make_pair(filePath, move(model)));

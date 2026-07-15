@@ -82,7 +82,7 @@ private:
 	std::unique_ptr<Skybox> skybox_;
 
 	// ImGuiマネジャー
-	std::unique_ptr<ImGuiManager> imGuiManager_ = nullptr;
+	ImGuiManager* imGuiManager_ = nullptr;
 
 	// オーディオ
 	Audio* audio_ = nullptr;

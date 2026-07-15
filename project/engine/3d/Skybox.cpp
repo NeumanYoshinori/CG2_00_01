@@ -5,11 +5,8 @@
 using namespace std;
 using namespace MathFunction;
 
-void Skybox::Initialize(SkyboxCommon* skyboxCommon, string textureFilePath) {
-	// 引数で受け取ってメンバ変数に記録する
-	skyboxCommon_ = skyboxCommon;
-
-	dxBase_ = skyboxCommon_->GetDxBase();
+void Skybox::Initialize(string textureFilePath) {
+	dxBase_ = DirectXBase::GetInstance();
 
 	// 頂点データ作成
 	CreateVertexData();
@@ -24,7 +21,7 @@ void Skybox::Initialize(SkyboxCommon* skyboxCommon, string textureFilePath) {
 	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 
 	// デフォルトカメラをセットする
-	camera_ = skyboxCommon_->GetDefaultCamera();
+	camera_ = SkyboxCommon::GetInstance()->GetDefaultCamera();
 
 	filePath = textureFilePath;
 }
@@ -65,12 +62,8 @@ void Skybox::Draw() {
 }
 
 void Skybox::CreateVertexData() {
-	assert(dxBase_);
-	assert(dxBase_->GetDevice());
-
 	// 頂点リソースを作る
 	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * kNumVertex);
-	assert(vertexResource);
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();

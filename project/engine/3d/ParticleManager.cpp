@@ -24,11 +24,10 @@ void ParticleManager::Finalize() {
 	instance_.reset();
 }
 
-void ParticleManager::Initialize(DirectXBase* dxBase, SrvManager* srvManager, Camera* camera) {
-	// 引数で受け取ってメンバ変数に記録する
-	dxBase_ = dxBase;
-	srvManager_ = srvManager;
-	camera_ = camera;
+void ParticleManager::Initialize() {
+	// シングルトンインスタンスを取得
+	dxBase_ = DirectXBase::GetInstance();
+	srvManager_ = SrvManager::GetInstance();
 
 	// グラフィックスパイプライン生成
 	GenerateGraphicsPipeline();
@@ -155,7 +154,7 @@ void ParticleManager::CreateParticleGroup(ParticleType type, const string name, 
 
 // パーティクル生成関数
 ParticleManager::Particle ParticleManager::MakeNewParticle(const Vector3& scale, const Vector3& rotate, const Vector3& translate, const Vector3& velocity, const Vector4& color) {
-	ParticleManager::Particle particle;
+	ParticleManager::Particle particle{};
 	particle.transform.scale = scale; // 横に潰す
 	particle.transform.rotate = rotate;
 	particle.transform.translate = translate;

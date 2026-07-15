@@ -7,7 +7,7 @@ public:
 	static SrvManager* GetInstance();
 
 	// 初期化
-	void Initialize(DirectXBase* directXBase);
+	void Initialize();
 
 	// 終了
 	void Finalize();

@@ -18,7 +18,7 @@ public:
 	void Finalize();
 
 	// 初期化
-	void Initialize(DirectXBase* dxBase, SrvManager* srvManager);
+	void Initialize();
 
 	// テクスチャファイルの読み込み
 	void LoadTexture(const std::string& filePath);

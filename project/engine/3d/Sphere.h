@@ -15,7 +15,7 @@ class Object3dCommon;
 class Sphere {
 public: // メンバ関数
 	// 初期化
-	void Initialize(Object3dCommon* object3dCommon, std::string textureFilePath);
+	void Initialize(std::string textureFilePath);
 
 	// 更新
 	void Update();
@@ -93,9 +93,6 @@ private:
 
 	// カメラデータ作成
 	void CreateCameraData();
-
-	// Object3DCommonのポインタ
-	Object3dCommon* object3dCommon_ = nullptr;
 
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;

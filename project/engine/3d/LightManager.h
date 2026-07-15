@@ -1,6 +1,11 @@
 #pragma once
-#include "DirectXBase.h"
 #include "MathFunction.h"
+#include <memory>
+#include <d3d12.h>
+#include <wrl.h>
+#include <array>
+
+#pragma comment(lib, "d3d12.lib")
 
 class LightManager {
 public:
@@ -11,7 +16,7 @@ public:
 	void Finalize();
 
 	// 初期化
-	void Initialize(DirectXBase* dxBase);
+	void Initialize();
 
 	// 描画
 	void Draw();
@@ -76,9 +81,6 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuff_;
 	ConstBufferData* constMap_ = nullptr;
-
-	// DirectXBase
-	DirectXBase* dxBase_ = nullptr;
 
 	~LightManager() = default;
 	LightManager(LightManager&) = delete;

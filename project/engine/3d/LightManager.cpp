@@ -1,7 +1,8 @@
 #include "LightManager.h"
-#include "ImGuiManager.h"
+#include <externals/imgui/imgui.h>
 #include "MathFunction.h"
 #include <numbers>
+#include "DirectXBase.h"
 
 using namespace std;
 using namespace Microsoft::WRL;
@@ -55,10 +56,8 @@ void LightManager::DebugPointLight() {
 #endif
 }
 
-void LightManager::Initialize(DirectXBase* dxBase) {
-	dxBase_ = dxBase;
-
-	constBuff_ = dxBase_->CreateBufferResource(sizeof(ConstBufferData));
+void LightManager::Initialize() {
+	constBuff_ = DirectXBase::GetInstance()->CreateBufferResource(sizeof(ConstBufferData));
 	constBuff_->Map(0, nullptr, reinterpret_cast<void**>(&constMap_));
 
 	for (int i = 0; i < kMaxDirectionalLights_; i++) {
@@ -90,7 +89,7 @@ void LightManager::Initialize(DirectXBase* dxBase) {
 }
 
 void LightManager::Draw() {
-	ComPtr<ID3D12GraphicsCommandList> commandList = dxBase_->GetCommandList();
+	ComPtr<ID3D12GraphicsCommandList> commandList = DirectXBase::GetInstance()->GetCommandList();
 
 	commandList->SetGraphicsRootConstantBufferView(3, constBuff_->GetGPUVirtualAddress());
 }

@@ -1,10 +1,11 @@
 #pragma once
 #include "Input.h"
-#include "WinApp.h"
 #include "D3DResourceLeakChecker.h"
-#include "SrvManager.h"
 #include "SceneManager.h"
 #include "AbstractSceneFactory.h"
+#include <dxgi1_6.h>
+
+#pragma comment(lib, "dxgi.lib")
 
 // ゲーム全体
 class Framework {
@@ -33,14 +34,6 @@ public:
 private:
 	D3DResourceLeakChecker leakCheck;
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dcgiFactory;
-
-	// WindowsAPI
-	WinApp* winApp_ = nullptr;
-
-	DirectXBase* dxBase_ = nullptr;
-
-	// SRVマネージャ
-	SrvManager* srvManager_ = nullptr;
 
 	bool endRequest_ = false;
 

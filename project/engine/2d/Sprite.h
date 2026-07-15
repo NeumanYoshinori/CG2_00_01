@@ -108,10 +108,10 @@ private:
 	SpriteCommon* spriteCommon_ = nullptr;
 
 	// バッファリソース
-	ComPtr<ID3D12Resource> vertexResource_ = nullptr; // 頂点リソース
-	ComPtr<ID3D12Resource> indexResource_ = nullptr; // インデックスリソース
-	ComPtr<ID3D12Resource> materialResource_ = nullptr; // マテリアルリソース
-	ComPtr<ID3D12Resource> transformationMatrixResource_ = nullptr; // 座標変換行列リソース
+	ComPtr<ID3D12Resource> vertexResource_; // 頂点リソース
+	ComPtr<ID3D12Resource> indexResource_; // インデックスリソース
+	ComPtr<ID3D12Resource> materialResource_; // マテリアルリソース
+	ComPtr<ID3D12Resource> transformationMatrixResource_; // 座標変換行列リソース
 
 	// バッファリソース内のデータを指すポインタ
 	VertexData* vertexData_ = nullptr;
@@ -127,11 +127,11 @@ private:
 	DirectXBase* dxBase_ = nullptr;
 
 	// コマンドリスト
-	ComPtr<ID3D12GraphicsCommandList> commandList_ = nullptr;
+	ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	// テクスチャリソース
-	ComPtr<ID3D12Resource> textureResource_ = nullptr;
-	ComPtr<ID3D12Resource> intermediateResource_ = nullptr;
+	ComPtr<ID3D12Resource> textureResource_;
+	ComPtr<ID3D12Resource> intermediateResource_;
 
 	// 座標
 	Vector2 position_ = { 0.0f, 0.0f };

@@ -14,9 +14,9 @@ SrvManager* SrvManager::GetInstance() {
 	return instance_.get();
 }
 
-void SrvManager::Initialize(DirectXBase* directXBase) {
-	// 引数で受け取ってメンバ変数に記録する
-	directXBase_ = directXBase;
+void SrvManager::Initialize() {
+	// シングルトンインスタンスの取得
+	directXBase_ = DirectXBase::GetInstance();
 
 	// デスクリプタヒープの生成
 	descriptorHeap_ = directXBase_->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCount_, true);

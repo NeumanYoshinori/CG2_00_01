@@ -2,9 +2,7 @@
 #include <map>
 #include <string>
 #include <memory>
-#include "DirectXBase.h"
 #include "Model.h"
-#include "ModelCommon.h"
 
 // モデルマネージャー
 class ModelManager {
@@ -13,9 +11,6 @@ public:
 	static ModelManager* GetInstance();
 	// 終了
 	void Finalize();
-
-	// 初期化
-	void Initialize(DirectXBase* dxBase);
 
 	/// <summary>
 	/// モデルファイルの読み込み
@@ -46,9 +41,6 @@ private:
 
 	// モデルデータ
 	std::map<std::string, std::unique_ptr<Model>> models_;
-
-	// モデル共通部
-	std::unique_ptr<ModelCommon> modelCommon_;
 
 	~ModelManager() = default;
 	ModelManager(ModelManager&) = delete;

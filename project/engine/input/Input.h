@@ -3,7 +3,7 @@
 #include <wrl.h>
 #define DIRECTINPUT_VERSION 0x0800 // DirectInputのバージョン指定
 #include <dinput.h>
-#include "WinApp.h"
+#include <memory>
 
 class Input {	
 public:
@@ -11,7 +11,7 @@ public:
 	static Input* GetInstance();
 
 	// 初期化
-	void Initialize(WinApp* winApp);
+	void Initialize();
 
 	// 更新
 	void Update();
@@ -51,9 +51,6 @@ private:
 
 	// DirectInputのインスタンス
 	ComPtr<IDirectInput8> directInput;
-
-	// WindowsAPI
-	WinApp* winApp_ = nullptr;
 
 	~Input() = default;
 	Input(Input&) = delete;

@@ -3,6 +3,7 @@
 #include <numbers>
 #include "PostEffect.h"
 #include "Vector4.h"
+#include "SceneManager.h"
 
 using namespace std;
 using namespace numbers;
@@ -31,42 +32,40 @@ void GamePlayScene::Initialize() {
 
 	// スカイボックス共通部の初期化
 	skyboxCommon_ = SkyboxCommon::GetInstance();
+	skyboxCommon_->SetDefaultCamera(camera_.get());
 
 	// スカイボックスの初期化
 	skybox_ = make_unique<Skybox>();
-	skybox_->Initialize(skyboxCommon_, "resources/rostock_laage_airport_4k.dds");
-	skybox_->SetCamera(camera_.get());
+	skybox_->Initialize("resources/rostock_laage_airport_4k.dds");
 
 	// モデルマネージャのインスタンス取得
 	modelManager_ = ModelManager::GetInstance();
 
 	// 3Dオブジェクト基盤部分のインスタンス取得
 	object3dCommon_ = Object3dCommon::GetInstance();
+	object3dCommon_->SetDefaultCamera(camera_.get());
 
 	// .objファイルからモデルを読み込む
 	modelManager_->LoadModel("terrain.obj");
 
 	// 3dオブジェクトの初期化
 	terrain_ = make_unique<Object3d>();
-	terrain_->Initialize(object3dCommon_);
+	terrain_->Initialize();
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	terrain_->SetModel("terrain.obj");
-	terrain_->SetCamera(camera_.get());
 	terrain_->SetSkybox(skybox_.get());
 
 	// 球の初期化
 	sphere_ = make_unique<Sphere>();
-	sphere_->Initialize(object3dCommon_, "resources/monsterBall.png");
-	sphere_->SetCamera(camera_.get());
+	sphere_->Initialize("resources/monsterBall.png");
 	sphere_->SetSkybox(skybox_.get());
 
 	// 乱数生成器の初期化
 	randomEngine_ = mt19937(seedGenerator_());
 
-	// パーティクルマネージャ
 	particleManager_ = ParticleManager::GetInstance();
-	particleManager_->Initialize(dxBase_, srvManager_, camera_.get());
+	particleManager_->SetCamera(camera_.get());
 
 	// 円のパーティクルグループを作成
 	particleManager_->CreateParticleGroup(ParticleManager::Cylinder, "gradationLine", "resources/gradationLine.png");
@@ -83,8 +82,7 @@ void GamePlayScene::Initialize() {
 	particleEmitter_ = make_unique<ParticleEmitter>("gradationLine", particleTransform, particleVelocity, particleColor, 1, 1.0f);
 
 	// ImGuiマネージャの初期化
-	imGuiManager_ = make_unique<ImGuiManager>();
-	imGuiManager_->Initialize(winApp_, dxBase_);
+	imGuiManager_ = ImGuiManager::GetInstance();
 
 	// オーディオの初期化
 	audio_ = Audio::GetInstance();
@@ -95,12 +93,6 @@ void GamePlayScene::Initialize() {
 }
 
 void GamePlayScene::Finalize() {
-	// パーティクルマネージャの終了
-	particleManager_->Finalize();
-
-	// ImGuiマネージャの終了処理
-	imGuiManager_->Finalize();
-
 	// 音声停止
 	audio_->SoundStopWave(bgmVoice_);
 
@@ -112,6 +104,12 @@ void GamePlayScene::Update() {
 	// 0キーを押したときコンソールにHit 0と表示する
 	if (input_->ReleaseKey(DIK_0)) {
 		OutputDebugStringA("Hit 0\n");
+	}
+
+	// ENTERキーを押したら
+	if (input_->TriggerKey(DIK_RETURN)) {
+		// シーン切り替え
+		SceneManager::GetInstance()->ChangeScene("TITLE");
 	}
 
 	// カメラの更新

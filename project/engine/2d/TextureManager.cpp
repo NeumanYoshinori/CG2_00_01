@@ -23,14 +23,14 @@ void TextureManager::Finalize() {
 	instance_.reset();
 }
 
-void TextureManager::Initialize(DirectXBase* dxBase, SrvManager* srvManager) {
+void TextureManager::Initialize() {
 	// SRVの数と同数
 	textureDatas_.reserve(SrvManager::kMaxSRVCount_);
 
 	// メンバ変数に記録
-	dxBase_ = dxBase;
+	dxBase_ = DirectXBase::GetInstance();
 
-	srvManager_ = srvManager;
+	srvManager_ = SrvManager::GetInstance();
 }
 
 void TextureManager::LoadTexture(const string& filePath) {

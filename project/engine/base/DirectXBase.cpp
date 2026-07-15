@@ -26,12 +26,9 @@ void DirectXBase::Finalize() {
 	instance_.reset();
 }
 
-void DirectXBase::Initialize(WinApp* winApp) {
-	// NULL検出
-	assert(winApp);
-
+void DirectXBase::Initialize() {
 	// メンバ変数に記録
-	winApp_ = winApp;
+	winApp_ = WinApp::GetInstance();
 
 	// FPS固定初期化
 	InitializeFixFPS();

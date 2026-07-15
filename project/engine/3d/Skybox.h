@@ -7,13 +7,11 @@
 #include "DirectXBase.h"
 #include "Camera.h"
 
-class SkyboxCommon;
-
 // スカイボックス
 class Skybox {
 public:
 	// 初期化
-	void Initialize(SkyboxCommon* skyboxCommon, std::string textureFilePath);
+	void Initialize(std::string textureFilePath);
 
 	// 更新
 	void Update();
@@ -76,9 +74,6 @@ private:
 
 	// 座標変換行列データ作成
 	void CreateTransformationMatrixData();
-
-	// Object3DCommonのポインタ
-	SkyboxCommon* skyboxCommon_ = nullptr;
 
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;

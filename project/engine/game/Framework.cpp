@@ -9,6 +9,8 @@
 #include "RenderTextureCommon.h"
 #include "PostEffect.h"
 #include "Logger.h"
+#include "ImGuiManager.h"
+#include "ParticleManager.h"
 #include "SkyboxCommon.h"
 
 void Framework::Initialize() {
@@ -19,44 +21,43 @@ void Framework::Initialize() {
 	Logger::GenerateLog();
 
 	// WindowsAPIの初期化
-	winApp_ = WinApp::GetInstance();
-	winApp_->Initialize();
+	WinApp::GetInstance()->Initialize();
 
 	// DirectXの初期化
-	dxBase_ = DirectXBase::GetInstance();
-	dxBase_->Initialize(winApp_);
+	DirectXBase::GetInstance()->Initialize();
 
 	// 入力の初期化
-	Input::GetInstance()->Initialize(winApp_);
+	Input::GetInstance()->Initialize();
 
 	// SRVマネージャの初期化
-	srvManager_ = SrvManager::GetInstance();
-	srvManager_->Initialize(dxBase_);
+	SrvManager::GetInstance()->Initialize();
 
 	// テクスチャマネージャの初期化
-	TextureManager::GetInstance()->Initialize(dxBase_, srvManager_);
+	TextureManager::GetInstance()->Initialize();
 
 	// スプライト共通部の初期化
-	SpriteCommon::GetInstance()->Initialize(dxBase_);
+	SpriteCommon::GetInstance()->Initialize();
 
 	// ライトマネージャの初期化
-	LightManager::GetInstance()->Initialize(dxBase_);
-
-	// モデルマネージャー
-	// 3Dモデルマネージャの初期化
-	ModelManager::GetInstance()->Initialize(dxBase_);
+	LightManager::GetInstance()->Initialize();
 
 	// 3Dオブジェクト共通部の初期化
-	Object3dCommon::GetInstance()->Initialize(dxBase_);
+	Object3dCommon::GetInstance()->Initialize();
+
+	// パーティクルマネージャ
+	ParticleManager::GetInstance()->Initialize();
+
+	// ImGuiマネージャの初期化
+	ImGuiManager::GetInstance()->Initialize();
 
 	// スカイボックス共通部の初期化
-	SkyboxCommon::GetInstance()->Initialize(dxBase_);
+	SkyboxCommon::GetInstance()->Initialize();
 
 	// レンダーテクスチャ基盤部分の初期化
-	RenderTextureCommon::GetInstance()->Initialize(dxBase_);
+	RenderTextureCommon::GetInstance()->Initialize();
 
 	// ポストエフェクトの初期化
-	PostEffect::GetInstance()->Initialize(dxBase_);
+	PostEffect::GetInstance()->Initialize();
 
 	Audio::GetInstance()->Initialize();
 
@@ -65,7 +66,7 @@ void Framework::Initialize() {
 }
 
 void Framework::Finalize() {
-	CloseHandle(dxBase_->GetFenceEvent());
+	CloseHandle(DirectXBase::GetInstance()->GetFenceEvent());
 
 	// スプライト共通部の解放
 	SpriteCommon::GetInstance()->Finalize();
@@ -79,6 +80,12 @@ void Framework::Finalize() {
 	// 3Dモデルマネージャの終了
 	ModelManager::GetInstance()->Finalize();
 
+	// パーティクルマネージャの終了
+	ParticleManager::GetInstance()->Finalize();
+
+	// ImGuiマネージャの解放
+	ImGuiManager::GetInstance()->Finalize();
+
 	// ポストエフェクトの解放
 	PostEffect::GetInstance()->Finalize();
 
@@ -86,7 +93,7 @@ void Framework::Finalize() {
 	RenderTextureCommon::GetInstance()->Finalize();
 
 	// SRVマネージャの解放
-	srvManager_->Finalize();
+	SrvManager::GetInstance()->Finalize();
 
 	// ライトマネージャの解放
 	LightManager::GetInstance()->Finalize();
@@ -94,21 +101,21 @@ void Framework::Finalize() {
 	// スカイボックス共通部の解放
 	SkyboxCommon::GetInstance()->Finalize();
 
-	// シーンマネージャの解放
-	sceneManager_->Finalize();
-
 	// DirectX解放
-	dxBase_->Finalize();
+	DirectXBase::GetInstance()->Finalize();
 
 	// WindowsAPIの終了処理
-	winApp_->Finalize();
+	WinApp::GetInstance()->Finalize();
+
+	// シーンマネージャの解放
+	sceneManager_->Finalize();
 
 	// オーディオマネジャーの解放
 	Audio::GetInstance()->Finalize();
 }
 
 void Framework::Update() {
-	if (winApp_->ProcessMessage()) {
+	if (WinApp::GetInstance()->ProcessMessage()) {
 		endRequest_ = true;
 	}
 

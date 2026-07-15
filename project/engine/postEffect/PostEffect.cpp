@@ -20,8 +20,8 @@ void PostEffect::Finalize() {
 	instance_.reset();
 }
 
-void PostEffect::Initialize(DirectXBase* dxBase) {
-	dxBase_ = dxBase;
+void PostEffect::Initialize() {
+	dxBase_ = dxBase_->GetInstance();
 
 	renderTextureResource_ = RenderTextureCommon::GetInstance()->GetRenderTextureResource();
 	srvIndex_ = SrvManager::GetInstance()->Allocate();

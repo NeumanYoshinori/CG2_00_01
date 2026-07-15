@@ -7,11 +7,8 @@
 using namespace std;
 using namespace MathFunction;
 
-void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath) {
-	// 引数で受け取ってメンバ変数に記録する
-	object3dCommon_ = object3dCommon;
-
-	dxBase_ = object3dCommon_->GetDxBase();
+void Sphere::Initialize(string textureFilePath) {
+	dxBase_ = dxBase_->GetInstance();
 
 	// 頂点データ作成
 	CreateVertexData();
@@ -26,7 +23,7 @@ void Sphere::Initialize(Object3dCommon* object3dCommon, string textureFilePath) 
 	transform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, -1.5f, 0.0f}, {10.0f, 0.0f, 2.0f} };
 
 	// デフォルトカメラをセットする
-	camera_ = object3dCommon_->GetDefaultCamera();
+	camera_ = Object3dCommon::GetInstance()->GetDefaultCamera();
 
 	// カメラデータ作成
 	CreateCameraData();

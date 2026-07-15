@@ -1,6 +1,4 @@
 #include "Model.h"
-#include "ModelCommon.h"
-#include <sstream>
 #include <cassert>
 #include "TextureManager.h"
 #include <assimp/Importer.hpp>
@@ -9,14 +7,11 @@
 using namespace std;
 using namespace MathFunction;
 
-void Model::Initialize(ModelCommon* modelCommon, const string& directorypath, const string& filename) {
-	// ModelCommonのポインタを引数からメンバ変数に記録する
-	modelCommon_ = modelCommon;
-
+void Model::Initialize(const string& directorypath, const string& filename) {
 	// モデル読み込み
 	modelData = LoadModelFile(directorypath, filename);
 
-	dxBase_ = modelCommon_->GetDxBase();
+	dxBase_ = DirectXBase::GetInstance();
 
 	// 頂点データ作成
 	CreateVertexData();

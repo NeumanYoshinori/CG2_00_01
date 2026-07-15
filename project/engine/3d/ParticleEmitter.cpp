@@ -22,6 +22,6 @@ void ParticleEmitter::Update() {
 	}
 }
 
-void ParticleEmitter::Emit() {
+void ParticleEmitter::Emit() const{
 	ParticleManager::GetInstance()->Emit(name_, transform_.scale, transform_.rotate, transform_.translate, velocity_, color_, count_);
 }

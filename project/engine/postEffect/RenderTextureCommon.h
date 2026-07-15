@@ -15,7 +15,7 @@ public:
 	void Finalize();
 
 	// 初期化
-	void Initialize(DirectXBase* dxBase);
+	void Initialize();
 
 	// 描画前処理
 	void PreDraw();
@@ -27,7 +27,7 @@ public:
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 	// レンダーテクスチャリソース
-	ComPtr<ID3D12Resource> CreateRenderTextureResource(ComPtr<ID3D12Device> device, uint32_t width, uint32_t height, DXGI_FORMAT format, const Vector4& color);
+	ComPtr<ID3D12Resource> CreateRenderTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format, const Vector4& color);
 
 	// レンダーテクスチャの取得
 	ComPtr<ID3D12Resource> GetRenderTextureResource() { return renderTextureResource_; }

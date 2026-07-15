@@ -18,9 +18,9 @@ void Object3dCommon::Finalize() {
 	instance_.reset();
 }
 
-void Object3dCommon::Initialize(DirectXBase* dxBase) {
-	// 引数で受け取ってメンバ変数に記録する
-	dxBase_ = dxBase;
+void Object3dCommon::Initialize() {
+	// シングルトンインスタンスを取得
+	dxBase_ = DirectXBase::GetInstance();
 
 	// グラフィックスパイプラインの生成
 	GenerateGraphicsPipeLine();

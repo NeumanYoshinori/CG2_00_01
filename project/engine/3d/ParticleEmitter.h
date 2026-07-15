@@ -13,7 +13,7 @@ public:
 	void Update();
 
 	// パーティクルの発生（Emit）
-	void Emit();
+	void Emit() const;
 
 private:
 	std::string name_;

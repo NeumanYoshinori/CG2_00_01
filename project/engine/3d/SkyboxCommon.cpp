@@ -19,9 +19,8 @@ void SkyboxCommon::Finalize() {
 	instance_.reset();
 }
 
-void SkyboxCommon::Initialize(DirectXBase* dxBase) {
-	// 引数で受け取ってメンバ変数に記録する
-	dxBase_ = dxBase;
+void SkyboxCommon::Initialize() {
+	dxBase_ = DirectXBase::GetInstance();
 
 	// グラフィックスパイプライン生成
 	GenerateGraphicsPipeLine();
@@ -68,7 +67,7 @@ void SkyboxCommon::CreateRootSignature() {
 	staticSamplers[0].ShaderRegister = 0; // レジスタ番号0を使う
 	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
 
-	// RootSignature(パーティクル用)
+	// RootSignature
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ
