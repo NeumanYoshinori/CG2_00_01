@@ -1,7 +1,6 @@
 #include "ParticleManager.h"
 #include <wrl.h>
 #include "Logger.h"
-#include "TextureManager.h"
 #include "MathFunction.h"
 #include <numbers>
 
@@ -28,6 +27,7 @@ void ParticleManager::Initialize() {
 	// シングルトンインスタンスを取得
 	dxBase_ = DirectXBase::GetInstance();
 	srvManager_ = SrvManager::GetInstance();
+	textureManager_ = TextureManager::GetInstance();
 
 	// グラフィックスパイプライン生成
 	GenerateGraphicsPipeline();
@@ -106,23 +106,17 @@ void ParticleManager::Draw() {
 		if (particleGroup.numInstance == 0) {
 			continue;
 		}
-		srvManager_->SetGraphicsRootDescriptorTable(2, particleGroup.materialData.textureIndex);
-		srvManager_->SetGraphicsRootDescriptorTable(1, particleGroup.srvIndex);
-		if (particleGroup.type == Plane) {
-			commandList->DrawInstanced(numVertex_, particleGroup.numInstance, 0, 0);
-		}
-		else if (particleGroup.type == Ring) {
-			commandList->DrawIndexedInstanced(kRingDivide_ * numIndex_, particleGroup.numInstance, 0, 0, 0);
-		}
-		else if (particleGroup.type == Cylinder) {
-			commandList->DrawInstanced(kCylinderDivide_ * numVertex_, particleGroup.numInstance, 0, 0);
-		}
+		commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetSrvHandleGPU(particleGroup.materialData.textureFilePath));
+		commandList->SetGraphicsRootDescriptorTable(1, srvManager_->GetGPUDescriptorHandle(particleGroup.srvIndex));
+		commandList->DrawIndexedInstanced(kDivide_ * kNumIndex_, particleGroup.numInstance, 0, 0, 0);
 	}
 }
 
 void ParticleManager::CreateParticleGroup(ParticleType type, const string name, const string textureFilePath) {
-	// 登録済みの名前かチェックしてassert
-	assert(!particleGroups_.contains(name));
+	// 登録済みの名前かチェックしてreturn
+	if (particleGroups_.contains(name)) {
+		return;
+	}
 
 	// 頂点データ作成
 	if (type == ParticleType::Plane) {
@@ -141,7 +135,7 @@ void ParticleManager::CreateParticleGroup(ParticleType type, const string name, 
 	// テクスチャを読み込む
 	TextureManager::GetInstance()->LoadTexture(textureFilePath);
 	// マテリアルデータにテクスチャのSRVインデックスを記録
-	particleGroup.materialData.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+	particleGroup.materialData.textureIndex = TextureManager::GetInstance()->GetSrvIndex(textureFilePath);
 	// インスタンシング用のリソースの生成
 	particleGroup.instancingResource = dxBase_->CreateBufferResource(sizeof(ParticleForGPU) * kNumMaxInstance_);
 	particleGroup.instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&particleGroup.instancingData));
@@ -313,95 +307,99 @@ void ParticleManager::GenerateGraphicsPipeline() {
 }
 
 void ParticleManager::CreatePlaneVertexData() {
-	// 頂点数を6に設定
-	numVertex_ = 6;
+	// 頂点数を1に設定
+	kDivide_ = 1;
 
 	// 頂点リソースを作る
-	vertexResource_ = dxBase_->CreateBufferResource(sizeof(VertexData) * numVertex_);
+	vertexResource_ = dxBase_->CreateBufferResource(sizeof(VertexData) * kNumVertex_);
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点のサイズ
-	vertexBufferView_.SizeInBytes = sizeof(VertexData) * numVertex_;
+	vertexBufferView_.SizeInBytes = sizeof(VertexData) * kNumVertex_;
 	// 1頂点あたりのサイズ
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
 	// 書き込むためのアドレスを取得
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
 	
+	// 左上
 	vertexData_[0].position = { 1.0f, 1.0f, 0.0f, 1.0f };
 	vertexData_[0].texcoord = { 0.0f, 0.0f };
 	vertexData_[0].normal = { 0.0f, 0.0f, 1.0f };
 
+	// 右上
 	vertexData_[1].position = { -1.0f, 1.0f, 0.0f, 1.0f };
 	vertexData_[1].texcoord = { 1.0f, 0.0f };
 	vertexData_[1].normal = { 0.0f, 0.0f, 1.0f };
 
+	// 左下
 	vertexData_[2].position = { 1.0f, -1.0f, 0.0f, 1.0f };
 	vertexData_[2].texcoord = { 0.0f, 1.0f };
 	vertexData_[2].normal = { 0.0f, 0.0f, 1.0f };
 
-	vertexData_[3].position = { 1.0f, -1.0f, 0.0f, 1.0f };
-	vertexData_[3].texcoord = { 0.0f, 1.0f };
+	// 右下
+	vertexData_[3].position = { -1.0f, -1.0f, 0.0f, 1.0f };
+	vertexData_[3].texcoord = { 1.0f, 1.0f };
 	vertexData_[3].normal = { 0.0f, 0.0f, 1.0f };
 
-	vertexData_[4].position = { -1.0f, 1.0f, 0.0f, 1.0f };
-	vertexData_[4].texcoord = { 1.0f, 0.0f };
-	vertexData_[4].normal = { 0.0f, 0.0f, 1.0f };
+	indexResource_ = dxBase_->CreateBufferResource(sizeof(uint32_t) * kNumIndex_);
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
 
-	vertexData_[5].position = { -1.0f, -1.0f, 0.0f, 1.0f };
-	vertexData_[5].texcoord = { 1.0f, 1.0f };
-	vertexData_[5].normal = { 0.0f, 0.0f, 1.0f };
+	indexData_[0] = 0; indexData_[1] = 1; indexData_[2] = 2;
+	indexData_[3] = 1; indexData_[4] = 3; indexData_[5] = 2;
+
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	indexBufferView_.SizeInBytes = sizeof(uint32_t) * kNumIndex_;
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 }
 
 void ParticleManager::CreateRingVertexData() {
 	const float kOuterRadius = 1.0f;
 	const float kInnerRadius = 0.2f;
-	const float radianPerDivide = 2.0f * pi_v<float> / float(kRingDivide_);
-
-	numVertex_ = 4;
+	const float radianPerDivide = 2.0f * pi_v<float> / float(kDivide_);
 
 	// 頂点リソースを作る
-	vertexResource_ = dxBase_->CreateBufferResource(sizeof(vertexData_) * kRingDivide_ * numVertex_);
+	vertexResource_ = dxBase_->CreateBufferResource(sizeof(VertexData) * kDivide_ * kNumVertex_);
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ
-	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kRingDivide_ * numVertex_);
+	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kDivide_ * kNumVertex_);
 	// 1頂点あたりのサイズ
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
 	// 書き込むためのアドレスを取得
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
 
-	for (uint32_t index = 0; index < kRingDivide_; ++index) {
+	for (uint32_t index = 0; index < kDivide_; ++index) {
 		float sin = std::sin(index * radianPerDivide);
 		float cos = std::cos(index * radianPerDivide);
 		float sinNext = std::sin((index + 1) * radianPerDivide);
 		float cosNext = std::cos((index + 1) * radianPerDivide);
-		float u = float(index) / float(kRingDivide_);
-		float uNext = float(index + 1) / float(kRingDivide_);
+		float u = float(index) / float(kDivide_);
+		float uNext = float(index + 1) / float(kDivide_);
 		// positionとuv。normalは必要なら+zを設定する
-		vertexData_[index * 4 + 0] = { {-sin * kOuterRadius, cos * kOuterRadius, 0.0f, 1.0f}, {u, 0.0f} };
-		vertexData_[index * 4 + 1] = { {-sinNext * kOuterRadius, cosNext * kOuterRadius, 0.0f, 1.0f}, {uNext, 0.0f} };
-		vertexData_[index * 4 + 2] = { {-sin * kInnerRadius, cos * kInnerRadius, 0.0f, 1.0f}, {u, 1.0f} };
-		vertexData_[index * 4 + 3] = { {-sinNext * kInnerRadius, cosNext * kInnerRadius, 0.0f, 1.0f}, {uNext, 1.0f} };
+		vertexData_[index * kNumVertex_ + 0] = { {-sin * kOuterRadius, cos * kOuterRadius, 0.0f, 1.0f}, {u, 0.0f} };
+		vertexData_[index * kNumVertex_ + 1] = { {-sinNext * kOuterRadius, cosNext * kOuterRadius, 0.0f, 1.0f}, {uNext, 0.0f} };
+		vertexData_[index * kNumVertex_ + 2] = { {-sin * kInnerRadius, cos * kInnerRadius, 0.0f, 1.0f}, {u, 1.0f} };
+		vertexData_[index * kNumVertex_ + 3] = { {-sinNext * kInnerRadius, cosNext * kInnerRadius, 0.0f, 1.0f}, {uNext, 1.0f} };
 	}
 
-	indexResource_ = dxBase_->CreateBufferResource(sizeof(uint32_t) * kRingDivide_ * numIndex_);
+	indexResource_ = dxBase_->CreateBufferResource(sizeof(uint32_t) * kDivide_ * kNumIndex_);
 	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
 
-	for (uint32_t index = 0; index < kRingDivide_; index++) {
-		indexData_[index * 6 + 0] = index * 4;
-		indexData_[index * 6 + 1] = index * 4 + 1;
-		indexData_[index * 6 + 2] = index * 4 + 2;
-		indexData_[index * 6 + 3] = index * 4 + 1;
-		indexData_[index * 6 + 4] = index * 4 + 3;
-		indexData_[index * 6 + 5] = index * 4 + 2;
+	for (uint32_t index = 0; index < kDivide_; index++) {
+		indexData_[index * kNumIndex_ + 0] = index * kNumVertex_;
+		indexData_[index * kNumIndex_ + 1] = index * kNumVertex_ + 1;
+		indexData_[index * kNumIndex_ + 2] = index * kNumVertex_ + 2;
+		indexData_[index * kNumIndex_ + 3] = index * kNumVertex_ + 1;
+		indexData_[index * kNumIndex_ + 4] = index * kNumVertex_ + 3;
+		indexData_[index * kNumIndex_ + 5] = index * kNumVertex_ + 2;
 	}
 
 	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
-	indexBufferView_.SizeInBytes = sizeof(uint32_t) * kRingDivide_ * numIndex_;
+	indexBufferView_.SizeInBytes = sizeof(uint32_t) * kDivide_ * kNumIndex_;
 	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 }
 
@@ -409,38 +407,50 @@ void ParticleManager::CreateCylinderVertexData() {
 	const float kTopRadius = 1.0f;
 	const float kBottomRadius = 1.0f;
 	const float kHeight = 3.0f;
-	const float radianPerDivide = 2.0f * pi_v<float> / float(kCylinderDivide_);
-
-	numVertex_ = 6;
+	const float radianPerDivide = 2.0f * pi_v<float> / float(kDivide_);
 
 	// 頂点リソースを作る
-	vertexResource_ = dxBase_->CreateBufferResource(sizeof(VertexData) * kCylinderDivide_ * numVertex_);
+	vertexResource_ = dxBase_->CreateBufferResource(sizeof(VertexData) * kDivide_ * kNumVertex_);
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ
-	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kCylinderDivide_ * numVertex_);
+	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * kDivide_ * kNumVertex_);
 	// 1頂点あたりのサイズ
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
 	// 書き込むためのアドレスを取得
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
 
-	for (uint32_t index = 0; index < kCylinderDivide_; ++index) {
+	for (uint32_t index = 0; index < kDivide_; ++index) {
 		float sin = std::sin(index * radianPerDivide);
 		float cos = std::cos(index * radianPerDivide);
 		float sinNext = std::sin((index + 1) * radianPerDivide);
 		float cosNext = std::cos((index + 1) * radianPerDivide);
-		float u = float(index) / float(kCylinderDivide_);
-		float uNext = float(index + 1) / float(kCylinderDivide_);
+		float u = float(index) / float(kDivide_);
+		float uNext = float(index + 1) / float(kDivide_);
 		// position, texcoord, normal
-		vertexData_[index * 6] = { {-sin * kTopRadius, kHeight, cos * kTopRadius, 1.0f}, {u, 0.0f}, {-sin, 0.0f, cos } };
-		vertexData_[index * 6 + 1] = { {-sinNext * kTopRadius, kHeight, cosNext * kTopRadius, 1.0f}, {uNext, 0.0f}, {-sinNext, 0.0f, cosNext} };
-		vertexData_[index * 6 + 2] = { {-sin * kBottomRadius, 0.0f, cos * kBottomRadius, 1.0f}, {u, 1.0f}, {-sin, 0.0f, cos} };
-		vertexData_[index * 6 + 3] = { {-sin * kBottomRadius, 0.0f, cos * kBottomRadius, 1.0f}, {u, 1.0f}, {-sin, 0.0f, cos} };
-		vertexData_[index * 6 + 4] = { {-sinNext * kTopRadius, kHeight, cosNext * kTopRadius, 1.0f}, {uNext, 0.0f}, {-sinNext, 0.0f, cosNext} };
-		vertexData_[index * 6 + 5] = { {-sinNext * kBottomRadius, 0.0f, cosNext * kBottomRadius, 1.0f}, {uNext, 1.0f}, {-sinNext, 0.0f, cosNext} };
+		vertexData_[index * kNumVertex_ + 0] = { {-sin * kTopRadius, kHeight, cos * kTopRadius, 1.0f}, {u, 0.0f}, {-sin, 0.0f, cos } };
+		vertexData_[index * kNumVertex_ + 1] = { {-sinNext * kTopRadius, kHeight, cosNext * kTopRadius, 1.0f}, {uNext, 0.0f}, {-sinNext, 0.0f, cosNext} };
+		vertexData_[index * kNumVertex_ + 2] = { {-sin * kBottomRadius, 0.0f, cos * kBottomRadius, 1.0f}, {u, 1.0f}, {-sin, 0.0f, cos} };
+		vertexData_[index * kNumVertex_ + 3] = { {-sinNext * kBottomRadius, 0.0f, cosNext * kBottomRadius, 1.0f}, {uNext, 1.0f}, {-sinNext, 0.0f, cosNext} };
 	}
+
+	indexResource_ = dxBase_->CreateBufferResource(sizeof(uint32_t) * kDivide_ * kNumIndex_);
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
+
+	for (uint32_t index = 0; index < kDivide_; index++) {
+		indexData_[index * kNumIndex_ + 0] = index * kNumVertex_;
+		indexData_[index * kNumIndex_ + 1] = index * kNumVertex_ + 1;
+		indexData_[index * kNumIndex_ + 2] = index * kNumVertex_ + 2;
+		indexData_[index * kNumIndex_ + 3] = index * kNumVertex_ + 1;
+		indexData_[index * kNumIndex_ + 4] = index * kNumVertex_ + 3;
+		indexData_[index * kNumIndex_ + 5] = index * kNumVertex_ + 2;
+	}
+
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	indexBufferView_.SizeInBytes = sizeof(uint32_t) * kDivide_ * kNumIndex_;
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 }
 
 void ParticleManager::CreateMaterialData() {

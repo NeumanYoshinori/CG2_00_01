@@ -5,21 +5,17 @@ using namespace std;
 
 void TitleScene::Initialize() {
 	// インスタンス取得
-	dxBase_ = DirectXBase::GetInstance();
-
 	input_ = Input::GetInstance();
-
-	srvManager_ = SrvManager::GetInstance();
 
 	textureManager_ = TextureManager::GetInstance();
 
 	// テクスチャを読み込む
 	textureManager_->LoadTexture("resources/uvChecker.png");
+	textureManager_->LoadTexture("resources/rostock_laage_airport_4k.dds");
 
-	spriteCommon_ = SpriteCommon::GetInstance();
 	// スプライトの初期化
 	sprite_ = make_unique<Sprite>();
-	sprite_->Initialize(spriteCommon_, "resources/uvChecker.png");
+	sprite_->Initialize("resources/uvChecker.png");
 
 	// オーディオの初期化
 	audio_ = Audio::GetInstance();
@@ -29,8 +25,7 @@ void TitleScene::Initialize() {
 	// 音声再生
 	bgmVoice_ = audio_->SoundPlayWave(soundData1, true);
 
-	// シーンマネージャのインスタンス取得
-	sceneManager_ = SceneManager::GetInstance();
+	imGuiManager_ = ImGuiManager::GetInstance();
 }
 
 void TitleScene::Finalize() {
@@ -41,32 +36,71 @@ void TitleScene::Finalize() {
 }
 
 void TitleScene::Update() {
-	// 0キーを押したときコンソールにHit 0と表示する
-	if (input_->ReleaseKey(DIK_0)) {
-		OutputDebugStringA("Hit 0\n");
-	}
-
 	// スプライトの更新
 	sprite_->Update();
 
 	// ENTERキーを押したら
-	if (input_->TriggerKey(DIK_RETURN)) {
+	if (input_->TriggerKey(DIK_R)) {
 		// シーン切り替え
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 	}
+
+	imGuiManager_->Begin();
+#ifdef USE_IMGUI
+	// スプライトのImGuiの開始
+	ImGui::Begin("Sprite");
+
+	// 座標
+	Vector2 spritePos = sprite_->GetPosition();
+	ImGui::DragFloat2("Po", &spritePos.x, 0.1f);
+	sprite_->SetPosition(spritePos);
+
+	// 角度
+	float spriteRot = sprite_->GetRotation();
+	ImGui::DragFloat("Rot", &spriteRot, 0.1f);
+	sprite_->SetRotation(spriteRot);
+
+	// アンカーポイント
+	Vector2 anchorPoint = sprite_->GetAnchorPoint();
+	ImGui::DragFloat2("AnchorPoint", &anchorPoint.x, 0.1f);
+	sprite_->SetAnchorPoint(anchorPoint);
+
+	// x座標フリップ
+	bool flipX = sprite_->IsFlipX();
+	ImGui::Checkbox("flipX", &flipX);
+	sprite_->SetFlipX(flipX);
+
+	// Y座標フリップ
+	bool flipY = sprite_->IsFlipY();
+	ImGui::Checkbox("flipY", &flipY);
+	sprite_->SetFlipY(flipY);
+
+	// テクスチャ左上座標
+	Vector2 textureLeftTop = sprite_->GetTextureLeftTop();
+	ImGui::DragFloat2("TextureLeftTop", &textureLeftTop.x, 0.1f);
+	sprite_->SetTextureLeftTop(textureLeftTop);
+
+	// テクスチャのサイズ
+	Vector2 textureSize = sprite_->GetTextureSize();
+	ImGui::DragFloat2("TextureSize", &textureSize.x, 0.1f);
+	sprite_->SetTextureSize(textureSize);
+	ImGui::End();
+#endif
+	ImGuiManager::GetInstance()->End();
 }
 
 void TitleScene::Draw() {
 	// SRVマネージャ描画前処理
-	srvManager_->PreDraw();
+	SrvManager::GetInstance()->PreDraw();
 
 	// 共通描画設定
-	spriteCommon_->DrawSetting();
+	SpriteCommon::GetInstance()->DrawSetting();
 
 	// スプライトの描画
 	sprite_->Draw();
 }
 
 void TitleScene::ImGuiDraw() {
-	return;
+	// ImGui受付開始
+	ImGuiManager::GetInstance()->Draw();
 }

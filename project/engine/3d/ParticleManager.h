@@ -5,6 +5,7 @@
 #include "Transform.h"
 #include <unordered_map>
 #include "Camera.h"
+#include "TextureManager.h"
 
 class ParticleManager {
 public:
@@ -87,7 +88,6 @@ private:
 		Vector4 color;
 		float lifeTime;
 		float currentTime;
-		uint32_t numVertices;
 	};
 
 	struct ParticleForGPU {
@@ -166,14 +166,15 @@ private:
 	ComPtr<ID3D12Resource> materialResource_;
 	Material* materialData_ = nullptr;
 
-	const uint32_t kRingDivide_ = 32;
+	uint32_t kDivide_ = 64;
 
 	// 頂点数
-	uint32_t numVertex_ = 0;
+	const uint32_t kNumVertex_ = 4;
 	// インデックス数
-	uint32_t numIndex_ = 6;
+	const uint32_t kNumIndex_ = 6;
 
-	const uint32_t kCylinderDivide_ = 32;
+	// テクスチャマネージャ
+	TextureManager* textureManager_ = nullptr;
 
 	~ParticleManager() = default;
 	ParticleManager(ParticleManager&) = delete;

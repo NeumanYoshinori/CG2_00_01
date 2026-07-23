@@ -10,13 +10,7 @@ using namespace numbers;
 
 void GamePlayScene::Initialize() {
 	// インスタンス取得
-	winApp_ = WinApp::GetInstance();
-
-	dxBase_ = DirectXBase::GetInstance();
-
 	input_ = Input::GetInstance();
-
-	srvManager_ = SrvManager::GetInstance();
 
 	textureManager_ = TextureManager::GetInstance();
 
@@ -68,18 +62,20 @@ void GamePlayScene::Initialize() {
 	particleManager_->SetCamera(camera_.get());
 
 	// 円のパーティクルグループを作成
-	particleManager_->CreateParticleGroup(ParticleManager::Cylinder, "gradationLine", "resources/gradationLine.png");
+	particleManager_->CreateParticleGroup(ParticleManager::Cylinder, "cylinder", "resources/circle2.png");
+	particleManager_->CreateParticleGroup(ParticleManager::Plane, "circle", "resources/gradationLine.png");
 
 	uniform_real_distribution<float> distScale(0.4f, 1.5f);
 	uniform_real_distribution<float> distRotate(-pi_v<float>, pi_v<float>);
 
 	// パーティクルエミッターの初期化
-	particleTransform.scale = { 1.0f, 1.0f, 1.0f}; // 横に潰す
-	particleTransform.rotate = { 0.0f, 0.0f, 0.0f};
-	particleTransform.translate = { 5.0f, 0.0f, 0.0f };
+	planeTransform.scale = {1.0f, 1.0f, 1.0f}; // 横に潰す
+	planeTransform.rotate = { 0.0f, 0.0f, 0.0f};
+	planeTransform.translate = { 5.0f, 0.0f, 0.0f };
 	Vector3 particleVelocity = { 0.0f, 0.0f, 0.0f }; // 動かない
 	Vector4 particleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-	particleEmitter_ = make_unique<ParticleEmitter>("gradationLine", particleTransform, particleVelocity, particleColor, 1, 1.0f);
+	planeEmitter_ = make_unique<ParticleEmitter>("cylinder", planeTransform, particleVelocity, particleColor, 1, 1.0f);
+	cylinderEmitter_ = make_unique<ParticleEmitter>("circle", planeTransform, particleVelocity, particleColor, 1, 2.0f);
 
 	// ImGuiマネージャの初期化
 	imGuiManager_ = ImGuiManager::GetInstance();
@@ -101,13 +97,8 @@ void GamePlayScene::Finalize() {
 }
 
 void GamePlayScene::Update() {
-	// 0キーを押したときコンソールにHit 0と表示する
-	if (input_->ReleaseKey(DIK_0)) {
-		OutputDebugStringA("Hit 0\n");
-	}
-
 	// ENTERキーを押したら
-	if (input_->TriggerKey(DIK_RETURN)) {
+	if (input_->TriggerKey(DIK_R)) {
 		// シーン切り替え
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 	}
@@ -125,7 +116,8 @@ void GamePlayScene::Update() {
 	particleManager_->Update();
 
 	// パーティクルエミッターの更新
-	particleEmitter_->Update();
+	planeEmitter_->Update();
+	cylinderEmitter_->Update();
 
 	// 球の更新
 	sphere_->Update();
@@ -137,27 +129,41 @@ void GamePlayScene::Update() {
 	// デモウィンドウの表示オン
 	ImGui::ShowDemoWindow();
 
-	ImGui::Begin("Settings");
+	// カメラのImGui
+	ImGui::Begin("Camera");
 	camera_->DebugUpdate();
-	Vector3 terrainPos = terrain_->GetTranslate();
-	ImGui::DragFloat3("terrainPos", &terrainPos.x, 0.01f);
-	terrain_->SetTranslate(terrainPos);
-	Vector3 terrainRot = terrain_->GetRotate();
-	ImGui::DragFloat3("terrainRot", &terrainRot.x, 0.01f);
-	terrain_->SetRotate(terrainRot);
+	ImGui::End();
+
+	// 地面のImGui
+	ImGui::Begin("Terrain");
+	terrain_->DebugUpdate();
+	ImGui::End();
+
+	// 球のImGui
+	ImGui::Begin("Sphere");
 	Vector3 spherePos = sphere_->GetTranslate();
 	ImGui::DragFloat3("spherePos", &spherePos.x, 0.01f);
 	sphere_->SetTranslate(spherePos);
 	Vector3 sphereRot = sphere_->GetRotate();
 	ImGui::DragFloat3("sphereRot", &sphereRot.x, 0.01f);
 	sphere_->SetRotate(sphereRot);
+	ImGui::End();
+
+	// スカイボックスのImGui
+	ImGui::Begin("Skybox");
 	Vector3 skyboxPos = skybox_->GetTranslate();
 	ImGui::DragFloat3("skyboxPos", &skyboxPos.x, 0.01f);
 	skybox_->SetTranslate(skyboxPos);
-	LightManager::GetInstance()->DebugPointLight();
-	float environmentCoefficient = sphere_->GetEnvironmentCoefficient();
-	ImGui::DragFloat("environmentCoefficient", &environmentCoefficient, 0.01f);
-	sphere_->SetEnvironmentCoefficient(environmentCoefficient);
+	ImGui::End();
+
+	ImGui::Begin("Light");
+	LightManager::GetInstance()->DebugLight();
+	ImGui::End();
+
+	ImGui::Begin("PostEffect");
+	//float environmentCoefficient = sphere_->GetEnvironmentCoefficient();
+	//ImGui::DragFloat("environmentCoefficient", &environmentCoefficient, 0.01f);
+	//sphere_->SetEnvironmentCoefficient(environmentCoefficient);
 	static PostEffect::PostEffectType currentPostEffect = PostEffect::PostEffectType::FullScreen;
 	const char* postEffect[] = { "FullScreen", "Grayscale", "Vignette" };
 	if (ImGui::BeginCombo("PostEffect", postEffect[static_cast<int>(currentPostEffect)])) {
@@ -189,7 +195,7 @@ void GamePlayScene::Update() {
 
 void GamePlayScene::Draw() {
 	// SRVマネージャの描画前処理
-	srvManager_->PreDraw();
+	SrvManager::GetInstance()->PreDraw();
 
 	// スカイボックスの描画準備
 	skyboxCommon_->DrawSetting();

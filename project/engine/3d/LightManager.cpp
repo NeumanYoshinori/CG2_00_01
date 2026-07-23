@@ -21,10 +21,15 @@ void LightManager::Finalize() {
 	instance_.reset();
 }
 
-void LightManager::DebugPointLight() {
+void LightManager::DebugLight() {
 #ifdef USE_IMGUI
+	// 平行光源
+	ImGui::ColorEdit3("directionalLightColor", &constMap_->directionalLights_[0].color.x);
 	ImGui::DragFloat3("directionalLightDirection", &constMap_->directionalLights_[0].direction.x, 0.01f);
+	ImGui::DragFloat("directionalLightIntensity", &constMap_->directionalLights_[0].intensity, 0.1f);
 
+	// ポイントライト1
+	ImGui::ColorEdit3("pointLightColor1", &constMap_->pointLights_[0].color.x);
 	ImGui::DragFloat3("pointLightPos1", &constMap_->pointLights_[0].position.x, 0.01f);
 	ImGui::DragFloat("pointLightIntensity1", &constMap_->pointLights_[0].intensity, 0.01f);
 	ImGui::DragFloat("pointLightRadius1", &constMap_->pointLights_[0].radius, 0.01f);
@@ -34,6 +39,8 @@ void LightManager::DebugPointLight() {
 		constMap_->pointLights_[0].isActive = pointLightActive1;
 	}
 
+	// ポイントライト2
+	ImGui::ColorEdit3("pointLightColor2", &constMap_->pointLights_[1].color.x);
 	ImGui::DragFloat3("pointLightPos2", &constMap_->pointLights_[1].position.x, 0.01f);
 	ImGui::DragFloat("pointLightIntensity2", &constMap_->pointLights_[1].intensity, 0.01f);
 	ImGui::DragFloat("pointLightRadius2", &constMap_->pointLights_[1].radius, 0.01f);
@@ -42,6 +49,9 @@ void LightManager::DebugPointLight() {
 	if (ImGui::Checkbox("pointLightActive2", &pointLightActive2)) {
 		constMap_->pointLights_[1].isActive = pointLightActive2;
 	}
+
+	// スポットライト1
+	ImGui::ColorEdit3("spotLightColor1", &constMap_->spotLights_[0].color.x);
 	ImGui::DragFloat3("spotLightPos1", &constMap_->spotLights_[0].position.x, 0.01f);
 	ImGui::DragFloat("spotLightIntensity1", &constMap_->spotLights_[0].intensity, 0.01f);
 	ImGui::DragFloat3("spotLightDirection1", &constMap_->spotLights_[0].direction.x, 0.01f);

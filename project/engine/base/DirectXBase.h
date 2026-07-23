@@ -63,6 +63,9 @@ public:
 	// デスクリプタヒープを生成する
 	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
+	// GPU実行待ち
+	void WaitForGPU();
+
 	// コンストラクタに渡すための鍵
 	class ConstructorKey {
 	private:

@@ -140,12 +140,14 @@ IXAudio2SourceVoice* Audio::SoundPlayWave(const SoundData& soundData, bool loopF
 }
 
 void Audio::SoundStopWave(IXAudio2SourceVoice* pSourceVoice) {
+	// 波形データの再生終了
 	pSourceVoice->Stop();
 	pSourceVoice->FlushSourceBuffers();
 	pSourceVoice->DestroyVoice();
 }
 
 void Audio::SoundPauseWave(IXAudio2SourceVoice* pSourceVoice) {
+	// 波形データの再生停止
 	pSourceVoice->Stop();
 	pSourceVoice->DestroyVoice();
 }

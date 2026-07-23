@@ -30,7 +30,7 @@ void SrvManager::Finalize() {
 
 uint32_t SrvManager::Allocate() {
 	// 上限に達していないかチェックしてassert
-	assert(useIndex_ < kMaxSRVCount_);
+	assert(CheckMax());
 
 	// returnする番号キーを記録しておく
 	int index = useIndex_;
@@ -90,8 +90,4 @@ void SrvManager::CreateSRVforStructuredBuffer(uint32_t srvIndex, ID3D12Resource*
 void SrvManager::PreDraw() {
 	ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { descriptorHeap_.Get() };
 	directXBase_->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
-}
-
-void SrvManager::SetGraphicsRootDescriptorTable(UINT RootParameterIndex, uint32_t srvIndex) {
-	directXBase_->GetCommandList()->SetGraphicsRootDescriptorTable(RootParameterIndex, GetGPUDescriptorHandle(srvIndex));
 }

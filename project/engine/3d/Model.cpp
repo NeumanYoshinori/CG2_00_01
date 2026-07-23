@@ -21,8 +21,6 @@ void Model::Initialize(const string& directorypath, const string& filename) {
 
 	// .objの参照しているテクスチャファイル読み込み
 	TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
-	// 読み込んだテクスチャの番号を取得
-	modelData.material.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath);
 }
 
 void Model::Draw() {

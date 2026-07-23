@@ -7,13 +7,11 @@
 #include "Transform.h"
 #include "DirectXBase.h"
 
-class SpriteCommon;
-
 // スプライト
 class Sprite {
 public: // メンバ関数
 	// 初期化
-	void Initialize(SpriteCommon* spriteCommon, std::string textureFilePath);
+	void Initialize(std::string textureFilePath);
 
 	// 更新
 	void Update();
@@ -53,16 +51,10 @@ public: // メンバ関数
 	bool IsFlipY() const { return isFlipY_; }
 
 	// テクスチャ左上座標のsetter
-	void SetTextureLeftTop(float leftTopX, float leftTopY) {
-		textureLeftTop_.x = leftTopX;
-		textureLeftTop_.y = leftTopY;
-	}
+	void SetTextureLeftTop(Vector2 leftTop) { textureLeftTop_ = leftTop; }
 
 	// テクスチャ切り出しサイズのsetter
-	void SetTextureSize(float sizeX, float sizeY) {
-		textureSize_.x = sizeX;
-		textureSize_.y = sizeY;
-	}
+	void SetTextureSize(Vector2 size) { textureSize_ = size; }
 
 	// テクスチャ左上座標のgetter
 	const Vector2& GetTextureLeftTop() const { return textureLeftTop_; }
@@ -104,9 +96,6 @@ private:
 	// テクスチャサイズをイメージに合わせる
 	void AdjustTextureSize();
 
-	// SpriteCommonのポインタ
-	SpriteCommon* spriteCommon_ = nullptr;
-
 	// バッファリソース
 	ComPtr<ID3D12Resource> vertexResource_; // 頂点リソース
 	ComPtr<ID3D12Resource> indexResource_; // インデックスリソース
@@ -129,10 +118,6 @@ private:
 	// コマンドリスト
 	ComPtr<ID3D12GraphicsCommandList> commandList_;
 
-	// テクスチャリソース
-	ComPtr<ID3D12Resource> textureResource_;
-	ComPtr<ID3D12Resource> intermediateResource_;
-
 	// 座標
 	Vector2 position_ = { 0.0f, 0.0f };
 
@@ -140,7 +125,7 @@ private:
 	float rotation_ = 0.0f;
 
 	// サイズ
-	Vector2 size_ = { 640.0f, 360.0f };
+	Vector2 size_ = { 0.0f, 0.0f };
 
 	// アンカーポイント
 	Vector2 anchorPoint_ = { 0.0f, 0.0f };

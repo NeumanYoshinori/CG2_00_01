@@ -28,9 +28,6 @@ public:
 	// ヒープセットコマンド
 	void PreDraw();
 
-	// SRVセットコマンド
-	void SetGraphicsRootDescriptorTable(UINT RootParameterIndex, uint32_t srvIndex);
-
 	// 最大SRV数（最大テクスチャ枚数）
 	static const uint32_t kMaxSRVCount_;
 

@@ -22,7 +22,7 @@ public:
 	void Draw();
 
 	// デバッグ
-	void DebugPointLight();
+	void DebugLight();
 
 	// コンストラクタに渡すための鍵
 	class ConstructorKey {

@@ -9,9 +9,6 @@ using namespace Microsoft::WRL;
 
 unique_ptr<TextureManager> TextureManager::instance_ = nullptr;
 
-// ImGuiで0番を使用するため、1番から使用
-uint32_t TextureManager::kSRVIndexTop_ = 1;
-
 TextureManager* TextureManager::GetInstance() {
 	if (instance_ == nullptr) {
 		instance_ = make_unique<TextureManager>(ConstructorKey());
@@ -88,44 +85,17 @@ void TextureManager::LoadTexture(const string& filePath) {
 	hr = commandList->Close();
 	assert(SUCCEEDED(hr));
 
-	ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get() };
-	commandQueue->ExecuteCommandLists(_countof(commandLists), commandLists->GetAddressOf());
+	ID3D12CommandList* commandLists[] = { commandList.Get() };
+	commandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
 
-	// フェンス
-	ComPtr<ID3D12Fence> fence = dxBase_->GetFence();
-
-	// フェンスイベント
-	HANDLE fenceEvent = dxBase_->GetFenceEvent();
-
-	// Fenceの値を更新
-	fenceVal++;
-	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
-	commandQueue->Signal(fence.Get(), fenceVal);
-
-	// Fenceの値が指定したSignal値にたどり着いているか確認する
-	// GetCompleteValueの初期値はFence作成時に渡した初期値
-	if (fence->GetCompletedValue() < fenceVal) {
-		// 指定したSignalにたどり着いていないので、たどり着くまで待つようイベントを設定する
-		fence->SetEventOnCompletion(fenceVal, fenceEvent);
-		// イベント待つ
-		WaitForSingleObject(fenceEvent, INFINITE);
-	}
+	// GPU完了待ち
+	dxBase_->WaitForGPU();
 
 	// 次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
 	hr = commandList->Reset(commandAllocator.Get(), nullptr);
 	assert(SUCCEEDED(hr));
-}
-
-uint32_t TextureManager::GetTextureIndexByFilePath(const string& filePath) {
-	// 読み込み済みテクスチャを検索
-	if (textureDatas_.contains(filePath)) {
-		return textureDatas_.at(filePath).srvIndex;
-	}
-
-	assert(0);
-	return 0;
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(const string& filePath) {

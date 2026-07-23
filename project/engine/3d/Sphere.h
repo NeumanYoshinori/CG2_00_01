@@ -71,12 +71,6 @@ private:
 		Matrix4x4 WorldInverseTranspose;
 	};
 
-	// マテリアルデータ
-	struct MaterialData {
-		std::string textureFilePath;
-		uint32_t textureIndex = 0;
-	};
-
 	// カメラ
 	struct CameraForGPU {
 		Vector3 worldPosition;
@@ -136,7 +130,7 @@ private:
 	Camera* camera_ = nullptr;
 
 	// マテリアル
-	MaterialData material_;
+	std::string textureFilePath_;
 
 	const uint32_t kSubdivision_ = 32; // 分割数
 

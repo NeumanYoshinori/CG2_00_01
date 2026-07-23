@@ -4,7 +4,6 @@
 #include "Object3dCommon.h"
 #include "Object3d.h"
 #include "ModelManager.h"
-#include "SrvManager.h"
 #include "ParticleManager.h"
 #include "ParticleEmitter.h"
 #include "ImGuiManager.h"
@@ -34,17 +33,8 @@ public:
 	void ImGuiDraw() override;
 
 private:
-	// WindowsAPI
-	WinApp* winApp_ = nullptr;
-
-	// DirectX基盤部分
-	DirectXBase* dxBase_ = nullptr;
-
 	// 入力
 	Input* input_ = nullptr;
-
-	// SRVマネージャ
-	SrvManager* srvManager_ = nullptr;
 
 	// テクスチャマネージャ
 	TextureManager* textureManager_ = nullptr;
@@ -67,13 +57,14 @@ private:
 	std::random_device seedGenerator_;
 	std::mt19937 randomEngine_;
 
-	Transform particleTransform{};
+	Transform planeTransform{};
 
 	// パーティクルマネージャ
 	ParticleManager* particleManager_ = nullptr;
 
 	// パーティクルエミッター
-	std::unique_ptr<ParticleEmitter> particleEmitter_;
+	std::unique_ptr<ParticleEmitter> planeEmitter_;
+	std::unique_ptr<ParticleEmitter> cylinderEmitter_;
 
 	// スカイボックス共通部
 	SkyboxCommon* skyboxCommon_ = nullptr;

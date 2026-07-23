@@ -2,6 +2,7 @@
 #include "Object3dCommon.h"
 #include "TextureManager.h"
 #include "ModelManager.h"
+#include "ImGuiManager.h"
 
 using namespace std;
 using namespace MathFunction;
@@ -59,6 +60,15 @@ void Object3d::Draw() {
 	if (model_) {
 		model_->Draw();
 	}
+}
+
+void Object3d::DebugUpdate() {
+#ifdef USE_IMGUI
+	ImGui::DragFloat3("Pos", &transform.translate.x, 0.01f);
+	ImGui::SliderAngle("RotateX", &transform.rotate.x);
+	ImGui::SliderAngle("RotateY", &transform.rotate.y);
+	ImGui::SliderAngle("RotateZ", &transform.rotate.z);
+#endif
 }
 
 void Object3d::SetModel(const std::string& filePath) {

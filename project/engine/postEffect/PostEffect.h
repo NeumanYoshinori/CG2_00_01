@@ -2,6 +2,7 @@
 #include "DirectXBase.h"
 #include "Vector3.h"
 #include <string>
+#include "SrvManager.h"
 
 class PostEffect {
 public:
@@ -85,6 +86,9 @@ private:
 
 	// PSの名前
 	std::wstring psName_;
+
+	// SRVマネージャ
+	SrvManager* srvManager_ = nullptr;
 
 	~PostEffect() = default;
 	PostEffect(const PostEffect&) = delete;

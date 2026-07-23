@@ -28,9 +28,9 @@ void Camera::Update() {
 void Camera::DebugUpdate() {
 #ifdef USE_IMGUI
 	// 開発用UIの処理
-	ImGui::DragFloat3("CameraTranslate", &transform_.translate.x, 0.01f);
-	ImGui::SliderAngle("CameraRotateX", &transform_.rotate.x);
-	ImGui::SliderAngle("CameraRotateY", &transform_.rotate.y);
-	ImGui::SliderAngle("CameraRotateZ", &transform_.rotate.z);
+	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.01f);
+	ImGui::SliderAngle("RotateX", &transform_.rotate.x);
+	ImGui::SliderAngle("RotateY", &transform_.rotate.y);
+	ImGui::SliderAngle("RotateZ", &transform_.rotate.z);
 #endif
 }

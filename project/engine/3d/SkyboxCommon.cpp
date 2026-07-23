@@ -27,11 +27,11 @@ void SkyboxCommon::Initialize() {
 }
 
 void SkyboxCommon::DrawSetting() {
-	commandList = dxBase_->GetCommandList();
-	commandList->SetGraphicsRootSignature(rootSignature.Get());
-	commandList->SetPipelineState(graphicsPipelineState.Get());
+	commandList_ = dxBase_->GetCommandList();
+	commandList_->SetGraphicsRootSignature(rootSignature_.Get());
+	commandList_->SetPipelineState(graphicsPipelineState_.Get());
 	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	commandList_->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void SkyboxCommon::CreateRootSignature() {
@@ -88,7 +88,7 @@ void SkyboxCommon::CreateRootSignature() {
 	// バイナリを元に生成
 	hr = dxBase_->GetDevice()->CreateRootSignature(0,
 		signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
-		IID_PPV_ARGS(&rootSignature));
+		IID_PPV_ARGS(&rootSignature_));
 	assert(SUCCEEDED(hr));
 }
 
@@ -140,7 +140,7 @@ void SkyboxCommon::GenerateGraphicsPipeLine() {
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL; // 今までと同様に比較
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get(); // RootSignature
+	graphicsPipelineStateDesc.pRootSignature = rootSignature_.Get(); // RootSignature
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc; // InputLayout
 	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),
 	vertexShaderBlob->GetBufferSize() }; // VertexShader
@@ -162,6 +162,6 @@ void SkyboxCommon::GenerateGraphicsPipeLine() {
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	// 実際に生成
 	HRESULT hr = dxBase_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&graphicsPipelineState));
+		IID_PPV_ARGS(&graphicsPipelineState_));
 	assert(SUCCEEDED(hr));
 }

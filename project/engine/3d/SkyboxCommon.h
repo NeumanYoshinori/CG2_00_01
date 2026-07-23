@@ -47,18 +47,18 @@ private:
 	DirectXBase* dxBase_ = nullptr;
 
 	// コマンドリストを生成する
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_ = nullptr;
 
 	// ルートシグネチャ
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_ = nullptr;
 
 	// グラフィックスパイプラインステート
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_ = nullptr;
 
 	// ブレンドデスク
-	D3D12_BLEND_DESC blendDesc = {};
+	D3D12_BLEND_DESC blendDesc_ = {};
 
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc = {};
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc_ = {};
 
 	// デフォルトカメラ
 	Camera* defaultCamera_ = nullptr;

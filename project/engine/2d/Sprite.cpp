@@ -1,5 +1,4 @@
 #include "Sprite.h"
-#include "SpriteCommon.h"
 #include "TextureManager.h"
 
 using namespace Microsoft::WRL;
@@ -7,11 +6,8 @@ using namespace MathFunction;
 using namespace DirectX;
 using namespace std;
 
-void Sprite::Initialize(SpriteCommon* spriteCommon, string textureFilePath) {
-	// 引数で受け取ってメンバ変数に記録する
-	spriteCommon_ = spriteCommon;
-
-	dxBase_ = spriteCommon_->GetDxBase();
+void Sprite::Initialize(string textureFilePath) {
+	dxBase_ = DirectXBase::GetInstance();
 
 	// 頂点データ作成
 	CreateVertexData();

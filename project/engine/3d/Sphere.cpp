@@ -8,7 +8,7 @@ using namespace std;
 using namespace MathFunction;
 
 void Sphere::Initialize(string textureFilePath) {
-	dxBase_ = dxBase_->GetInstance();
+	dxBase_ = DirectXBase::GetInstance();
 
 	// 頂点データ作成
 	CreateVertexData();
@@ -29,9 +29,7 @@ void Sphere::Initialize(string textureFilePath) {
 	CreateCameraData();
 
 	// テクスチャファイル読み込み
-	material_.textureFilePath = textureFilePath;
-	// 読み込んだテクスチャの番号を取得
-	material_.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+	textureFilePath_ = textureFilePath;
 }
 
 void Sphere::Update() {
@@ -65,7 +63,7 @@ void Sphere::Draw() {
 	// wvp用のCBufferの場所を設定
 	commandList_->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭を設定
-	commandList_->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(material_.textureFilePath));
+	commandList_->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_));
 	// ライトのCBufferの場所を設定
 	lightManager_->Draw();
 	// カメラのCBufferの場所を設定

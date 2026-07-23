@@ -101,26 +101,11 @@ void DirectXBase::PostDraw() {
 	HRESULT hr = commandList_->Close();
 	assert(SUCCEEDED(hr));
 
-	ComPtr<ID3D12CommandList> commandLists[] = { commandList_.Get() };
-	commandQueue_->ExecuteCommandLists(_countof(commandLists), commandLists->GetAddressOf());
+	ID3D12CommandList* commandLists[] = { commandList_.Get() };
+	commandQueue_->ExecuteCommandLists(_countof(commandLists), commandLists);
 
-	// Fenceの値を更新
-	fenceVal_++;
-	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
-	commandQueue_->Signal(fence_.Get(), fenceVal_);
-
-	// GPUとOSに画面の交換を行うよう通知する
-	swapChain_->Present(1, 0);
-	assert(SUCCEEDED(hr));
-
-	// Fenceの値が指定したSignal値にたどり着いているか確認する
-	// GetCompleteValueの初期値はFence作成時に渡した初期値
-	if (fence_->GetCompletedValue() < fenceVal_) {
-		// 指定したSignalにたどり着いていないので、たどり着くまで待つようイベントを設定する
-		fence_->SetEventOnCompletion(fenceVal_, fenceEvent_);
-		// イベント待つ
-		WaitForSingleObject(fenceEvent_, INFINITE);
-	}
+	// GPU完了待ち
+	WaitForGPU();
 
 	// FPS固定
 	UpdateFixFPS();
@@ -517,4 +502,24 @@ ComPtr<ID3D12Resource> DirectXBase::UploadTextureData(const ComPtr<ID3D12Resourc
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
 	commandList_->ResourceBarrier(1, &barrier);
 	return intermediateResource;
+}
+
+void DirectXBase::WaitForGPU() {
+	// GPUとOSに画面の交換を行うよう通知する
+	swapChain_->Present(1, 0);
+	assert(SUCCEEDED(hr));
+
+	// Fenceの値を更新
+	fenceVal_++;
+	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
+	commandQueue_->Signal(fence_.Get(), fenceVal_);
+
+	// Fenceの値が指定したSignal値にたどり着いているか確認する
+	// GetCompleteValueの初期値はFence作成時に渡した初期値
+	if (fence_->GetCompletedValue() < fenceVal_) {
+		// 指定したSignalにたどり着いていないので、たどり着くまで待つようイベントを設定する
+		fence_->SetEventOnCompletion(fenceVal_, fenceEvent_);
+		// イベント待つ
+		WaitForSingleObject(fenceEvent_, INFINITE);
+	}
 }

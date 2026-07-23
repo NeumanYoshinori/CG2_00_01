@@ -3,9 +3,9 @@
 #include "SpriteCommon.h"
 #include "Sprite.h"
 #include "TextureManager.h"
-#include "SrvManager.h"
 #include "Audio.h"
 #include "BaseScene.h"
+#include "ImGuiManager.h"
 
 // 前方宣言
 class SceneManager;
@@ -38,14 +38,8 @@ private:
 	// 入力
 	Input* input_ = nullptr;
 
-	// SRVマネージャ
-	SrvManager* srvManager_ = nullptr;
-
 	// テクスチャマネージャ
 	TextureManager* textureManager_ = nullptr;
-
-	// スプライト共通部
-	SpriteCommon* spriteCommon_ = nullptr;
 
 	// スプライト
 	std::unique_ptr<Sprite> sprite_;
@@ -58,6 +52,6 @@ private:
 
 	IXAudio2SourceVoice* bgmVoice_ = nullptr;
 
-	// シーンマネージャ
-	SceneManager* sceneManager_ = nullptr;
+	// ImGuiマネージャ
+	ImGuiManager* imGuiManager_ = nullptr;
 };
