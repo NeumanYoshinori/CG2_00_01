@@ -1,12 +1,9 @@
 #pragma once
 #include "Input.h"
-#include "SpriteCommon.h"
-#include "Sprite.h"
 #include "TextureManager.h"
 #include "Object3dCommon.h"
 #include "Object3d.h"
 #include "ModelManager.h"
-#include "SrvManager.h"
 #include "ParticleManager.h"
 #include "ParticleEmitter.h"
 #include "ImGuiManager.h"
@@ -16,7 +13,6 @@
 #include "Skybox.h"
 #include "BaseScene.h"
 #include <random>
-#include <numbers>
 
 // ゲームプレイシーン
 class GamePlayScene : public BaseScene {
@@ -37,23 +33,14 @@ public:
 	void ImGuiDraw() override;
 
 private:
-	// WindowsAPI
-	WinApp* winApp_ = nullptr;
-
-	// DirectX基盤部分
-	DirectXBase* dxBase_ = nullptr;
-
 	// 入力
 	Input* input_ = nullptr;
-
-	// SRVマネージャ
-	SrvManager* srvManager_ = nullptr;
 
 	// テクスチャマネージャ
 	TextureManager* textureManager_ = nullptr;
 
 	// カメラ
-	Camera* camera_ = nullptr;
+	std::unique_ptr<Camera> camera_;
 
 	// モデルマネージャ
 	ModelManager* modelManager_ = nullptr;
@@ -62,27 +49,28 @@ private:
 	Object3dCommon* object3dCommon_ = nullptr;
 
 	// 地面
-	Object3d* terrain_ = nullptr;
+	std::unique_ptr<Object3d> terrain_;
 
 	// 球
-	Sphere* sphere_ = nullptr;
+	std::unique_ptr<Sphere> sphere_;
 
 	std::random_device seedGenerator_;
 	std::mt19937 randomEngine_;
 
-	Transform particleTransform;
+	Transform planeTransform{};
 
 	// パーティクルマネージャ
 	ParticleManager* particleManager_ = nullptr;
 
 	// パーティクルエミッター
-	ParticleEmitter* particleEmitter_ = nullptr;
+	std::unique_ptr<ParticleEmitter> planeEmitter_;
+	std::unique_ptr<ParticleEmitter> cylinderEmitter_;
 
 	// スカイボックス共通部
 	SkyboxCommon* skyboxCommon_ = nullptr;
 
 	// スカイボックス
-	Skybox* skybox_ = nullptr;
+	std::unique_ptr<Skybox> skybox_;
 
 	// ImGuiマネジャー
 	ImGuiManager* imGuiManager_ = nullptr;
@@ -92,6 +80,8 @@ private:
 
 	// サウンドデータ2
 	Audio::SoundData soundData2;
+
+	IXAudio2SourceVoice* bgmVoice_ = nullptr;
 
 	float rgb[3] = { 1.0f, 1.0f, 1.0f };
 

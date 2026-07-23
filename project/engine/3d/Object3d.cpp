@@ -1,16 +1,14 @@
 #include "Object3d.h"
 #include "Object3dCommon.h"
-#include "ImGuiManager.h"
 #include "TextureManager.h"
+#include "ModelManager.h"
+#include "ImGuiManager.h"
 
 using namespace std;
 using namespace MathFunction;
 
-void Object3d::Initialize(Object3dCommon* object3dCommon) {
-	// 引数で受け取ってメンバ変数に記録する
-	object3dCommon_ = object3dCommon;
-
-	dxBase_ = object3dCommon_->GetDxBase();
+void Object3d::Initialize() {
+	dxBase_ = DirectXBase::GetInstance();
 
 	// 座標変換行列データ作成
 	CreateTransformationMatrixData();
@@ -19,7 +17,7 @@ void Object3d::Initialize(Object3dCommon* object3dCommon) {
 	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 	
 	// デフォルトカメラをセットする
-	camera_ = object3dCommon_->GetDefaultCamera();
+	camera_ = Object3dCommon::GetInstance()->GetDefaultCamera();
 
 	// カメラデータ作成
 	CreateCameraData();
@@ -62,6 +60,15 @@ void Object3d::Draw() {
 	if (model_) {
 		model_->Draw();
 	}
+}
+
+void Object3d::DebugUpdate() {
+#ifdef USE_IMGUI
+	ImGui::DragFloat3("Pos", &transform.translate.x, 0.01f);
+	ImGui::SliderAngle("RotateX", &transform.rotate.x);
+	ImGui::SliderAngle("RotateY", &transform.rotate.y);
+	ImGui::SliderAngle("RotateZ", &transform.rotate.z);
+#endif
 }
 
 void Object3d::SetModel(const std::string& filePath) {

@@ -1,9 +1,10 @@
 #pragma once
 #include <Windows.h>
 #include <xaudio2.h>
-#include <fstream>
 #include <wrl.h>
 #include <vector>
+#include <string>
+#include <memory>
 
 #pragma comment(lib, "xaudio2.lib")
 
@@ -27,22 +28,24 @@ private:
 		WAVEFORMATEX fmt; // 波形フォーマット
 	};
 
-	// インスタンス
-	static Audio* instance;
+	// unique_ptr化したシングルトンインスタンス
+	static std::unique_ptr<Audio> instance_;
 
-	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
-	IXAudio2MasteringVoice* masterVoice;
+	Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
+	IXAudio2MasteringVoice* masterVoice_ = nullptr;
 
-	Audio() = default;
 	~Audio() = default;
 	Audio(Audio&) = delete;
 	Audio& operator=(Audio&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<Audio>;
 
 public:
 	// サウンドデータ
 	struct SoundData {
 		// 波形フォーマット
-		WAVEFORMATEX wfex;
+		WAVEFORMATEX wfex{};
 		// バッファ
 		std::vector<BYTE> buffer;
 	};
@@ -50,14 +53,21 @@ public:
 	// シングルトンインスタンスの取得
 	static Audio* GetInstance();
 
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class Audio;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit Audio(ConstructorKey) {}
+
 	// 終了
 	void Finalize();
 
 	// 初期化
 	void Initialize();
-
-	// 後始末
-	void Release();
 
 	// 音声ファイル読み込み
 	SoundData SoundLoadFile(const std::string& filename);
@@ -66,6 +76,10 @@ public:
 	void SoundUnload(SoundData* soundData);
 
 	// 音声再生
-	void SoundPlayWave(const SoundData& soundData, bool loop);
+	IXAudio2SourceVoice* SoundPlayWave(const SoundData& soundData, bool loopFlag);
+
+	void SoundStopWave(IXAudio2SourceVoice* pSourceVoice);
+
+	void SoundPauseWave(IXAudio2SourceVoice* pSourceVoice);
 };
 

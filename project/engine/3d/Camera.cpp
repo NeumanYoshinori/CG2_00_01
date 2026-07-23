@@ -7,30 +7,30 @@
 using namespace MathFunction;
 
 Camera::Camera()
-	: transform({ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} })
+	: transform_({ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} })
 	, fovY_(0.45f)
 	, aspectRatio_(float(WinApp::kClientWidth) / float(WinApp::kClientHeight))
 	, nearClip_(0.1f)
 	, farClip_(100.0f)
-	, worldMatrix(MakeAffineMatrix(transform.scale, transform.rotate, transform.translate))
-	, viewMatrix(Inverse(worldMatrix))
-	, projectionMatrix(MakePerspectiveFovMatrix(fovY_, aspectRatio_, nearClip_, farClip_))
-	, viewProjectionMatrix(Multiply(viewMatrix, projectionMatrix))
+	, worldMatrix_(MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate))
+	, viewMatrix_(Inverse(worldMatrix_))
+	, projectionMatrix_(MakePerspectiveFovMatrix(fovY_, aspectRatio_, nearClip_, farClip_))
+	, viewProjectionMatrix_(Multiply(viewMatrix_, projectionMatrix_))
 {}
 
 void Camera::Update() {
-	worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-	viewMatrix = Inverse(worldMatrix);
-	projectionMatrix = MakePerspectiveFovMatrix(fovY_, aspectRatio_, nearClip_, farClip_);
-	viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
+	worldMatrix_ = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
+	viewMatrix_ = Inverse(worldMatrix_);
+	projectionMatrix_ = MakePerspectiveFovMatrix(fovY_, aspectRatio_, nearClip_, farClip_);
+	viewProjectionMatrix_ = Multiply(viewMatrix_, projectionMatrix_);
 }
 
 void Camera::DebugUpdate() {
 #ifdef USE_IMGUI
 	// 開発用UIの処理
-	ImGui::DragFloat3("CameraTranslate", &transform.translate.x, 0.01f);
-	ImGui::SliderAngle("CameraRotateX", &transform.rotate.x);
-	ImGui::SliderAngle("CameraRotateY", &transform.rotate.y);
-	ImGui::SliderAngle("CameraRotateZ", &transform.rotate.z);
+	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.01f);
+	ImGui::SliderAngle("RotateX", &transform_.rotate.x);
+	ImGui::SliderAngle("RotateY", &transform_.rotate.y);
+	ImGui::SliderAngle("RotateZ", &transform_.rotate.z);
 #endif
 }

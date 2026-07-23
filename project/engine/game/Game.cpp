@@ -1,6 +1,4 @@
 #include "Game.h"
-#include "CrashHandler.h"
-#include "Logger.h"
 #include "SceneFactory.h"
 #include "RenderTextureCommon.h"
 #include "PostEffect.h"
@@ -8,10 +6,10 @@
 void Game::Initialize() {
 	// 基底クラスの初期化処理
 	Framework::Initialize();
-
+	
 	// シーンファクトリを生成し、マネージャにセット
-	sceneFactory_ = new SceneFactory();
-	SceneManager::GetInstance()->SetSceneFactory(sceneFactory_);
+	sceneFactory_ = std::make_unique<SceneFactory>();
+	SceneManager::GetInstance()->SetSceneFactory(sceneFactory_.get());
 	// シーンマネージャに最初のシーンをセット
 	SceneManager::GetInstance()->ChangeScene("TITLE");
 }

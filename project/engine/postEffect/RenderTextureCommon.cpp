@@ -4,22 +4,21 @@
 using namespace std;
 using namespace Microsoft::WRL;
 
-RenderTextureCommon* RenderTextureCommon::instance = nullptr;
+unique_ptr<RenderTextureCommon> RenderTextureCommon::instance_ = nullptr;
 
 RenderTextureCommon* RenderTextureCommon::GetInstance() {
-	if (instance == nullptr) {
-		instance = new RenderTextureCommon;
+	if (instance_ == nullptr) {
+		instance_ = make_unique<RenderTextureCommon>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
 void RenderTextureCommon::Finalize() {
-	delete instance;
-	instance = nullptr;
+	instance_.reset();
 }
 
-void RenderTextureCommon::Initialize(DirectXBase* dxBase) {
-	dxBase_ = dxBase;
+void RenderTextureCommon::Initialize() {
+	dxBase_ = DirectXBase::GetInstance();
 
 	device_ = dxBase_->GetDevice();
 
@@ -91,7 +90,7 @@ void RenderTextureCommon::PostDraw() {
 	commandList_->ResourceBarrier(1, &barrier);
 }
 
-ComPtr<ID3D12Resource> RenderTextureCommon::CreateRenderTextureResource(ComPtr<ID3D12Device> device, uint32_t width, uint32_t height, DXGI_FORMAT format, const Vector4& clearColor) {
+ComPtr<ID3D12Resource> RenderTextureCommon::CreateRenderTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format, const Vector4& clearColor) {
 	// 生成するResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
 	resourceDesc.Width = width; // Textureの幅
@@ -117,7 +116,7 @@ ComPtr<ID3D12Resource> RenderTextureCommon::CreateRenderTextureResource(ComPtr<I
 
 	// Resourceの生成
 	ComPtr<ID3D12Resource> resource;
-	HRESULT hr = device->CreateCommittedResource(
+	HRESULT hr = device_->CreateCommittedResource(
 		&heapProperties,
 		D3D12_HEAP_FLAG_NONE,
 		&resourceDesc,
@@ -167,7 +166,7 @@ void RenderTextureCommon::RenderTargetViewInitialize() {
 	rtvDesc_.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 出力結果をSRGBに変換して書き込む
 	rtvDesc_.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // 2dテクスチャとして書き込む
 	const Vector4 kRenderTargetClearValue{ 1.0f, 0.0f, 0.0f, 1.0f };
-	renderTextureResource_ = CreateRenderTextureResource(device_, WinApp::kClientWidth, WinApp::kClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, kRenderTargetClearValue);
+	renderTextureResource_ = CreateRenderTextureResource(WinApp::kClientWidth, WinApp::kClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, kRenderTargetClearValue);
 	device_->CreateRenderTargetView(renderTextureResource_.Get(), &rtvDesc_, rtvHandle_);
 }
 

@@ -29,22 +29,34 @@ public:
 	// シーンファクトリーのsetter
 	void SetSceneFactory(AbstractSceneFactory* sceneFactory) { sceneFactory_ = sceneFactory; }
 
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class SceneManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit SceneManager(ConstructorKey) {}
+
 private:
 	// インスタンス
-	static SceneManager* instance;
+	static std::unique_ptr<SceneManager> instance_;
 
 	// 今のシーン（実行中シーン）
-	BaseScene* scene_ = nullptr;
+	std::unique_ptr<BaseScene> scene_;
 
 	// 次のシーン
-	BaseScene* nextScene_ = nullptr;
+	std::unique_ptr<BaseScene> nextScene_;
 
 	// シーンファクトリー（借りてくる）
 	AbstractSceneFactory* sceneFactory_ = nullptr;
 
-	SceneManager() = default;
 	~SceneManager() = default;
 	SceneManager(const SceneManager&) = delete;
 	const SceneManager& operator=(const SceneManager&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<SceneManager>;
 };
 

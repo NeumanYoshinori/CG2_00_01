@@ -1,22 +1,17 @@
 #include "Model.h"
-#include "ModelCommon.h"
-#include <fstream>
-#include <sstream>
 #include <cassert>
 #include "TextureManager.h"
-#include <numbers>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 
 using namespace std;
 using namespace MathFunction;
 
-void Model::Initialize(ModelCommon* modelCommon, const string& directorypath, const string& filename) {
-	// ModelCommonのポインタを引数からメンバ変数に記録する
-	modelCommon_ = modelCommon;
-
+void Model::Initialize(const string& directorypath, const string& filename) {
 	// モデル読み込み
 	modelData = LoadModelFile(directorypath, filename);
 
-	dxBase_ = modelCommon_->GetDxBase();
+	dxBase_ = DirectXBase::GetInstance();
 
 	// 頂点データ作成
 	CreateVertexData();
@@ -26,8 +21,6 @@ void Model::Initialize(ModelCommon* modelCommon, const string& directorypath, co
 
 	// .objの参照しているテクスチャファイル読み込み
 	TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
-	// 読み込んだテクスチャの番号を取得
-	modelData.material.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath);
 }
 
 void Model::Draw() {

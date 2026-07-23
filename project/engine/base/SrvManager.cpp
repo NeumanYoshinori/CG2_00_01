@@ -1,54 +1,54 @@
 #include "SrvManager.h"
 
-SrvManager* SrvManager::instance = nullptr;
-
-const uint32_t SrvManager::kMaxSRVCount = 512;
+const uint32_t SrvManager::kMaxSRVCount_ = 512;
 
 using namespace Microsoft::WRL;
+using namespace std;
+
+unique_ptr<SrvManager> SrvManager::instance_ = nullptr;
 
 SrvManager* SrvManager::GetInstance() {
-	if (instance == nullptr) {
-		instance = new SrvManager();
+	if (instance_ == nullptr) {
+		instance_ = make_unique<SrvManager>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
-void SrvManager::Initialize(DirectXBase* directXBase) {
-	// 引数で受け取ってメンバ変数に記録する
-	directXBase_ = directXBase;
+void SrvManager::Initialize() {
+	// シングルトンインスタンスの取得
+	directXBase_ = DirectXBase::GetInstance();
 
 	// デスクリプタヒープの生成
-	descriptorHeap_ = directXBase_->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCount, true);
+	descriptorHeap_ = directXBase_->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCount_, true);
 	// デスクリプタ1個分のサイズを取得して記録する
-	descriptorSize = directXBase_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	descriptorSize_ = directXBase_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 void SrvManager::Finalize() {
-	delete instance;
-	instance = nullptr;
+	instance_.reset();
 }
 
 uint32_t SrvManager::Allocate() {
 	// 上限に達していないかチェックしてassert
-	assert(useIndex < kMaxSRVCount);
+	assert(CheckMax());
 
 	// returnする番号キーを記録しておく
-	int index = useIndex;
+	int index = useIndex_;
 	// 次回のために番号を1進める
-	useIndex++;
+	useIndex_++;
 	// 上で記録した番号をreturn
 	return index;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE SrvManager::GetCPUDescriptorHandle(uint32_t index) {
 	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap_->GetCPUDescriptorHandleForHeapStart();
-	handleCPU.ptr += (descriptorSize * index);
+	handleCPU.ptr += (descriptorSize_ * index);
 	return handleCPU;
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE SrvManager::GetGPUDescriptorHandle(uint32_t index) {
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap_->GetGPUDescriptorHandleForHeapStart();
-	handleGPU.ptr += (descriptorSize * index);
+	handleGPU.ptr += (descriptorSize_ * index);
 	return handleGPU;
 }
 
@@ -90,8 +90,4 @@ void SrvManager::CreateSRVforStructuredBuffer(uint32_t srvIndex, ID3D12Resource*
 void SrvManager::PreDraw() {
 	ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { descriptorHeap_.Get() };
 	directXBase_->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
-}
-
-void SrvManager::SetGraphicsRootDescriptorTable(UINT RootParameterIndex, uint32_t srvIndex) {
-	directXBase_->GetCommandList()->SetGraphicsRootDescriptorTable(RootParameterIndex, GetGPUDescriptorHandle(srvIndex));
 }

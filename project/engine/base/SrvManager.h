@@ -7,7 +7,7 @@ public:
 	static SrvManager* GetInstance();
 
 	// 初期化
-	void Initialize(DirectXBase* directXBase);
+	void Initialize();
 
 	// 終了
 	void Finalize();
@@ -28,32 +28,41 @@ public:
 	// ヒープセットコマンド
 	void PreDraw();
 
-	// SRVセットコマンド
-	void SetGraphicsRootDescriptorTable(UINT RootParameterIndex, uint32_t srvIndex);
-
 	// 最大SRV数（最大テクスチャ枚数）
-	static const uint32_t kMaxSRVCount;
+	static const uint32_t kMaxSRVCount_;
 
-	bool CheckMax() const { return useIndex < kMaxSRVCount; }
+	bool CheckMax() const { return useIndex_ < kMaxSRVCount_; }
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDescriptorHeap() const { return descriptorHeap_; }
 
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class SrvManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit SrvManager(ConstructorKey) {}
+
 private:
-	static SrvManager* instance;
+	static std::unique_ptr<SrvManager> instance_;
 
 	DirectXBase* directXBase_ = nullptr;
 
 	// SRV用のデスクリプタサイズ
-	uint32_t descriptorSize;
+	uint32_t descriptorSize_ = 0;
 	// SRV用デスクリプタヒープ
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap_;
 
 	// 次に使用するインデックス
-	uint32_t useIndex = 0;
+	uint32_t useIndex_ = 0;
 
-	SrvManager() = default;
 	~SrvManager() = default;
 	SrvManager(SrvManager&) = delete;
 	SrvManager& operator=(SrvManager&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<SrvManager>;
 };
 

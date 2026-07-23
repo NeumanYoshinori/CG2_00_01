@@ -7,36 +7,32 @@ using namespace std;
 using namespace StringUtility;
 using namespace Microsoft::WRL;
 
-TextureManager* TextureManager::instance = nullptr;
-
-// ImGuiで0番を使用するため、1番から使用
-uint32_t TextureManager::kSRVIndexTop = 1;
+unique_ptr<TextureManager> TextureManager::instance_ = nullptr;
 
 TextureManager* TextureManager::GetInstance() {
-	if (instance == nullptr) {
-		instance = new TextureManager;
+	if (instance_ == nullptr) {
+		instance_ = make_unique<TextureManager>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
 void TextureManager::Finalize() {
-	delete instance;
-	instance = nullptr;
+	instance_.reset();
 }
 
-void TextureManager::Initialize(DirectXBase* dxBase, SrvManager* srvManager) {
+void TextureManager::Initialize() {
 	// SRVの数と同数
-	textureDatas.reserve(SrvManager::kMaxSRVCount);
+	textureDatas_.reserve(SrvManager::kMaxSRVCount_);
 
 	// メンバ変数に記録
-	dxBase_ = dxBase;
+	dxBase_ = DirectXBase::GetInstance();
 
-	srvManager_ = srvManager;
+	srvManager_ = SrvManager::GetInstance();
 }
 
 void TextureManager::LoadTexture(const string& filePath) {
 	// 読み込み済みテクスチャを検索
-	if (textureDatas.contains(filePath)) {
+	if (textureDatas_.contains(filePath)) {
 		return;
 	}
 
@@ -65,7 +61,7 @@ void TextureManager::LoadTexture(const string& filePath) {
 	assert(SUCCEEDED(hr));
 
 	// テクスチャデータを追加して書き込む
-	TextureData& textureData = textureDatas[filePath];
+	TextureData& textureData = textureDatas_[filePath];
 	textureData.metadata = mipImages.GetMetadata();
 	textureData.resource = dxBase_->CreateTextureResource(textureData.metadata);
 	// SRV確保
@@ -89,28 +85,11 @@ void TextureManager::LoadTexture(const string& filePath) {
 	hr = commandList->Close();
 	assert(SUCCEEDED(hr));
 
-	ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get() };
-	commandQueue->ExecuteCommandLists(_countof(commandLists), commandLists->GetAddressOf());
+	ID3D12CommandList* commandLists[] = { commandList.Get() };
+	commandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
 
-	// フェンス
-	ComPtr<ID3D12Fence> fence = dxBase_->GetFence();
-
-	// フェンスイベント
-	HANDLE fenceEvent = dxBase_->GetFenceEvent();
-
-	// Fenceの値を更新
-	fenceVal++;
-	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
-	commandQueue->Signal(fence.Get(), fenceVal);
-
-	// Fenceの値が指定したSignal値にたどり着いているか確認する
-	// GetCompleteValueの初期値はFence作成時に渡した初期値
-	if (fence->GetCompletedValue() < fenceVal) {
-		// 指定したSignalにたどり着いていないので、たどり着くまで待つようイベントを設定する
-		fence->SetEventOnCompletion(fenceVal, fenceEvent);
-		// イベント待つ
-		WaitForSingleObject(fenceEvent, INFINITE);
-	}
+	// GPU完了待ち
+	dxBase_->WaitForGPU();
 
 	// 次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
@@ -119,36 +98,26 @@ void TextureManager::LoadTexture(const string& filePath) {
 	assert(SUCCEEDED(hr));
 }
 
-uint32_t TextureManager::GetTextureIndexByFilePath(const string& filePath) {
-	// 読み込み済みテクスチャを検索
-	if (textureDatas.contains(filePath)) {
-		return textureDatas.at(filePath).srvIndex;
-	}
-
-	assert(0);
-	return 0;
-}
-
 D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(const string& filePath) {
 	// 範囲外指定違反チェック
-	assert(textureDatas.contains(filePath));
+	assert(textureDatas_.contains(filePath));
 
-	TextureData& textureData = textureDatas[filePath];
+	TextureData& textureData = textureDatas_[filePath];
 	return textureData.srvHandleGPU;
 }
 
 const TexMetadata& TextureManager::GetMetaData(const string& filePath) {
 	// 範囲外指定違反チェック
-	assert(textureDatas.contains(filePath));
+	assert(textureDatas_.contains(filePath));
 
-	TextureData& textureData = textureDatas[filePath];
+	TextureData& textureData = textureDatas_[filePath];
 	return textureData.metadata;
 }
 
 uint32_t TextureManager::GetSrvIndex(const std::string& filePath) {
 	// 範囲外指定違反チェック
-	assert(textureDatas.contains(filePath));
+	assert(textureDatas_.contains(filePath));
 
-	TextureData& textureData = textureDatas[filePath];
+	TextureData& textureData = textureDatas_[filePath];
 	return textureData.srvIndex;
 }

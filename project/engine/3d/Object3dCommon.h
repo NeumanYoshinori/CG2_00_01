@@ -32,18 +32,25 @@ public: // メンバ関数
 	void Finalize();
 
 	// 初期化
-	void Initialize(DirectXBase* dxBase);
+	void Initialize();
 
 	// 共通描画設定
 	void DrawSetting();
-
-	// DxBaseのgetter
-	DirectXBase* GetDxBase() const { return dxBase_; }
 
 	// setter
 	void SetDefaultCamera(Camera* camera) { defaultCamera_ = camera; }
 	// getter
 	Camera* GetDefaultCamera() const { return defaultCamera_; }
+
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class Object3dCommon;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit Object3dCommon(ConstructorKey) {}
 
 private:
 	// ルートシグネチャの作成
@@ -52,31 +59,28 @@ private:
 	void GenerateGraphicsPipeLine();
 
 	// インスタンス
-	static Object3dCommon* instance;
+	static std::unique_ptr<Object3dCommon> instance_;
 
 	// DirectXBase
-	DirectXBase* dxBase_;
+	DirectXBase* dxBase_ = nullptr;
 
 	// コマンドリストを生成する
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	// ルートシグネチャ
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
 
 	// グラフィックスパイプラインステート
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
-
-	// ブレンドデスク
-	D3D12_BLEND_DESC blendDesc = {};
-
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc = {};
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_;
 
 	// デフォルトカメラ
 	Camera* defaultCamera_ = nullptr;
 
-	Object3dCommon() = default;
 	~Object3dCommon() = default;
 	Object3dCommon(Object3dCommon&) = delete;
 	Object3dCommon& operator=(Object3dCommon&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<Object3dCommon>;
 };
 

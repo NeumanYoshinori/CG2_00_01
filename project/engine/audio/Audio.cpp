@@ -12,18 +12,25 @@
 using namespace std;
 using namespace Microsoft::WRL;
 
-Audio* Audio::instance = nullptr;
+unique_ptr<Audio> Audio::instance_ = nullptr;
 
 Audio* Audio::GetInstance() {
-	if (instance == nullptr) {
-		instance = new Audio;
+	if (instance_ == nullptr) {
+		// PassKeyを渡してインスタンス生成
+		instance_ = make_unique<Audio>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
 void Audio::Finalize() {
-	delete instance;
-	instance = nullptr;
+	HRESULT result; // 他と使いまわし可能
+
+	// Windows Media Foundationの終了
+	result = MFShutdown();
+	assert(SUCCEEDED(result));
+
+	// XAudio2解放
+	xAudio2_.Reset();
 }
 
 void Audio::Initialize() {
@@ -34,10 +41,10 @@ void Audio::Initialize() {
 	assert(SUCCEEDED(result));
 
 	// XAudioエンジンのインスタンスを生成
-	XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
+	result = XAudio2Create(&xAudio2_, 0, XAUDIO2_DEFAULT_PROCESSOR);
 
 	// マスターボイスを生成
-	result = xAudio2->CreateMasteringVoice(&masterVoice);
+	result = xAudio2_->CreateMasteringVoice(&masterVoice_);
 }
 
 Audio::SoundData Audio::SoundLoadFile(const string& filename) {
@@ -107,12 +114,12 @@ void Audio::SoundUnload(SoundData* soundData) {
 	soundData->wfex = {};
 }
 
-void Audio::SoundPlayWave(const SoundData& soundData, bool loop) {
+IXAudio2SourceVoice* Audio::SoundPlayWave(const SoundData& soundData, bool loopFlag) {
 	HRESULT result;
 
 	// 波形フォーマットを基にSourceVoiceの生成
 	IXAudio2SourceVoice* pSourceVoice = nullptr;
-	result = xAudio2->CreateSourceVoice(&pSourceVoice, &soundData.wfex);
+	result = xAudio2_->CreateSourceVoice(&pSourceVoice, &soundData.wfex);
 	assert(SUCCEEDED(result));
 
 	// 再生する波形データの設定
@@ -121,24 +128,26 @@ void Audio::SoundPlayWave(const SoundData& soundData, bool loop) {
 	buf.AudioBytes = static_cast<UINT32>(soundData.buffer.size());
 	buf.Flags = XAUDIO2_END_OF_STREAM;
 
-	if (loop) {
-		buf.LoopBegin = 0;
-		buf.LoopLength = buf.PlayLength;
+	if (loopFlag) {
 		buf.LoopCount = XAUDIO2_LOOP_INFINITE;
 	}
 
 	// 波形データの再生
 	result = pSourceVoice->SubmitSourceBuffer(&buf);
 	result = pSourceVoice->Start();
+
+	return pSourceVoice;
 }
 
-void Audio::Release() {
-	HRESULT result; // 他と使いまわし可能
+void Audio::SoundStopWave(IXAudio2SourceVoice* pSourceVoice) {
+	// 波形データの再生終了
+	pSourceVoice->Stop();
+	pSourceVoice->FlushSourceBuffers();
+	pSourceVoice->DestroyVoice();
+}
 
-	// Windows Media Foundationの終了
-	result = MFShutdown();
-	assert(SUCCEEDED(result));
-
-	// XAudio2解放
-	xAudio2.Reset();
+void Audio::SoundPauseWave(IXAudio2SourceVoice* pSourceVoice) {
+	// 波形データの再生停止
+	pSourceVoice->Stop();
+	pSourceVoice->DestroyVoice();
 }

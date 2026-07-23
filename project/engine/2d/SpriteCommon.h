@@ -1,5 +1,4 @@
 #pragma once
-#include <wrl.h>
 #include <d3d12.h>
 #include "DirectXBase.h"
 
@@ -13,13 +12,20 @@ public: // メンバ関数
 	void Finalize();
 
 	// 初期化
-	void Initialize(DirectXBase* dxBase);
+	void Initialize();
 
 	// 共通描画設定
 	void DrawSetting();
 
-	// DxBaseのgetter
-	DirectXBase* GetDxBase() const { return dxBase_; }
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class SpriteCommon;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit SpriteCommon(ConstructorKey) {}
 
 private:
 	// ルートシグネチャの作成
@@ -28,23 +34,25 @@ private:
 	void GenerateGraphicsPipeLine();
 
 	// インスタンス
-	static SpriteCommon* instance;
+	static std::unique_ptr<SpriteCommon> instance_;
 
 	// DirectXBase
-	DirectXBase* dxBase_;
+	DirectXBase* dxBase_ = nullptr;
 
 	// コマンドリストを生成する
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	// ルートシグネチャ
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
 
 	// グラフィックスパイプラインステート
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_;
 
-	SpriteCommon() = default;
 	~SpriteCommon() = default;
 	SpriteCommon(SpriteCommon&) = delete;
 	SpriteCommon& operator=(SpriteCommon&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<SpriteCommon>;
 };
 

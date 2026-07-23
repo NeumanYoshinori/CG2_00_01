@@ -1,16 +1,13 @@
 #pragma once
-#include "ModelCommon.h"
 #include "MathFunction.h"
 #include <string>
 #include <vector>
 #include "DirectXBase.h"
-#include <assimp/Importer.hpp>
 #include <assimp/scene.h>
-#include <assimp/postprocess.h>
 
 // 3Dモデル
 class Model {
-public:
+private:
 	// 頂点データ
 	struct VertexData {
 		Vector4 position;
@@ -33,12 +30,11 @@ public:
 	// マテリアルデータ
 	struct MaterialData {
 		std::string textureFilePath;
-		uint32_t textureIndex = 0;
 	};
 
 	// ノード
 	struct Node {
-		Matrix4x4 localMatrix;
+		Matrix4x4 localMatrix{};
 		std::string name;
 		std::vector<Node> children;
 	};
@@ -50,8 +46,9 @@ public:
 		Node rootNode;
 	};
 
+public:
 	// 初期化
-	void Initialize(ModelCommon* modelCommon, const std::string& directorypath, const std::string& filename);
+	void Initialize(const std::string& directorypath, const std::string& filename);
 
 	// 描画
 	void Draw();
@@ -72,9 +69,6 @@ private:
 
 	// マテリアルデータ作成
 	void CreateMaterialData();
-
-	// ModelCommonのポインタ
-	ModelCommon* modelCommon_ = nullptr;
 
 	// objファイルのデータ
 	ModelData modelData;

@@ -1,20 +1,44 @@
 #pragma once
 #include <string>
-#include <vector>
 #include <MathFunction.h>
 #include <Transform.h>
 #include <wrl.h>
 #include <d3d12.h>
 #include "DirectXBase.h"
-#include "Model.h"
-#include "ModelManager.h"
 #include "Camera.h"
-
-class SkyboxCommon;
 
 // スカイボックス
 class Skybox {
 public:
+	// 初期化
+	void Initialize(std::string textureFilePath);
+
+	// 更新
+	void Update();
+
+	// 描画
+	void Draw();
+
+	// setter
+	void SetScale(const Vector3& scale) { transform_.scale = scale; }
+	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
+	void SetTranslate(const Vector3& translate) { transform_.translate = translate; }
+
+	// getter
+	const Vector3& GetScale() const { return transform_.scale; }
+	const Vector3& GetRotate() const { return transform_.rotate; }
+	const Vector3& GetTranslate() const { return transform_.translate; }
+
+	// setter
+	void SetCamera(Camera* camera) { camera_ = camera; }
+
+	// ファイルパス取得
+	std::string GetFilePath() { return filePath_; }
+
+	// namespace省略
+	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+private:
 	// 頂点データ
 	struct VertexData {
 		Vector4 position;
@@ -42,32 +66,6 @@ public:
 		uint32_t textureIndex = 0;
 	};
 
-	// 初期化
-	void Initialize(SkyboxCommon* skyboxCommon, std::string textureFilePath);
-
-	// 更新
-	void Update();
-
-	// 描画
-	void Draw();
-
-	// setter
-	void SetScale(const Vector3& scale) { transform.scale = scale; }
-	void SetRotate(const Vector3& rotate) { transform.rotate = rotate; }
-	void SetTranslate(const Vector3& translate) { transform.translate = translate; }
-
-	// getter
-	const Vector3& GetScale() const { return transform.scale; }
-	const Vector3& GetRotate() const { return transform.rotate; }
-	const Vector3& GetTranslate() const { return transform.translate; }
-
-	// setter
-	void SetCamera(Camera* camera) { camera_ = camera; }
-
-	// ファイルパス取得
-	std::string GetFilePath() { return filePath; }
-
-private:
 	// 頂点データ作成
 	void CreateVertexData();
 
@@ -77,47 +75,49 @@ private:
 	// 座標変換行列データ作成
 	void CreateTransformationMatrixData();
 
-	// Object3DCommonのポインタ
-	SkyboxCommon* skyboxCommon_ = nullptr;
-
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource; // 頂点リソース
+	ComPtr<ID3D12Resource> vertexResource_ = nullptr; // 頂点リソース
 	// バッファリソース内のデータを指すポインタ
-	VertexData* vertexData = nullptr;
+	VertexData* vertexData_ = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+
+	const uint32_t kNumVertex_ = 24; // 頂点数
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource; // インデックスリソース
+	ComPtr<ID3D12Resource> indexResource_ = nullptr; // インデックスリソース
 	// バッファリソース内のデータを指すポインタ
-	uint32_t* indexData = nullptr;
+	uint32_t* indexData_ = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
-	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
+	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+
+	const uint32_t kNumIndex_ = 36; // インデックス数
+
+	const uint32_t kNumFace_ = 6; // 面の数
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource; // マテリアルリソース
+	ComPtr<ID3D12Resource> materialResource_ = nullptr; // マテリアルリソース
 	// バッファリソース内のデータを指すポインタ
-	Material* materialData = nullptr;
+	Material* materialData_ = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource; // 座標返還行列リソース
+	ComPtr<ID3D12Resource> transformationMatrixResource_; // 座標返還行列リソース
 	// バッファリソース内のデータを指すポインタ
-	TransformationMatrix* transformationMatrixData = nullptr;
+	TransformationMatrix* transformationMatrixData_ = nullptr;
 
 	// Transform
-	Transform transform;
+	Transform transform_{};
 
 	// コマンドリスト
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+	ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	// カメラ
 	Camera* camera_ = nullptr;
 
-	uint32_t textureIndex;
 	// ファイルパス
-	std::string filePath;
+	std::string filePath_;
 };
 

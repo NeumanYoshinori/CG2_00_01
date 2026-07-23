@@ -2,19 +2,15 @@
 #include <random>
 #include <numbers>
 #include "PostEffect.h"
+#include "Vector4.h"
+#include "SceneManager.h"
 
 using namespace std;
 using namespace numbers;
 
 void GamePlayScene::Initialize() {
 	// インスタンス取得
-	winApp_ = WinApp::GetInstance();
-
-	dxBase_ = DirectXBase::GetInstance();
-
 	input_ = Input::GetInstance();
-
-	srvManager_ = SrvManager::GetInstance();
 
 	textureManager_ = TextureManager::GetInstance();
 
@@ -24,123 +20,87 @@ void GamePlayScene::Initialize() {
 	textureManager_->LoadTexture("resources/rostock_laage_airport_4k.dds");
 
 	// カメラの初期化
-	camera_ = new Camera();
+	camera_ = make_unique<Camera>();
 	camera_->SetRotate({ 0.0f, 1.75f, 0.0f });
 	camera_->SetTranslate({ 0.0f, 0.0f, 0.0f });
 
 	// スカイボックス共通部の初期化
-	skyboxCommon_ = new SkyboxCommon();
-	skyboxCommon_->Initialize(dxBase_);
+	skyboxCommon_ = SkyboxCommon::GetInstance();
+	skyboxCommon_->SetDefaultCamera(camera_.get());
 
 	// スカイボックスの初期化
-	skybox_ = new Skybox();
-	skybox_->Initialize(skyboxCommon_, "resources/rostock_laage_airport_4k.dds");
-	skybox_->SetCamera(camera_);
+	skybox_ = make_unique<Skybox>();
+	skybox_->Initialize("resources/rostock_laage_airport_4k.dds");
 
 	// モデルマネージャのインスタンス取得
 	modelManager_ = ModelManager::GetInstance();
 
 	// 3Dオブジェクト基盤部分のインスタンス取得
 	object3dCommon_ = Object3dCommon::GetInstance();
+	object3dCommon_->SetDefaultCamera(camera_.get());
 
 	// .objファイルからモデルを読み込む
 	modelManager_->LoadModel("terrain.obj");
 
 	// 3dオブジェクトの初期化
-	terrain_ = new Object3d();
-	terrain_->Initialize(object3dCommon_);
+	terrain_ = make_unique<Object3d>();
+	terrain_->Initialize();
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	terrain_->SetModel("terrain.obj");
-	terrain_->SetCamera(camera_);
-	terrain_->SetSkybox(skybox_);
+	terrain_->SetSkybox(skybox_.get());
 
 	// 球の初期化
-	sphere_ = new Sphere();
-	sphere_->Initialize(object3dCommon_, "resources/monsterBall.png");
-	sphere_->SetCamera(camera_);
-	sphere_->SetSkybox(skybox_);
+	sphere_ = make_unique<Sphere>();
+	sphere_->Initialize("resources/monsterBall.png");
+	sphere_->SetSkybox(skybox_.get());
 
 	// 乱数生成器の初期化
 	randomEngine_ = mt19937(seedGenerator_());
 
-	// パーティクルマネージャ
 	particleManager_ = ParticleManager::GetInstance();
-	particleManager_->Initialize(dxBase_, srvManager_, camera_);
+	particleManager_->SetCamera(camera_.get());
 
 	// 円のパーティクルグループを作成
-	particleManager_->CreateParticleGroup(ParticleManager::Cylinder, "gradationLine", "resources/gradationLine.png");
+	particleManager_->CreateParticleGroup(ParticleManager::Cylinder, "cylinder", "resources/circle2.png");
+	particleManager_->CreateParticleGroup(ParticleManager::Plane, "circle", "resources/gradationLine.png");
 
 	uniform_real_distribution<float> distScale(0.4f, 1.5f);
 	uniform_real_distribution<float> distRotate(-pi_v<float>, pi_v<float>);
 
 	// パーティクルエミッターの初期化
-	particleTransform.scale = { 1.0f, 1.0f, 1.0f}; // 横に潰す
-	particleTransform.rotate = { 0.0f, 0.0f, 0.0f};
-	particleTransform.translate = { 5.0f, 0.0f, 0.0f };
+	planeTransform.scale = {1.0f, 1.0f, 1.0f}; // 横に潰す
+	planeTransform.rotate = { 0.0f, 0.0f, 0.0f};
+	planeTransform.translate = { 5.0f, 0.0f, 0.0f };
 	Vector3 particleVelocity = { 0.0f, 0.0f, 0.0f }; // 動かない
 	Vector4 particleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-	particleEmitter_ = new ParticleEmitter("gradationLine", particleTransform, particleVelocity, particleColor, 1, 1.0f);
+	planeEmitter_ = make_unique<ParticleEmitter>("cylinder", planeTransform, particleVelocity, particleColor, 1, 1.0f);
+	cylinderEmitter_ = make_unique<ParticleEmitter>("circle", planeTransform, particleVelocity, particleColor, 1, 2.0f);
 
 	// ImGuiマネージャの初期化
-	imGuiManager_ = new ImGuiManager();
-	imGuiManager_->Initialize(winApp_, dxBase_);
+	imGuiManager_ = ImGuiManager::GetInstance();
 
 	// オーディオの初期化
 	audio_ = Audio::GetInstance();
-	audio_->Initialize();
 	// 音声読み込み
-	soundData2 = audio_->SoundLoadFile("resources/The_maze_of_aqua.mp3");
+	soundData2 = audio_->SoundLoadFile("resources/audios/The_maze_of_aqua.mp3");
 	// 音声再生
-	audio_->SoundPlayWave(soundData2, true);
+	bgmVoice_ = audio_->SoundPlayWave(soundData2, true);
 }
 
 void GamePlayScene::Finalize() {
-	// 3dオブジェクトの解放
-	delete terrain_;
-	terrain_ = nullptr;
-
-	// 球の解放
-	delete sphere_;
-	sphere_ = nullptr;
-
-	// パーティクルエミッターの解放
-	delete particleEmitter_;
-	particleEmitter_ = nullptr;
-
-	// パーティクルマネージャの終了
-	particleManager_->Finalize();
-
-	// スカイボックスの解放
-	delete skybox_;
-	skybox_ = nullptr;
-
-	// スカイボックス共通部の解放
-	delete skyboxCommon_;
-	skyboxCommon_ = nullptr;
-
-	// カメラの解放
-	delete camera_;
-	camera_ = nullptr;
-
-	// ImGuiマネージャの終了処理
-	imGuiManager_->Finalize();
-
-	// ImGuiマネージャの解放
-	delete imGuiManager_;
-	imGuiManager_ = nullptr;
-
-	// オーディオの終了
-	audio_->Release();
+	// 音声停止
+	audio_->SoundStopWave(bgmVoice_);
 
 	// 音声データ開放
 	audio_->SoundUnload(&soundData2);
 }
 
 void GamePlayScene::Update() {
-	// 0キーを押したときコンソールにHit 0と表示する
-	if (input_->ReleaseKey(DIK_0)) {
-		OutputDebugStringA("Hit 0\n");
+	// ENTERキーを押したら
+	if (input_->TriggerKey(DIK_R)) {
+		// シーン切り替え
+		SceneManager::GetInstance()->ChangeScene("TITLE");
 	}
 
 	// カメラの更新
@@ -156,7 +116,8 @@ void GamePlayScene::Update() {
 	particleManager_->Update();
 
 	// パーティクルエミッターの更新
-	particleEmitter_->Update();
+	planeEmitter_->Update();
+	cylinderEmitter_->Update();
 
 	// 球の更新
 	sphere_->Update();
@@ -168,27 +129,41 @@ void GamePlayScene::Update() {
 	// デモウィンドウの表示オン
 	ImGui::ShowDemoWindow();
 
-	ImGui::Begin("Settings");
+	// カメラのImGui
+	ImGui::Begin("Camera");
 	camera_->DebugUpdate();
-	Vector3 terrainPos = terrain_->GetTranslate();
-	ImGui::DragFloat3("terrainPos", &terrainPos.x, 0.01f);
-	terrain_->SetTranslate(terrainPos);
-	Vector3 terrainRot = terrain_->GetRotate();
-	ImGui::DragFloat3("terrainRot", &terrainRot.x, 0.01f);
-	terrain_->SetRotate(terrainRot);
+	ImGui::End();
+
+	// 地面のImGui
+	ImGui::Begin("Terrain");
+	terrain_->DebugUpdate();
+	ImGui::End();
+
+	// 球のImGui
+	ImGui::Begin("Sphere");
 	Vector3 spherePos = sphere_->GetTranslate();
 	ImGui::DragFloat3("spherePos", &spherePos.x, 0.01f);
 	sphere_->SetTranslate(spherePos);
 	Vector3 sphereRot = sphere_->GetRotate();
 	ImGui::DragFloat3("sphereRot", &sphereRot.x, 0.01f);
 	sphere_->SetRotate(sphereRot);
+	ImGui::End();
+
+	// スカイボックスのImGui
+	ImGui::Begin("Skybox");
 	Vector3 skyboxPos = skybox_->GetTranslate();
 	ImGui::DragFloat3("skyboxPos", &skyboxPos.x, 0.01f);
 	skybox_->SetTranslate(skyboxPos);
-	LightManager::GetInstance()->DebugPointLight();
-	float environmentCoefficient = sphere_->GetEnvironmentCoefficient();
-	ImGui::DragFloat("environmentCoefficient", &environmentCoefficient, 0.01f);
-	sphere_->SetEnvironmentCoefficient(environmentCoefficient);
+	ImGui::End();
+
+	ImGui::Begin("Light");
+	LightManager::GetInstance()->DebugLight();
+	ImGui::End();
+
+	ImGui::Begin("PostEffect");
+	//float environmentCoefficient = sphere_->GetEnvironmentCoefficient();
+	//ImGui::DragFloat("environmentCoefficient", &environmentCoefficient, 0.01f);
+	//sphere_->SetEnvironmentCoefficient(environmentCoefficient);
 	static PostEffect::PostEffectType currentPostEffect = PostEffect::PostEffectType::FullScreen;
 	const char* postEffect[] = { "FullScreen", "Grayscale", "Vignette" };
 	if (ImGui::BeginCombo("PostEffect", postEffect[static_cast<int>(currentPostEffect)])) {
@@ -220,7 +195,7 @@ void GamePlayScene::Update() {
 
 void GamePlayScene::Draw() {
 	// SRVマネージャの描画前処理
-	srvManager_->PreDraw();
+	SrvManager::GetInstance()->PreDraw();
 
 	// スカイボックスの描画準備
 	skyboxCommon_->DrawSetting();

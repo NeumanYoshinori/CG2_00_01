@@ -1,32 +1,32 @@
 #include "PostEffect.h"
-#include "SrvManager.h"
 #include "RenderTextureCommon.h"
-#include "TextureManager.h"
-
-PostEffect* PostEffect::instance = nullptr;
+#include "Logger.h"
 
 using namespace Microsoft::WRL;
 using namespace Logger;
 using namespace std;
 
+unique_ptr<PostEffect> PostEffect::instance_ = nullptr;
+
 PostEffect* PostEffect::GetInstance() {
-	if (instance == nullptr) {
-		instance = new PostEffect;
+	if (instance_ == nullptr) {
+		instance_ = make_unique<PostEffect>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
 void PostEffect::Finalize() {
-	delete instance;
-	instance = nullptr;
+	instance_.reset();
 }
 
-void PostEffect::Initialize(DirectXBase* dxBase) {
-	dxBase_ = dxBase;
+void PostEffect::Initialize() {
+	dxBase_ = DirectXBase::GetInstance();
+
+	srvManager_ = SrvManager::GetInstance();
 
 	renderTextureResource_ = RenderTextureCommon::GetInstance()->GetRenderTextureResource();
-	srvIndex_ = SrvManager::GetInstance()->Allocate();
-	SrvManager::GetInstance()->CreateSRVforTexture2D(srvIndex_, renderTextureResource_.Get(), DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, false);
+	srvIndex_ = srvManager_->Allocate();
+	srvManager_->CreateSRVforTexture2D(srvIndex_, renderTextureResource_.Get(), DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, false);
 
 	GenerateGraphicsPipeline(L"resources/shaders/FullScreen.PS.hlsl", PostEffectType::FullScreen);
 	GenerateGraphicsPipeline(L"resources/shaders/Grayscale.PS.hlsl", PostEffectType::Grayscale);
@@ -43,7 +43,7 @@ void PostEffect::Draw() {
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// マテリアルCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(1, SrvManager::GetInstance()->GetGPUDescriptorHandle(srvIndex_));
+	commandList->SetGraphicsRootDescriptorTable(1, srvManager_->GetGPUDescriptorHandle(srvIndex_));
 	commandList->DrawInstanced(3, 1, 0, 0);
 }
 

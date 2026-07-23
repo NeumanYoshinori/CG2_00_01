@@ -2,6 +2,7 @@
 #include "DirectXBase.h"
 #include "Vector3.h"
 #include <string>
+#include "SrvManager.h"
 
 class PostEffect {
 public:
@@ -18,7 +19,7 @@ public:
 	void Finalize();
 
 	// 初期化
-	void Initialize(DirectXBase* dxBase);
+	void Initialize();
 
 	// 描画
 	void Draw();
@@ -28,6 +29,19 @@ public:
 
 	void SetColor(Vector3 color) { materialData_->color = color; }
 	void UseSepia(bool useSepia) { materialData_->useSepia = useSepia; }
+
+	// namespace省略
+	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class PostEffect;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit PostEffect(ConstructorKey) {}
 
 private:
 	// マテリアルデータ
@@ -46,37 +60,42 @@ private:
 	void CreateMaterialData();
 
 	// シングルトンインスタンス
-	static PostEffect* instance;
+	static std::unique_ptr<PostEffect> instance_;
 
 	// DxBase
 	DirectXBase* dxBase_ = nullptr;
 
 	// ルートシグネチャ
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
+	ComPtr<ID3D12RootSignature> rootSignature_;
 
 	// グラフィックスパイプライン
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_[3];
+	ComPtr<ID3D12PipelineState> graphicsPipelineState_[3];
 
 	// SRVインデックス
-	uint32_t srvIndex_;
+	uint32_t srvIndex_ = 0;
 
 	// レンダーテクスチャリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> renderTextureResource_;
+	ComPtr<ID3D12Resource> renderTextureResource_;
 
 	// マテリアルリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
+	ComPtr<ID3D12Resource> materialResource_;
 	Material* materialData_ = nullptr;
 
 	// ポストエフェクトの種類
-	PostEffectType postEffectType_;
+	PostEffectType postEffectType_{};
 
 	// PSの名前
 	std::wstring psName_;
 
-	PostEffect() = default;
+	// SRVマネージャ
+	SrvManager* srvManager_ = nullptr;
+
 	~PostEffect() = default;
 	PostEffect(const PostEffect&) = delete;
 	const PostEffect& operator=(const PostEffect&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<PostEffect>;
 };
 
 

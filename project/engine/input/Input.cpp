@@ -1,28 +1,24 @@
 #include "Input.h"
 #include <cassert>
-#include <cstdint>
+#include "WinApp.h"
 
-#pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 
-Input* Input::instance = nullptr;
+using namespace std;
+
+unique_ptr<Input> Input::instance_ = nullptr;
 
 Input* Input::GetInstance() {
-	if (instance == nullptr) {
-		instance = new Input;
+	if (instance_ == nullptr) {
+		instance_ = make_unique<Input>(ConstructorKey());
 	}
-	return instance;
+	return instance_.get();
 }
 
-void Input::Finalize() {
-	delete instance;
-	instance = nullptr;
-}
-
-void Input::Initialize(WinApp* winApp) {
+void Input::Initialize() {
 	HRESULT result;
-	result = DirectInput8Create(winApp->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
+	result = DirectInput8Create(WinApp::GetInstance()->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
 
 	// キーボードデバイスの生成
@@ -34,7 +30,7 @@ void Input::Initialize(WinApp* winApp) {
 	assert(SUCCEEDED(result));
 
 	// 排他制御レベルのセット
-	result = keyboard->SetCooperativeLevel(winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	result = keyboard->SetCooperativeLevel(WinApp::GetInstance()->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
 }
 

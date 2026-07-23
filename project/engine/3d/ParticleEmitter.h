@@ -2,7 +2,7 @@
 #include "Transform.h"
 #include <cstdint>
 #include <string>
-#include "MathFunction.h"
+#include "Vector4.h"
 
 class ParticleEmitter {
 public:
@@ -13,7 +13,7 @@ public:
 	void Update();
 
 	// パーティクルの発生（Emit）
-	void Emit();
+	void Emit() const;
 
 private:
 	std::string name_;

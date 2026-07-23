@@ -1,12 +1,22 @@
 #include "ImGuiManager.h"
-#include "wrl.h"
+#include "SrvManager.h"
 
 using namespace Microsoft::WRL;
+using namespace std;
 
-void ImGuiManager::Initialize([[maybe_unused]] WinApp* winApp, [[maybe_unused]] DirectXBase* dxBase) {
+unique_ptr<ImGuiManager> ImGuiManager::instance_ = nullptr;
+
+ImGuiManager* ImGuiManager::GetInstance() {
+	if (instance_ == nullptr) {
+		instance_ = make_unique<ImGuiManager>(ConstructorKey());
+	}
+	return instance_.get();
+}
+
+void ImGuiManager::Initialize() {
 #ifdef USE_IMGUI
 	// メンバ変数に記録
-	dxBase_ = dxBase;
+	dxBase_ = DirectXBase::GetInstance();
 
 	srvHeap_ = SrvManager::GetInstance()->GetDescriptorHeap();
 
@@ -15,7 +25,7 @@ void ImGuiManager::Initialize([[maybe_unused]] WinApp* winApp, [[maybe_unused]] 
 	// ImGuiのスタイルを設定
 	ImGui::StyleColorsDark();
 
-	ImGui_ImplWin32_Init(winApp->GetHwnd());
+	ImGui_ImplWin32_Init(WinApp::GetInstance()->GetHwnd());
 
 	// DirectX12用の初期化情報
 	ImGui_ImplDX12_InitInfo initInfo = {};
@@ -80,5 +90,7 @@ void ImGuiManager::Finalize() {
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+
+	instance_.reset();
 #endif
 }

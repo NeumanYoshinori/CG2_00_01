@@ -1,6 +1,5 @@
 #pragma once
 #include <d3d12.h>
-#include <dxgi1_6.h>
 #include <wrl.h>
 #include <cstdint>
 #include "WinApp.h"
@@ -16,7 +15,7 @@ public:
 	void Finalize();
 
 	// 初期化
-	void Initialize(DirectXBase* dxBase);
+	void Initialize();
 
 	// 描画前処理
 	void PreDraw();
@@ -24,11 +23,24 @@ public:
 	// 描画後処理
 	void PostDraw();
 
+	// namespace省略
+	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+
 	// レンダーテクスチャリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, uint32_t width, uint32_t height, DXGI_FORMAT format, const Vector4& color);
+	ComPtr<ID3D12Resource> CreateRenderTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format, const Vector4& color);
 
 	// レンダーテクスチャの取得
-	Microsoft::WRL::ComPtr<ID3D12Resource> GetRenderTextureResource() { return renderTextureResource_; }
+	ComPtr<ID3D12Resource> GetRenderTextureResource() { return renderTextureResource_; }
+
+	// コンストラクタに渡すための鍵
+	class ConstructorKey {
+	private:
+		ConstructorKey() = default;
+		friend class RenderTextureCommon;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit RenderTextureCommon(ConstructorKey) {}
 
 private:
 	// 深度バッファの生成
@@ -41,16 +53,16 @@ private:
 	void DepthStencilInitialize();
 
 	// シングルトンインスタンス
-	static RenderTextureCommon* instance;
+	static std::unique_ptr<RenderTextureCommon> instance_;
 
 	// DirectX12デバイス
-	Microsoft::WRL::ComPtr<ID3D12Device> device_;
+	ComPtr<ID3D12Device> device_;
 
 	// コマンドリスト
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
+	ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	// DepthStencilTextureをウィンドウのサイズで作成
-	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource_;
+	ComPtr<ID3D12Resource> depthStencilResource_;
 
 	// WindowsAPI
 	WinApp* winApp_ = nullptr;
@@ -59,10 +71,10 @@ private:
 	DirectXBase* dxBase_ = nullptr;
 
 	// RTV用のヒープ
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap_;
+	ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap_;
 
 	// DSV用のヒープ
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap_;
+	ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap_;
 
 	// rtvデスク
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc_{};
@@ -77,21 +89,23 @@ private:
 	D3D12_RECT scissorRect_{};
 
 	// RTVHandle
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle_;
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle_{};
 	// DSVHandle
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle_;
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle_{};
 
 	// レンダーテクスチャリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> renderTextureResource_;
+	ComPtr<ID3D12Resource> renderTextureResource_;
 
 	// クリア値
 	D3D12_CLEAR_VALUE clearValue_{};
 
 	// SRVのインデックス
-	uint32_t srvIndex_;
+	uint32_t srvIndex_ = 0;
 
-	RenderTextureCommon() = default;
 	~RenderTextureCommon() = default;
 	RenderTextureCommon(const RenderTextureCommon&) = delete;
 	const RenderTextureCommon& operator=(const RenderTextureCommon&) = delete;
+
+	// default_delete にアクセスを許可する
+	friend struct std::default_delete<RenderTextureCommon>;
 };
