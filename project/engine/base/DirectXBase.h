@@ -47,6 +47,7 @@ public:
 	// スワップチェーンリソースの数を取得
 	size_t GetSwapChainResourcesNum() const { return swapChainResources_.size(); }
 	ComPtr<ID3D12DescriptorHeap> GetDsvDescriptorHeap() { return dsvDescriptorHeap_; }
+	ComPtr<IDXGISwapChain> GetSwapChain() { return swapChain_; }
 
 	// シェーダーのコンパイル
 	ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);

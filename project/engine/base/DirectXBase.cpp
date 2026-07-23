@@ -104,6 +104,9 @@ void DirectXBase::PostDraw() {
 	ID3D12CommandList* commandLists[] = { commandList_.Get() };
 	commandQueue_->ExecuteCommandLists(_countof(commandLists), commandLists);
 
+	// GPUとOSに画面の交換を行うよう通知する
+	swapChain_->Present(1, 0);
+
 	// GPU完了待ち
 	WaitForGPU();
 
@@ -505,10 +508,6 @@ ComPtr<ID3D12Resource> DirectXBase::UploadTextureData(const ComPtr<ID3D12Resourc
 }
 
 void DirectXBase::WaitForGPU() {
-	// GPUとOSに画面の交換を行うよう通知する
-	swapChain_->Present(1, 0);
-	assert(SUCCEEDED(hr));
-
 	// Fenceの値を更新
 	fenceVal_++;
 	// GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
