@@ -33,6 +33,7 @@ void PostEffect::Initialize() {
 	GenerateGraphicsPipeline(L"resources/shaders/Grayscale.PS.hlsl", PostEffectType::Grayscale);
 	GenerateGraphicsPipeline(L"resources/shaders/Vignette.PS.hlsl", PostEffectType::Vignette);
 	GenerateGraphicsPipeline(L"resources/shaders/BoxFilter.PS.hlsl", PostEffectType::BoxFilter);
+	GenerateGraphicsPipeline(L"resources/shaders/GaussianFilter.PS.hlsl", PostEffectType::GaussianFilter);
 
 	// マテリアルデータ作成
 	CreateMaterialData();
@@ -52,7 +53,7 @@ void PostEffect::Draw() {
 
 void PostEffect::DebugUpdate() {
 	static PostEffectType currentPostEffect = PostEffectType::FullScreen;
-	const char* postEffect[] = { "FullScreen", "Grayscale", "Vignette", "BoxFilter" };
+	const char* postEffect[] = { "FullScreen", "Grayscale", "Vignette", "BoxFilter", "GaussianFilter" };
 	if (ImGui::BeginCombo("PostEffectType", postEffect[static_cast<int>(currentPostEffect)])) {
 		for (uint32_t i = 0; i < size(postEffect); ++i) {
 			const bool isSelected = (static_cast<int>(currentPostEffect) == i);

@@ -11,6 +11,7 @@ public:
 		Grayscale,
 		Vignette,
 		BoxFilter,
+		GaussianFilter,
 		kNumType,
 	};
 
