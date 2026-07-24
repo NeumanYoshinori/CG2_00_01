@@ -10,6 +10,7 @@ public: // メンバ関数
 	// 更新
 	void Update();
 
+	// デバッグ
 	void DebugUpdate();
 
 	// setter

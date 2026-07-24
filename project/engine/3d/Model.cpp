@@ -9,7 +9,7 @@ using namespace MathFunction;
 
 void Model::Initialize(const string& directorypath, const string& filename) {
 	// モデル読み込み
-	modelData = LoadModelFile(directorypath, filename);
+	modelData_ = LoadModelFile(directorypath, filename);
 
 	dxBase_ = DirectXBase::GetInstance();
 
@@ -20,21 +20,21 @@ void Model::Initialize(const string& directorypath, const string& filename) {
 	CreateMaterialData();
 
 	// .objの参照しているテクスチャファイル読み込み
-	TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
+	TextureManager::GetInstance()->LoadTexture(modelData_.material.textureFilePath);
 }
 
 void Model::Draw() {
 	// コマンドリストを作成
-	commandList = dxBase_->GetCommandList();
+	commandList_ = dxBase_->GetCommandList();
 
-	// VertexBufferViewを設定
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+	// vertexBufferView_を設定
+	commandList_->IASetVertexBuffers(0, 1, &vertexBufferView_);
 	// マテリアルCBufferの場所を設定
-	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+	commandList_->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
-	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData.material.textureFilePath));
+	commandList_->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData_.material.textureFilePath));
 	// 描画！（フォローコール）
-	commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+	commandList_->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
 }
 
 Model::ModelData Model::LoadModelFile(const string& directoryPath, const string& filename) {
@@ -60,7 +60,7 @@ Model::ModelData Model::LoadModelFile(const string& directoryPath, const string&
 				aiVector3D& position = mesh->mVertices[vertexIndex];
 				aiVector3D& normal = mesh->mNormals[vertexIndex];
 				aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
-				VertexData vertex;
+				VertexData vertex{};
 				vertex.position = { position.x, position.y, position.z, 1.0f };
 				vertex.normal = { normal.x, normal.y, normal.z };
 				vertex.texcoord = { texcoord.x, texcoord.y };
@@ -106,33 +106,33 @@ Model::Node Model::ReadNode(aiNode* node) {
 
 void Model::CreateVertexData() {
 	// 頂点リソースを作る
-	vertexResource = dxBase_->CreateBufferResource(sizeof(VertexData) * modelData.vertices.size());
+	vertexResource_ = dxBase_->CreateBufferResource(sizeof(VertexData) * modelData_.vertices.size());
 
 	// リソースの先頭のアドレスから使う
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());
+	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
 	// 1頂点あたりのサイズ
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
 	// 書き込むためのアドレスを取得
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
+	memcpy(vertexData_, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
 }
 
 void Model::CreateMaterialData() {
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
-	materialResource = dxBase_->CreateBufferResource(sizeof(Material));
+	materialResource_ = dxBase_->CreateBufferResource(sizeof(Material));
 
 	// マテリアルにデータを書き込む
 	// 書き込むためのアドレスを取得
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 
 	// マテリアルデータの初期値を書き込む
-	materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData->enableLighting = true;
-	materialData->uvTransform = MakeIdentity4x4();
-	materialData->shininess = 10.0f;
-	materialData->environmentCoefficient = 1.0f;
-	materialData->alphaReference = 0.5f;
+	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	materialData_->enableLighting = true;
+	materialData_->uvTransform = MakeIdentity4x4();
+	materialData_->shininess = 10.0f;
+	materialData_->environmentCoefficient = 1.0f;
+	materialData_->alphaReference = 0.0f;
 }

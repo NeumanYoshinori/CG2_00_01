@@ -52,7 +52,7 @@ void TitleScene::Update() {
 
 	// 座標
 	Vector2 spritePos = sprite_->GetPosition();
-	ImGui::DragFloat2("Po", &spritePos.x, 0.1f);
+	ImGui::DragFloat2("Pos", &spritePos.x, 0.1f);
 	sprite_->SetPosition(spritePos);
 
 	// 角度

@@ -3,6 +3,7 @@
 #include <numbers>
 #include "TextureManager.h"
 #include "Skybox.h"
+#include "ImGuiManager.h"
 
 using namespace std;
 using namespace MathFunction;
@@ -72,6 +73,15 @@ void Sphere::Draw() {
 	commandList_->SetGraphicsRootDescriptorTable(5, TextureManager::GetInstance()->GetSrvHandleGPU(skybox_->GetFilePath()));
 	// 描画
 	commandList_->DrawIndexedInstanced(kSubdivision_ * kSubdivision_ * 6, 1, 0, 0, 0);
+}
+
+void Sphere::DebugUpdate() {
+	ImGui::DragFloat3("Scale", &transform_.scale.x, 0.01f);
+	ImGui::SliderAngle("RotateX", &transform_.rotate.x);
+	ImGui::SliderAngle("RotateY", &transform_.rotate.y);
+	ImGui::SliderAngle("RotateZ", &transform_.rotate.z);
+	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.01f);
+	ImGui::DragFloat("EnvironmentCoefficient", &materialData_->environmentCoefficient, 0.01f);
 }
 
 void Sphere::CreateVertexData() {
@@ -160,6 +170,7 @@ void Sphere::CreateMaterialData() {
 	materialData_->uvTransform = MakeIdentity4x4();
 	materialData_->shininess = 10.0f;
 	materialData_->environmentCoefficient = 1.0f;
+	materialData_->alphaReference = 0.0f;
 }
 
 void Sphere::CreateTransformationMatrixData() {

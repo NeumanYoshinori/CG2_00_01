@@ -1,6 +1,7 @@
 #include "PostEffect.h"
 #include "RenderTextureCommon.h"
 #include "Logger.h"
+#include "ImGuiManager.h"
 
 using namespace Microsoft::WRL;
 using namespace Logger;
@@ -31,7 +32,9 @@ void PostEffect::Initialize() {
 	GenerateGraphicsPipeline(L"resources/shaders/FullScreen.PS.hlsl", PostEffectType::FullScreen);
 	GenerateGraphicsPipeline(L"resources/shaders/Grayscale.PS.hlsl", PostEffectType::Grayscale);
 	GenerateGraphicsPipeline(L"resources/shaders/Vignette.PS.hlsl", PostEffectType::Vignette);
+	GenerateGraphicsPipeline(L"resources/shaders/BoxFilter.PS.hlsl", PostEffectType::BoxFilter);
 
+	// マテリアルデータ作成
 	CreateMaterialData();
 }
 
@@ -45,6 +48,29 @@ void PostEffect::Draw() {
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootDescriptorTable(1, srvManager_->GetGPUDescriptorHandle(srvIndex_));
 	commandList->DrawInstanced(3, 1, 0, 0);
+}
+
+void PostEffect::DebugUpdate() {
+	static PostEffectType currentPostEffect = PostEffectType::FullScreen;
+	const char* postEffect[] = { "FullScreen", "Grayscale", "Vignette", "BoxFilter" };
+	if (ImGui::BeginCombo("PostEffectType", postEffect[static_cast<int>(currentPostEffect)])) {
+		for (uint32_t i = 0; i < size(postEffect); ++i) {
+			const bool isSelected = (static_cast<int>(currentPostEffect) == i);
+			if (ImGui::Selectable(postEffect[i], isSelected)) {
+				currentPostEffect = static_cast<PostEffectType>(i);
+
+				postEffectType_ = currentPostEffect;
+
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::Checkbox("useSepia", &materialData_->useSepia);
+	if (ImGui::InputFloat3("GrayscaleRGB", &(materialData_->color.x, materialData_->color.y, materialData_->color.z))) {
+	}
 }
 
 void PostEffect::CreateRootSignature() {
@@ -163,4 +189,6 @@ void PostEffect::CreateMaterialData() {
 	// マテリアルデータの初期値を書き込む
 	materialData_->color = { 1.0f, 1.0f, 1.0f };
 	materialData_->useSepia = false;
+	materialData_->scale = 16.0f;
+	materialData_->power = 0.8f;
 }

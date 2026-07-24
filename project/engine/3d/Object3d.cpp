@@ -64,10 +64,14 @@ void Object3d::Draw() {
 
 void Object3d::DebugUpdate() {
 #ifdef USE_IMGUI
-	ImGui::DragFloat3("Pos", &transform.translate.x, 0.01f);
+	ImGui::DragFloat3("Scale", &transform.scale.x, 0.01f);
 	ImGui::SliderAngle("RotateX", &transform.rotate.x);
 	ImGui::SliderAngle("RotateY", &transform.rotate.y);
 	ImGui::SliderAngle("RotateZ", &transform.rotate.z);
+	ImGui::DragFloat3("Translate", &transform.translate.x, 0.01f);
+	float environmentCoeffcient = model_->GetEnvironmentCoefficient();
+	ImGui::DragFloat("EnvironmentCoefficient", &environmentCoeffcient, 0.01f);
+	model_->SetEnvironmentCoefficient(environmentCoeffcient);
 #endif
 }
 

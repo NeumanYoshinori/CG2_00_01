@@ -3,6 +3,8 @@
 struct Material {
     float32_t3 color;
     bool useSepia;
+    float32_t scale;
+    float32_t power;
 };
 
 ConstantBuffer<Material> gMaterial : register(b0);
