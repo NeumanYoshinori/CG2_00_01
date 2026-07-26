@@ -70,7 +70,7 @@ void PostEffect::DebugUpdate() {
 		ImGui::EndCombo();
 	}
 	ImGui::Checkbox("useSepia", &materialData_->useSepia);
-	if (ImGui::InputFloat3("GrayscaleRGB", &(materialData_->color.x, materialData_->color.y, materialData_->color.z))) {
+	if (ImGui::InputFloat3("GrayscaleRGB", &(materialData_->color.x))) {
 	}
 }
 
