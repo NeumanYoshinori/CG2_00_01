@@ -129,63 +129,38 @@ void GamePlayScene::Update() {
 	// デモウィンドウの表示オン
 	ImGui::ShowDemoWindow();
 
+	ImGui::Begin("Setting");
+
 	// カメラのImGui
-	ImGui::Begin("Camera");
-	camera_->DebugUpdate();
-	ImGui::End();
+	if (ImGui::CollapsingHeader("Camera")) {
+		camera_->DebugUpdate();
+	}
 
 	// 地面のImGui
-	ImGui::Begin("Terrain");
-	terrain_->DebugUpdate();
-	ImGui::End();
+	if (ImGui::CollapsingHeader("Terrain")) {
+		terrain_->DebugUpdate();
+	}
 
 	// 球のImGui
-	ImGui::Begin("Sphere");
-	Vector3 spherePos = sphere_->GetTranslate();
-	ImGui::DragFloat3("spherePos", &spherePos.x, 0.01f);
-	sphere_->SetTranslate(spherePos);
-	Vector3 sphereRot = sphere_->GetRotate();
-	ImGui::DragFloat3("sphereRot", &sphereRot.x, 0.01f);
-	sphere_->SetRotate(sphereRot);
-	ImGui::End();
+	if (ImGui::CollapsingHeader("Sphere")) {
+		sphere_->DebugUpdate();
+	}
 
 	// スカイボックスのImGui
-	ImGui::Begin("Skybox");
-	Vector3 skyboxPos = skybox_->GetTranslate();
-	ImGui::DragFloat3("skyboxPos", &skyboxPos.x, 0.01f);
-	skybox_->SetTranslate(skyboxPos);
-	ImGui::End();
-
-	ImGui::Begin("Light");
-	LightManager::GetInstance()->DebugLight();
-	ImGui::End();
-
-	ImGui::Begin("PostEffect");
-	//float environmentCoefficient = sphere_->GetEnvironmentCoefficient();
-	//ImGui::DragFloat("environmentCoefficient", &environmentCoefficient, 0.01f);
-	//sphere_->SetEnvironmentCoefficient(environmentCoefficient);
-	static PostEffect::PostEffectType currentPostEffect = PostEffect::PostEffectType::FullScreen;
-	const char* postEffect[] = { "FullScreen", "Grayscale", "Vignette" };
-	if (ImGui::BeginCombo("PostEffect", postEffect[static_cast<int>(currentPostEffect)])) {
-		for (uint32_t i = 0; i < size(postEffect); ++i) {
-			const bool isSelected = (static_cast<int>(currentPostEffect) == i);
-			if (ImGui::Selectable(postEffect[i], isSelected)) {
-				currentPostEffect = static_cast<PostEffect::PostEffectType>(i);
-
-				PostEffect::GetInstance()->SetPostEffect(currentPostEffect);
-
-				if (isSelected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-		}
-		ImGui::EndCombo();
+	if (ImGui::CollapsingHeader("Skybox")) {
+		Vector3 skyboxPos = skybox_->GetTranslate();
+		ImGui::DragFloat3("skyboxPos", &skyboxPos.x, 0.01f);
+		skybox_->SetTranslate(skyboxPos);
 	}
-	ImGui::Checkbox("useSepia", &useSepia);
-	PostEffect::GetInstance()->UseSepia(useSepia);
-	if (ImGui::InputFloat3("GrayscaleRGB", rgb)) {
-		PostEffect::GetInstance()->SetColor(Vector3(rgb[0], rgb[1], rgb[2]));
+
+	if (ImGui::CollapsingHeader("Light")) {
+		LightManager::GetInstance()->DebugLight();
 	}
+
+	if (ImGui::CollapsingHeader("PostEffect")) {
+		PostEffect::GetInstance()->DebugUpdate();
+	}
+
 	ImGui::End();
 #endif
 

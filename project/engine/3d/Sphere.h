@@ -23,6 +23,9 @@ public: // メンバ関数
 	// 描画
 	void Draw();
 
+	// デバッグ
+	void DebugUpdate();
+
 	// setter
 	void SetScale(const Vector3& scale) { transform_.scale = scale; }
 	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
@@ -61,7 +64,8 @@ private:
 		Matrix4x4 uvTransform;
 		float shininess;
 		float environmentCoefficient;
-		float padding2[2];
+		float alphaReference;
+		float padding2;
 	};
 
 	// 座標変換用行列

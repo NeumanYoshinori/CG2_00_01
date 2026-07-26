@@ -44,8 +44,6 @@ public: // メンバ関数
 	// setter
 	void SetSkybox(Skybox* skybox) { skybox_ = skybox; }
 
-	Model* GetModel() { return model_; }
-
 private:
 	// 座標変換用行列
 	struct TransformationMatrix {

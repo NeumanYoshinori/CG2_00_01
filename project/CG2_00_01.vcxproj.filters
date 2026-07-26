@@ -369,5 +369,7 @@
     <FxCompile Include="resources\shaders\Vignette.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
+    <FxCompile Include="resources\shaders\BoxFilter.PS.hlsl" />
+    <FxCompile Include="resources\shaders\GaussianFilter.PS.hlsl" />
   </ItemGroup>
 </Project>

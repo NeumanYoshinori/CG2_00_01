@@ -58,10 +58,10 @@ public:
 
 	static Node ReadNode(aiNode* node);
 
-	ModelData GetModelData() const { return modelData; }
+	ModelData GetModelData() const { return modelData_; }
 
-	float GetEnvironmentCoefficient() { return materialData->environmentCoefficient; }
-	void SetEnvironmentCoefficient(float environmentCoefficient) { materialData->environmentCoefficient = environmentCoefficient; }
+	float GetEnvironmentCoefficient() { return materialData_->environmentCoefficient; }
+	void SetEnvironmentCoefficient(float environmentCoefficient) { materialData_->environmentCoefficient = environmentCoefficient; }
 
 private:
 	// 頂点データ作成
@@ -71,30 +71,30 @@ private:
 	void CreateMaterialData();
 
 	// objファイルのデータ
-	ModelData modelData;
+	ModelData modelData_;
 
 	DirectXBase* dxBase_ = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource; // 頂点リソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_; // 頂点リソース
 	// バッファリソース内のデータを指すポインタ
-	VertexData* vertexData = nullptr;
+	VertexData* vertexData_ = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_;
 	// バッファリソース内のデータを指すポインタ
-	uint32_t* indexData = nullptr;
+	uint32_t* indexData_ = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource; // マテリアルリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_; // マテリアルリソース
 	// バッファリソース内のデータを指すポインタ
-	Material* materialData = nullptr;
+	Material* materialData_ = nullptr;
 
 	// コマンドリスト
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 };
 

@@ -10,6 +10,9 @@ public:
 		FullScreen,
 		Grayscale,
 		Vignette,
+		BoxFilter,
+		GaussianFilter,
+		kNumType,
 	};
 
 	// シングルトンインスタンスの取得
@@ -23,6 +26,9 @@ public:
 
 	// 描画
 	void Draw();
+
+	// デバッグ
+	void DebugUpdate();
 
 	// ポストエフェクトを変更
 	void SetPostEffect(PostEffectType postEffectType) { postEffectType_ = postEffectType; }
@@ -48,6 +54,8 @@ private:
 	struct Material {
 		Vector3 color;
 		bool useSepia;
+		float scale;
+		float power;
 	};
 
 	// ルートシグネチャの作成
@@ -69,7 +77,7 @@ private:
 	ComPtr<ID3D12RootSignature> rootSignature_;
 
 	// グラフィックスパイプライン
-	ComPtr<ID3D12PipelineState> graphicsPipelineState_[3];
+	ComPtr<ID3D12PipelineState> graphicsPipelineState_[static_cast<uint32_t>(PostEffectType::kNumType)];
 
 	// SRVインデックス
 	uint32_t srvIndex_ = 0;

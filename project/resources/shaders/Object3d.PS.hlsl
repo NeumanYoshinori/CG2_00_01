@@ -64,12 +64,12 @@ PixelShaderOutput main(VertexShaderOutput input) {
     float4 transformedUV = mul(float32_t4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float32_t4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
     
-    // textureのα値が0.5以下のときにPixelを棄却
+    // textureのα値がalphaReference以下のときにPixelを棄却
     if (textureColor.a <= gMaterial.alphaReference) {
         discard;
     }
     
-    // output.colorの値が0の時にPixelを棄却
+    // output.colorの値がalphaReference以下のときにPixelを棄却
     if (output.color.a <= gMaterial.alphaReference) {
         discard;
     }
