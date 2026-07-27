@@ -5,6 +5,8 @@ struct Material {
     bool useSepia;
     float32_t scale;
     float32_t power;
+    int kKernelSize;
+    float32_t sigma;
 };
 
 ConstantBuffer<Material> gMaterial : register(b0);

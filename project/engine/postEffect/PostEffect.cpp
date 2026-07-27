@@ -72,6 +72,8 @@ void PostEffect::DebugUpdate() {
 	ImGui::Checkbox("useSepia", &materialData_->useSepia);
 	if (ImGui::InputFloat3("GrayscaleRGB", &(materialData_->color.x))) {
 	}
+	ImGui::InputInt("kKernelSize", &materialData_->kKernelSize);
+	ImGui::DragFloat("sigma", &materialData_->sigma, 0.01f);
 }
 
 void PostEffect::CreateRootSignature() {
@@ -192,4 +194,6 @@ void PostEffect::CreateMaterialData() {
 	materialData_->useSepia = false;
 	materialData_->scale = 16.0f;
 	materialData_->power = 0.8f;
+	materialData_->kKernelSize = 3;
+	materialData_->sigma = 2.0f;
 }
