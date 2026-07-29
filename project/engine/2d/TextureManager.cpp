@@ -76,8 +76,6 @@ void TextureManager::LoadTexture(const string& filePath) {
 
 	// コマンドリスト
 	ComPtr<ID3D12GraphicsCommandList> commandList = dxBase_->GetCommandList();
-	// コマンドキュー
-	ComPtr<ID3D12CommandQueue> commandQueue = dxBase_->GetCommandQueue();
 	// コマンドアロケーター
 	ComPtr<ID3D12CommandAllocator> commandAllocator = dxBase_->GetCommandAllocator();
 
@@ -86,7 +84,7 @@ void TextureManager::LoadTexture(const string& filePath) {
 	assert(SUCCEEDED(hr));
 
 	ID3D12CommandList* commandLists[] = { commandList.Get() };
-	commandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
+	dxBase_->GetCommandQueue()->ExecuteCommandLists(_countof(commandLists), commandLists);
 
 	// GPU完了待ち
 	dxBase_->WaitForGPU();

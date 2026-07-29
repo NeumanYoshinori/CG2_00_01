@@ -4,6 +4,10 @@
 #include "PostEffect.h"
 #include "Vector4.h"
 #include "SceneManager.h"
+#include "Sphere.h"
+#include "Plane.h"
+#include "Ring.h"
+#include "Cylinder.h"
 
 using namespace std;
 using namespace numbers;
@@ -18,6 +22,7 @@ void GamePlayScene::Initialize() {
 	textureManager_->LoadTexture("resources/uvChecker.png");
 	textureManager_->LoadTexture("resources/monsterBall.png");
 	textureManager_->LoadTexture("resources/rostock_laage_airport_4k.dds");
+	textureManager_->LoadTexture("resources/gradationLine.png");
 
 	// カメラの初期化
 	camera_ = make_unique<Camera>();
@@ -52,8 +57,25 @@ void GamePlayScene::Initialize() {
 
 	// 球の初期化
 	sphere_ = make_unique<Sphere>();
-	sphere_->Initialize("resources/monsterBall.png");
-	sphere_->SetSkybox(skybox_.get());
+	sphere_->Initialize("resources/monsterBall.png", 1);
+
+	// 平面の初期化
+	plane_ = make_unique<Plane>();
+	plane_->Initialize("resources/uvChecker.png", 1);
+
+	ring_ = make_unique<Ring>();
+	ring_->Initialize("resources/gradationLine.png", 1);
+
+	cylinder_ = make_unique<Cylinder>();
+	cylinder_->Initialize("resources/gradationLine.png", 1);
+
+	// モンスターボールの初期化
+	primitive_ = make_unique<Object3d>();
+	primitive_->Initialize();
+
+	// 初期化済みの3Dオブジェクトにプリミティブを紐づける
+	primitive_->SetPrimitive(sphere_.get());
+	primitive_->SetSkybox(skybox_.get());
 
 	// 乱数生成器の初期化
 	randomEngine_ = mt19937(seedGenerator_());
@@ -62,11 +84,8 @@ void GamePlayScene::Initialize() {
 	particleManager_->SetCamera(camera_.get());
 
 	// 円のパーティクルグループを作成
-	particleManager_->CreateParticleGroup(ParticleManager::Cylinder, "cylinder", "resources/circle2.png");
-	particleManager_->CreateParticleGroup(ParticleManager::Plane, "circle", "resources/gradationLine.png");
-
-	uniform_real_distribution<float> distScale(0.4f, 1.5f);
-	uniform_real_distribution<float> distRotate(-pi_v<float>, pi_v<float>);
+	particleManager_->CreateParticleGroup("Sphere", "cylinder", "resources/monsterBall.png", false, false);
+	particleManager_->CreateParticleGroup("Plane", "circle", "resources/gradationLine.png", false, false);
 
 	// パーティクルエミッターの初期化
 	planeTransform.scale = {1.0f, 1.0f, 1.0f}; // 横に潰す
@@ -74,8 +93,8 @@ void GamePlayScene::Initialize() {
 	planeTransform.translate = { 5.0f, 0.0f, 0.0f };
 	Vector3 particleVelocity = { 0.0f, 0.0f, 0.0f }; // 動かない
 	Vector4 particleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-	planeEmitter_ = make_unique<ParticleEmitter>("cylinder", planeTransform, particleVelocity, particleColor, 1, 1.0f);
-	cylinderEmitter_ = make_unique<ParticleEmitter>("circle", planeTransform, particleVelocity, particleColor, 1, 2.0f);
+	planeEmitter_ = make_unique<ParticleEmitter>("cylinder", planeTransform, particleVelocity, particleColor, 1.0f, 5, 2.0f);
+	cylinderEmitter_ = make_unique<ParticleEmitter>("circle", planeTransform, particleVelocity, particleColor, 2.0f, 5, 2.0f);
 
 	// ImGuiマネージャの初期化
 	imGuiManager_ = ImGuiManager::GetInstance();
@@ -103,14 +122,30 @@ void GamePlayScene::Update() {
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 	}
 
+	if (input_->TriggerKey(DIK_1)) {
+		primitive_->SetPrimitive(sphere_.get());
+	}
+	if (input_->TriggerKey(DIK_2)) {
+		primitive_->SetPrimitive(plane_.get());
+	}
+	if (input_->TriggerKey(DIK_3)) {
+		primitive_->SetPrimitive(ring_.get());
+	}
+	if (input_->TriggerKey(DIK_4)) {
+		primitive_->SetPrimitive(cylinder_.get());
+	}
+
 	// カメラの更新
 	camera_->Update();
 
 	// スカイボックスの更新
 	skybox_->Update();
 
-	// 3Dオブジェクトの更新
+	// 地面の更新
 	terrain_->Update();
+
+	// モンスターボールの更新
+	primitive_->Update();
 
 	// パーティクルマネージャの更新
 	particleManager_->Update();
@@ -118,9 +153,6 @@ void GamePlayScene::Update() {
 	// パーティクルエミッターの更新
 	planeEmitter_->Update();
 	cylinderEmitter_->Update();
-
-	// 球の更新
-	sphere_->Update();
 
 	// ImGui受付開始
 	imGuiManager_->Begin();
@@ -142,8 +174,8 @@ void GamePlayScene::Update() {
 	}
 
 	// 球のImGui
-	if (ImGui::CollapsingHeader("Sphere")) {
-		sphere_->DebugUpdate();
+	if (ImGui::CollapsingHeader("Primitive")) {
+		primitive_->DebugUpdate();
 	}
 
 	// スカイボックスのImGui
@@ -181,11 +213,11 @@ void GamePlayScene::Draw() {
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	object3dCommon_->DrawSetting();
 
-	// 3Dオブジェクトの描画
+	// 地面の描画
 	terrain_->Draw();
 
 	// 球の描画
-	sphere_->Draw();
+	primitive_->Draw();
 
 	// パーティクルマネージャ描画
 	particleManager_->Draw();

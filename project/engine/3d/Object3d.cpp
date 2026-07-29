@@ -33,8 +33,15 @@ void Object3d::Update() {
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
-	transformationMatrixData->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
-	transformationMatrixData->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
+	if (model_) {
+		transformationMatrixData->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
+		transformationMatrixData->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
+	}
+
+	if (primitive_) {
+		transformationMatrixData->WVP = worldViewProjectionMatrix;
+		transformationMatrixData->World = worldMatrix;
+	}
 
 	Matrix4x4 worldInverseMatrix = Inverse(worldMatrix);
 	transformationMatrixData->WorldInverseTranspose = Transpose(worldInverseMatrix);
@@ -60,6 +67,11 @@ void Object3d::Draw() {
 	if (model_) {
 		model_->Draw();
 	}
+
+	// 球が割り当てられていれば描画する
+	if (primitive_) {
+		primitive_->Draw();
+	}
 }
 
 void Object3d::DebugUpdate() {
@@ -69,9 +81,24 @@ void Object3d::DebugUpdate() {
 	ImGui::SliderAngle("RotateY", &transform.rotate.y);
 	ImGui::SliderAngle("RotateZ", &transform.rotate.z);
 	ImGui::DragFloat3("Translate", &transform.translate.x, 0.01f);
-	float environmentCoeffcient = model_->GetEnvironmentCoefficient();
-	ImGui::DragFloat("EnvironmentCoefficient", &environmentCoeffcient, 0.01f);
-	model_->SetEnvironmentCoefficient(environmentCoeffcient);
+	if (model_) {
+		float modelEnvironmentCoeffcient = model_->GetEnvironmentCoefficient();
+		ImGui::DragFloat("EnvironmentCoefficient", &modelEnvironmentCoeffcient, 0.01f);
+		model_->SetEnvironmentCoefficient(modelEnvironmentCoeffcient);
+	}
+	if (primitive_) {
+		float sphereEnvironmentCoeffcient = primitive_->GetEnvironmentCoefficient();
+		ImGui::DragFloat("EnvironmentCoefficient", &sphereEnvironmentCoeffcient, 0.01f);
+		primitive_->SetEnvironmentCoefficient(sphereEnvironmentCoeffcient);
+	}
+	bool flipX = transformationMatrixData->flipX;
+	if (ImGui::Checkbox("FlipX", &flipX)) {
+		transformationMatrixData->flipX = flipX;
+	}
+	bool flipY = transformationMatrixData->flipY;
+	if (ImGui::Checkbox("FlipY", &flipY)) {
+		transformationMatrixData->flipY = flipY;
+	}
 #endif
 }
 
@@ -91,6 +118,8 @@ void Object3d::CreateTransformationMatrixData() {
 	transformationMatrixData->WVP = MakeIdentity4x4();
 	transformationMatrixData->World = MakeIdentity4x4();
 	transformationMatrixData->WorldInverseTranspose = MakeIdentity4x4();
+	transformationMatrixData->flipX = false;
+	transformationMatrixData->flipY = false;
 }
 
 void Object3d::CreateCameraData() {

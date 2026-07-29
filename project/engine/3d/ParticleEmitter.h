@@ -7,7 +7,7 @@
 class ParticleEmitter {
 public:
 	// コンストラクタ
-	ParticleEmitter(std::string name, Transform transform, Vector3 velocity, Vector4 color, uint32_t count, float frequency);
+	ParticleEmitter(std::string name, Transform transform, Vector3 velocity, Vector4 color, float lifeTime, uint32_t count, float frequency);
 
 	// 更新
 	void Update();
@@ -21,6 +21,7 @@ private:
 	Vector3 velocity_;
 	Vector4 color_;
 	uint32_t count_ = 0;
+	float lifeTime_ = 0.0f;
 	float frequency_ = 0.0f;
 	float frequencyTime_ = 0.0f;
 };

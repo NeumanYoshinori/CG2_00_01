@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include "Model.h"
+#include "Sphere.h"
 
 // モデルマネージャー
 class ModelManager {
@@ -24,6 +25,12 @@ public:
 	/// <param name="filePath">モデルファイルのパス</param>
 	/// <returns></returns>
 	Model* FindModel(const std::string& filePath);
+
+	/// <summary>
+	/// 球生成
+	/// </summary>
+	/// <returns></returns>
+	Sphere* CreateSphere(const std::string& filePath);
 
 	// コンストラクタに渡すための鍵
 	class ConstructorKey {

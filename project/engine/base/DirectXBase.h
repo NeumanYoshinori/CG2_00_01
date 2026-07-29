@@ -43,10 +43,8 @@ public:
 	D3D12_RECT GetScissorRect() const { return scissorRect_; }
 	HANDLE GetFenceEvent() const { return fenceEvent_; }
 	D3D12_RENDER_TARGET_VIEW_DESC GetRtvDesc() const { return rtvDesc_; }
-	D3D12_DEPTH_STENCIL_VIEW_DESC GetDsvDesc() const { return dsvDesc_; }
 	// スワップチェーンリソースの数を取得
 	size_t GetSwapChainResourcesNum() const { return swapChainResources_.size(); }
-	ComPtr<ID3D12DescriptorHeap> GetDsvDescriptorHeap() { return dsvDescriptorHeap_; }
 	ComPtr<IDXGISwapChain> GetSwapChain() { return swapChain_; }
 
 	// シェーダーのコンパイル
@@ -87,8 +85,8 @@ private:
 	// スワップチェーンの生成
 	void CreateSwapChain();
 
-	// 各種デスクリプタヒープの生成
-	void CreateDescriptorHeaps();
+	// RTVデスクリプタヒープの生成
+	void CreateRTVDescriptorHeap();
 
 	// レンダーターゲットビューの初期化
 	void RenderTargetViewInitialize();
@@ -150,20 +148,12 @@ private:
 
 	// RTV用のデスクリプタヒープ生成
 	uint32_t descriptorSizeRTV_ = 0;
-	// DSV用のデスクリプタヒープ生成
-	uint32_t descriptorSizeDSV_ = 0;
 
 	// RTV用のヒープ
 	ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap_;
 
-	// DSV用のヒープ
-	ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap_;
-
 	// rtvデスク
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc_{};
-
-	// dsvデスク
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc_{};
 	
 	// フェンス
 	ComPtr<ID3D12Fence> fence_;

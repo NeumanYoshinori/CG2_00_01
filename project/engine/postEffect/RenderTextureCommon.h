@@ -32,6 +32,8 @@ public:
 	// レンダーテクスチャの取得
 	ComPtr<ID3D12Resource> GetRenderTextureResource() { return renderTextureResource_; }
 
+	D3D12_DEPTH_STENCIL_VIEW_DESC GetDsvDesc() const { return dsvDesc_; }
+
 	// コンストラクタに渡すための鍵
 	class ConstructorKey {
 	private:
@@ -45,6 +47,9 @@ public:
 private:
 	// 深度バッファの生成
 	void CreateDepthBuffer();
+
+	// 各種デスクリプタヒープの作成
+	void CreateDescriptorHeaps();
 
 	// レンダーターゲットビューの初期化
 	void RenderTargetViewInitialize();
@@ -69,6 +74,11 @@ private:
 
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
+
+	// RTV用のデスクリプタヒープ生成
+	uint32_t descriptorSizeRTV_ = 0;
+	// DSV用のデスクリプタヒープ生成
+	uint32_t descriptorSizeDSV_ = 0;
 
 	// RTV用のヒープ
 	ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap_;

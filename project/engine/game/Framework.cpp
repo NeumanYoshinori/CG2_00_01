@@ -47,9 +47,6 @@ void Framework::Initialize() {
 	// パーティクルマネージャ
 	ParticleManager::GetInstance()->Initialize();
 
-	// ImGuiマネージャの初期化
-	ImGuiManager::GetInstance()->Initialize();
-
 	// スカイボックス共通部の初期化
 	SkyboxCommon::GetInstance()->Initialize();
 
@@ -59,6 +56,10 @@ void Framework::Initialize() {
 	// ポストエフェクトの初期化
 	PostEffect::GetInstance()->Initialize();
 
+	// ImGuiマネージャの初期化
+	ImGuiManager::GetInstance()->Initialize();
+
+	// オーディオの初期化
 	Audio::GetInstance()->Initialize();
 
 	// シーンマネージャのインスタンス取得

@@ -9,6 +9,7 @@
 #include "Camera.h"
 #include "LightManager.h"
 #include "Skybox.h"
+#include "Sphere.h"
 
 // 3Dオブジェクト
 class Object3d {
@@ -44,12 +45,17 @@ public: // メンバ関数
 	// setter
 	void SetSkybox(Skybox* skybox) { skybox_ = skybox; }
 
+	// setter
+	void SetPrimitive(Primitive* primitive) { primitive_ = primitive; }
+
 private:
 	// 座標変換用行列
 	struct TransformationMatrix {
 		Matrix4x4 WVP;
 		Matrix4x4 World;
 		Matrix4x4 WorldInverseTranspose;
+		int32_t flipX;
+		int32_t flipY;
 	};
 
 	// カメラ
@@ -93,5 +99,8 @@ private:
 
 	// スカイボックス
 	Skybox* skybox_ = nullptr;
+
+	// プリミティブ
+	Primitive* primitive_ = nullptr;
 };
 

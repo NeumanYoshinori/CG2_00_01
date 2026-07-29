@@ -5,6 +5,7 @@
 #include "externals/imgui/imgui_impl_win32.h"
 #endif
 #include "DirectXBase.h"
+#include "RenderTextureCommon.h"
 
 // ImGUIの管理
 class ImGuiManager {
@@ -53,6 +54,8 @@ private:
 
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
+
+	RenderTextureCommon* rtCommon_ = nullptr;
 
 	// SRVヒープ
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap_;
