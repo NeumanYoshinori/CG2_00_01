@@ -18,6 +18,8 @@ void ImGuiManager::Initialize() {
 	// メンバ変数に記録
 	dxBase_ = DirectXBase::GetInstance();
 
+	rtCommon_ = RenderTextureCommon::GetInstance();
+
 	srvHeap_ = SrvManager::GetInstance()->GetDescriptorHeap();
 
 	// ImGuiのコンテキストを生成
@@ -34,7 +36,7 @@ void ImGuiManager::Initialize() {
 	initInfo.CommandQueue = dxBase_->GetCommandQueue().Get();
 	initInfo.NumFramesInFlight = static_cast<int>(dxBase_->GetSwapChainResourcesNum());
 	initInfo.RTVFormat = dxBase_->GetRtvDesc().Format;
-	initInfo.DSVFormat = dxBase_->GetDsvDesc().Format;
+	initInfo.DSVFormat = rtCommon_->GetDsvDesc().Format;
 	initInfo.SrvDescriptorHeap = srvHeap_.Get();
 	// SRV解放用関数の設定
 	initInfo.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo* info, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle,

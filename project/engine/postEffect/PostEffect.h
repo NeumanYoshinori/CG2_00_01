@@ -56,6 +56,8 @@ private:
 		bool useSepia;
 		float scale;
 		float power;
+		int kKernelSize;
+		float sigma;
 	};
 
 	// ルートシグネチャの作成

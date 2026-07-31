@@ -63,6 +63,8 @@ public:
 	float GetEnvironmentCoefficient() { return materialData_->environmentCoefficient; }
 	void SetEnvironmentCoefficient(float environmentCoefficient) { materialData_->environmentCoefficient = environmentCoefficient; }
 
+	void SetNumInstance(uint32_t numInstance) { numInstance_ = numInstance; }
+
 private:
 	// 頂点データ作成
 	void CreateVertexData();
@@ -96,5 +98,7 @@ private:
 
 	// コマンドリスト
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
+
+	uint32_t numInstance_ = 0;
 };
 

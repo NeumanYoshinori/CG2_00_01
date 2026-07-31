@@ -5,6 +5,8 @@ struct Material {
     bool useSepia;
     float32_t scale;
     float32_t power;
+    int kKernelSize;
+    float32_t sigma;
 };
 
 ConstantBuffer<Material> gMaterial : register(b0);
@@ -23,7 +25,6 @@ PixelShaderOutput main(VertexShaderOutput input) {
     float32_t2 correct = input.texcoord * (1.0f - input.texcoord.yx);
     // correctだけで計算すると中心の最大値が0.0625で暗すぎるのでScaleで調整。
     float vignette = correct.x * correct.y * gMaterial.scale;
-    // とりあえず0.8乗でそれっぽくしてみた
     vignette = saturate(pow(vignette, gMaterial.power));
     // 係数として乗算
     output.color.rgb *= vignette;

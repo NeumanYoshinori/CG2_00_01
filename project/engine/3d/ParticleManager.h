@@ -5,20 +5,15 @@
 #include "Transform.h"
 #include <unordered_map>
 #include "Camera.h"
-#include "TextureManager.h"
+#include "Primitive.h"
+#include <random>
+#include "Model.h"
 
 class ParticleManager {
 public:
 	struct AccelerationField {
 		Vector3 acceleration;
 		AABB area;
-	};
-
-	enum ParticleType {
-		Plane,
-		Ring,
-		Cylinder,
-		kNum
 	};
 
 	// シングルトンインスタンスの取得
@@ -37,10 +32,10 @@ public:
 	void Draw();
 
 	// パーティクルグループの生成
-	void CreateParticleGroup(ParticleType type, const std::string name, const std::string textureFilePath);
+	void CreateParticleGroup(const std::string type, const std::string name, const std::string textureFilePath, int32_t flipX, int32_t flipY);
 
 	// パーティクルの生成
-	void Emit(const std::string name, const Vector3& size, const Vector3& angle, const Vector3& position, const Vector3& velocity, const Vector4& color, uint32_t count);
+	void Emit(const std::string name, const Vector3& size, const Vector3& angle, const Vector3& position, const Vector3& velocity, const Vector4& color, float lifeTime, uint32_t count);
 
 	// カメラをセット
 	void SetCamera(Camera* camera) { camera_ = camera; }
@@ -59,29 +54,6 @@ public:
 	explicit ParticleManager(ConstructorKey) {}
 
 private:
-	// 頂点データ
-	struct VertexData {
-		Vector4 position;
-		Vector2 texcoord;
-		Vector3 normal;
-	};
-
-	// マテリアルデータ
-	struct Material {
-		Vector4 color;
-		int32_t enableLighting;
-		float padding[3];
-		Matrix4x4 uvTransform;
-		float alphaReference;
-		float padding2;
-	};
-
-	// マテリアルデータ
-	struct MaterialData {
-		std::string textureFilePath;
-		uint32_t textureIndex = 0;
-	};
-
 	struct Particle {
 		Transform transform;
 		Vector3 velocity;
@@ -94,16 +66,20 @@ private:
 		Matrix4x4 WVP;
 		Matrix4x4 World;
 		Vector4 color;
+		int32_t flipX;
+		int32_t flipY;
 	};
 
 	struct ParticleGroup {
-		MaterialData materialData;
 		std::list<Particle> particles;
 		uint32_t srvIndex = 0;
 		ComPtr<ID3D12Resource> instancingResource;
 		uint32_t numInstance = 0;
 		ParticleForGPU* instancingData = nullptr;
-		ParticleType type{};
+		int32_t flipX = false;
+		int32_t flipY = false;
+		Model* model = nullptr;
+		std::unique_ptr<Primitive> primitive;
 	};
 
 	// ルートシグネチャの作成
@@ -112,20 +88,8 @@ private:
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeline();
 
-	// planeの頂点データ作成
-	void CreatePlaneVertexData();
-
-	// ringの頂点データ作成
-	void CreateRingVertexData();
-
-	// cylinderの頂点データ作成
-	void CreateCylinderVertexData();
-
-	// マテリアルデータ作成
-	void CreateMaterialData();
-
 	// パーティクル生成関数
-	Particle MakeNewParticle(const Vector3& scale, const Vector3& rotate, const Vector3& translate, const Vector3& velocity, const Vector4& color);
+	Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& scale, const Vector3& rotate, const Vector3& translate, const Vector3& velocity, const Vector4& color, float lifeTime);
 
 	// インスタンス
 	static std::unique_ptr<ParticleManager> instance_;
@@ -135,6 +99,10 @@ private:
 
 	// SRVマネジャー
 	SrvManager* srvManager_ = nullptr;
+
+	// 乱数生成器
+	std::random_device seedGenerator_;
+	std::mt19937 randomEngine_;
 
 	// ルートシグネチャ
 	ComPtr<ID3D12RootSignature> rootSignature_;
@@ -147,34 +115,8 @@ private:
 	// 最大インスタンス数
 	const uint32_t kNumMaxInstance_ = 100;
 
-	// 頂点リソース
-	ComPtr<ID3D12Resource> vertexResource_;
-
-	VertexData* vertexData_ = nullptr;
-	// 頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
-
-	ComPtr<ID3D12Resource> indexResource_;
-	uint32_t* indexData_ = nullptr;
-	// インデックスバッファビューを作成する
-	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
-
 	// カメラ
 	Camera* camera_ = nullptr;
-
-	// マテリアルリソース
-	ComPtr<ID3D12Resource> materialResource_;
-	Material* materialData_ = nullptr;
-
-	uint32_t kDivide_ = 64;
-
-	// 頂点数
-	const uint32_t kNumVertex_ = 4;
-	// インデックス数
-	const uint32_t kNumIndex_ = 6;
-
-	// テクスチャマネージャ
-	TextureManager* textureManager_ = nullptr;
 
 	~ParticleManager() = default;
 	ParticleManager(ParticleManager&) = delete;
@@ -183,4 +125,5 @@ private:
 	// default_delete にアクセスを許可する
 	friend struct std::default_delete<ParticleManager>;
 };
+
 

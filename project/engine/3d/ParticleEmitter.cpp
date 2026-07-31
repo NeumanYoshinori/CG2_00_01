@@ -1,12 +1,13 @@
 #include "ParticleEmitter.h"
 #include "ParticleManager.h"
 
-ParticleEmitter::ParticleEmitter(std::string name, Transform transform, Vector3 velocity, Vector4 color, uint32_t count, float frequency) {
+ParticleEmitter::ParticleEmitter(std::string name, Transform transform, Vector3 velocity, Vector4 color, float lifeTime, uint32_t count, float frequency) {
 	name_ = name;
 	transform_ = transform;
 	velocity_ = velocity;
 	color_ = color;
 	count_ = count;
+	lifeTime_ = lifeTime;
 	frequency_ = frequency;
 	frequencyTime_ = 0.0f;
 }
@@ -17,11 +18,11 @@ void ParticleEmitter::Update() {
 	frequencyTime_ += kDeltaTime;
 
 	if (frequency_ <= frequencyTime_) { // 頻度より大きいなら発生
-		ParticleManager::GetInstance()->Emit(name_, transform_.scale, transform_.rotate, transform_.translate, velocity_, color_, count_); // 発生処理
+		ParticleManager::GetInstance()->Emit(name_, transform_.scale, transform_.rotate, transform_.translate, velocity_, color_, lifeTime_, count_); // 発生処理
 		frequencyTime_ -= frequency_; // 余計に過ぎた時間も加味して頻度計算する
 	}
 }
 
-void ParticleEmitter::Emit() const{
-	ParticleManager::GetInstance()->Emit(name_, transform_.scale, transform_.rotate, transform_.translate, velocity_, color_, count_);
+void ParticleEmitter::Emit() const {
+	ParticleManager::GetInstance()->Emit(name_, transform_.scale, transform_.rotate, transform_.translate, velocity_, color_, lifeTime_, count_);
 }

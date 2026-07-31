@@ -8,7 +8,6 @@
 #include "ParticleEmitter.h"
 #include "ImGuiManager.h"
 #include "Audio.h"
-#include "Sphere.h"
 #include "SkyboxCommon.h"
 #include "Skybox.h"
 #include "BaseScene.h"
@@ -52,7 +51,19 @@ private:
 	std::unique_ptr<Object3d> terrain_;
 
 	// 球
-	std::unique_ptr<Sphere> sphere_;
+	std::unique_ptr<Primitive> sphere_;
+
+	// 平面
+	std::unique_ptr<Primitive> plane_;
+
+	// リング
+	std::unique_ptr<Primitive> ring_;
+
+	// シリンダー
+	std::unique_ptr<Primitive> cylinder_;
+
+	// プリミティブ
+	std::unique_ptr<Object3d> primitive_;
 
 	std::random_device seedGenerator_;
 	std::mt19937 randomEngine_;
@@ -63,6 +74,7 @@ private:
 	ParticleManager* particleManager_ = nullptr;
 
 	// パーティクルエミッター
+	std::unique_ptr<ParticleEmitter> fenceEmitter_;
 	std::unique_ptr<ParticleEmitter> planeEmitter_;
 	std::unique_ptr<ParticleEmitter> cylinderEmitter_;
 

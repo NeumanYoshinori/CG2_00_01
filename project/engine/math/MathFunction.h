@@ -31,9 +31,6 @@ namespace MathFunction {
 	// 単位行列の作成
 	Matrix4x4 MakeIdentity4x4();
 
-	// 行列の積
-	Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
-
 	// 拡大縮小行列
 	Matrix4x4 MakeScaleMatrix(const Vector3& scale);
 
@@ -43,6 +40,9 @@ namespace MathFunction {
 	Matrix4x4 MakeRotateYMatrix(float radian);
 	// Z軸回転行列
 	Matrix4x4 MakeRotateZMatrix(float radian);
+
+	// XYZ軸回転行列
+	Matrix4x4 MakeRotateMatrix(const Vector3& radian);
 
 	// 平行移動行列
 	Matrix4x4 MakeTranslateMatrix(const Vector3& translate);

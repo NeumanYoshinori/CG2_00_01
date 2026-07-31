@@ -77,7 +77,7 @@ void Sprite::Update() {
 	Matrix4x4 viewMatrix = MakeIdentity4x4();
 	// ProjectionMatrixを作って平行投影行列を書き込む
 	Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 100.0f);
-	transformationMatrixData_->WVP = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+	transformationMatrixData_->WVP = worldMatrix * viewMatrix * projectionMatrix;
 	transformationMatrixData_->World = worldMatrix;
 }
 

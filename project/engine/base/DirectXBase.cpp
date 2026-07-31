@@ -39,8 +39,8 @@ void DirectXBase::Initialize() {
 	CommandInitialize();
 	// スワップチェーンの作成
 	CreateSwapChain();
-	// 各種デスクリプタ―ヒープの作成
-	CreateDescriptorHeaps();
+	// RTVデスクリプタ―ヒープの作成
+	CreateRTVDescriptorHeap();
 	// レンダーターゲットビューの初期化
 	RenderTargetViewInitialize();
 	// フェンスの初期化
@@ -254,16 +254,12 @@ void DirectXBase::CreateSwapChain() {
 	assert(SUCCEEDED(hr));
 }
 
-void DirectXBase::CreateDescriptorHeaps() {
+void DirectXBase::CreateRTVDescriptorHeap() {
 	// DescriptorSizeを取得しておく
 	descriptorSizeRTV_ = device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	descriptorSizeDSV_ = device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	// RTV用のヒープ
 	rtvDescriptorHeap_ = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
-
-	// DSV用のヒープ
-	dsvDescriptorHeap_ = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 }
 
 ComPtr<ID3D12DescriptorHeap> DirectXBase::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible) {

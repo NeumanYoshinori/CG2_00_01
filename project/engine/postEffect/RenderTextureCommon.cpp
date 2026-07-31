@@ -26,8 +26,7 @@ void RenderTextureCommon::Initialize() {
 	CreateDepthBuffer();
 
 	// 各種デスクリプターヒープの作成
-	rtvDescriptorHeap_ = dxBase_->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1, false);
-	dsvDescriptorHeap_ = dxBase_->GetDsvDescriptorHeap();
+	CreateDescriptorHeaps();
 
 	// レンダーターゲットビューの初期化
 	RenderTargetViewInitialize();
@@ -158,6 +157,18 @@ void RenderTextureCommon::CreateDepthBuffer() {
 		&depthClearValue,
 		IID_PPV_ARGS(&depthStencilResource_));
 	assert(SUCCEEDED(hr));
+}
+
+void RenderTextureCommon::CreateDescriptorHeaps() {
+	// DescriptorSizeを取得しておく
+	descriptorSizeRTV_ = device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	descriptorSizeDSV_ = device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
+	// RTV用のヒープ
+	rtvDescriptorHeap_ = dxBase_->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+
+	// DSV用のヒープ
+	dsvDescriptorHeap_ = dxBase_->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 }
 
 void RenderTextureCommon::RenderTargetViewInitialize() {

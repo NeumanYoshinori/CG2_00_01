@@ -159,6 +159,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application\scene\GamePlayScene.cpp" />
+    <ClCompile Include="Cylinder.cpp" />
+    <ClCompile Include="engine\3d\Primitive.cpp" />
     <ClCompile Include="engine\base\CrashHandler.cpp" />
     <ClCompile Include="engine\audio\Audio.cpp" />
     <ClCompile Include="engine\3d\Camera.cpp" />
@@ -195,8 +197,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\scene\SceneFactory.cpp" />
     <ClCompile Include="engine\postEffect\RenderTextureCommon.cpp" />
     <ClCompile Include="engine\postEffect\PostEffect.cpp" />
+    <ClCompile Include="engine\3d\Plane.cpp" />
+    <ClCompile Include="engine\3d\Ring.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="engine\3d\Primitive.h" />
     <ClInclude Include="engine\game\AbstractSceneFactory.h" />
     <ClInclude Include="application\scene\GamePlayScene.h" />
     <ClInclude Include="engine\game\BaseScene.h" />
@@ -237,6 +243,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\scene\SceneFactory.h" />
     <ClInclude Include="engine\postEffect\RenderTextureCommon.h" />
     <ClInclude Include="engine\postEffect\PostEffect.h" />
+    <ClInclude Include="engine\3d\Plane.h" />
+    <ClInclude Include="engine\3d\Ring.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\FullScreen.hlsli">
