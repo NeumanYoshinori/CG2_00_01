@@ -33,8 +33,11 @@ void Model::Draw() {
 	commandList_->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
 	commandList_->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData_.material.textureFilePath));
+	if (numInstance_ == 0) {
+		return;
+	}
 	// 描画！（フォローコール）
-	commandList_->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
+	commandList_->DrawInstanced(UINT(modelData_.vertices.size()), numInstance_, 0, 0);
 }
 
 Model::ModelData Model::LoadModelFile(const string& directoryPath, const string& filename) {

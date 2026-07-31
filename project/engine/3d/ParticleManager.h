@@ -8,7 +8,7 @@
 #include "TextureManager.h"
 #include "Primitive.h"
 #include <random>
-#include <random> // std::mt19937 のため
+#include "Model.h"
 
 class ParticleManager {
 public:
@@ -79,6 +79,7 @@ private:
 		ParticleForGPU* instancingData = nullptr;
 		int32_t flipX = false;
 		int32_t flipY = false;
+		Model* model;
 		std::unique_ptr<Primitive> primitive;
 	};
 

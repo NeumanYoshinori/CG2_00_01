@@ -7,6 +7,7 @@
 #include "Plane.h"
 #include "Ring.h"
 #include "Cylinder.h"
+#include "ModelManager.h"
 
 using namespace std;
 using namespace Microsoft::WRL;
@@ -94,8 +95,14 @@ void ParticleManager::Update() {
 			++particleIterator;
 		}
 
-		// インスタンス数を渡す
-		particleGroup.primitive->SetNumInstance(particleGroup.numInstance);
+		if (particleGroup.model) {
+			particleGroup.model->SetNumInstance(particleGroup.numInstance);
+		}
+
+		if (particleGroup.primitive) {
+			// インスタンス数を渡す
+			particleGroup.primitive->SetNumInstance(particleGroup.numInstance);
+		}
 	}
 }
 
@@ -111,8 +118,14 @@ void ParticleManager::Draw() {
 		}
 		commandList->SetGraphicsRootDescriptorTable(1, srvManager_->GetGPUDescriptorHandle(particleGroup.srvIndex));
 
-		// プリミティブの描画
-		particleGroup.primitive->Draw();
+		if (particleGroup.model) {
+			particleGroup.model->Draw();
+		}
+
+		if (particleGroup.primitive) {
+			// プリミティブの描画
+			particleGroup.primitive->Draw();
+		}
 	}
 }
 
@@ -123,8 +136,6 @@ void ParticleManager::CreateParticleGroup(const string type, const string name, 
 	}
 
 	ParticleGroup& particleGroup = particleGroups_[name];
-	// テクスチャを読み込む
-	TextureManager::GetInstance()->LoadTexture(textureFilePath);
 	// インスタンシング用のリソースの生成
 	particleGroup.instancingResource = dxBase_->CreateBufferResource(sizeof(ParticleForGPU) * kNumMaxInstance_);
 	particleGroup.instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&particleGroup.instancingData));
@@ -132,21 +143,27 @@ void ParticleManager::CreateParticleGroup(const string type, const string name, 
 	particleGroup.srvIndex = srvManager_->Allocate();
 	particleGroup.flipX = flipX;
 	particleGroup.flipY = flipY;
-	// 頂点データ作成
-	if (type == "Sphere") {
-		particleGroup.primitive = make_unique<Sphere>();
+	if (type == "Model") {
+		particleGroup.model = ModelManager::GetInstance()->FindModel(textureFilePath);
 	}
-	if (type == "Plane") {
-		particleGroup.primitive = make_unique<Plane>();
+	else {
+		// 頂点データ作成
+		if (type == "Sphere") {
+			particleGroup.primitive = make_unique<Sphere>();
+		}
+		if (type == "Plane") {
+			particleGroup.primitive = make_unique<Plane>();
+		}
+		else if (type == "Ring") {
+			particleGroup.primitive = make_unique<Ring>();
+		}
+		else if (type == "Cylinder") {
+			particleGroup.primitive = make_unique<Cylinder>();
+		}
+
+		// プリミティブの初期化
+		particleGroup.primitive->Initialize(textureFilePath, particleGroup.numInstance);
 	}
-	else if (type == "Ring") {
-		particleGroup.primitive = make_unique<Ring>();
-	}
-	else if (type == "Cylinder") {
-		particleGroup.primitive = make_unique<Cylinder>();
-	}
-	// プリミティブの初期化
-	particleGroup.primitive->Initialize(textureFilePath, particleGroup.numInstance);
 	// SRV生成（StructuredBuffer用設定）
 	srvManager_->CreateSRVforStructuredBuffer(particleGroup.srvIndex, particleGroup.instancingResource.Get(), kNumMaxInstance_, sizeof(ParticleForGPU));
 }

@@ -46,6 +46,7 @@ void GamePlayScene::Initialize() {
 
 	// .objファイルからモデルを読み込む
 	modelManager_->LoadModel("terrain.obj");
+	modelManager_->LoadModel("fence.obj");
 
 	// 3dオブジェクトの初期化
 	terrain_ = make_unique<Object3d>();
@@ -84,15 +85,17 @@ void GamePlayScene::Initialize() {
 	particleManager_->SetCamera(camera_.get());
 
 	// 円のパーティクルグループを作成
+	particleManager_->CreateParticleGroup("Model", "fence", "fence.obj", false, false);
 	particleManager_->CreateParticleGroup("Sphere", "cylinder", "resources/monsterBall.png", false, false);
 	particleManager_->CreateParticleGroup("Plane", "circle", "resources/gradationLine.png", false, false);
 
 	// パーティクルエミッターの初期化
-	planeTransform.scale = {1.0f, 1.0f, 1.0f}; // 横に潰す
+	planeTransform.scale = {0.5f, 0.5f, 0.5f}; // 横に潰す
 	planeTransform.rotate = { 0.0f, 0.0f, 0.0f};
 	planeTransform.translate = { 5.0f, 0.0f, 0.0f };
-	Vector3 particleVelocity = { 0.0f, 0.0f, 0.0f }; // 動かない
+	Vector3 particleVelocity = { 5.0f, 0.0f, 0.0f }; // 動かない
 	Vector4 particleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	fenceEmitter_ = make_unique<ParticleEmitter>("fence", planeTransform, particleVelocity, particleColor, 2.0f, 5, 2.0f);
 	planeEmitter_ = make_unique<ParticleEmitter>("cylinder", planeTransform, particleVelocity, particleColor, 1.0f, 5, 2.0f);
 	cylinderEmitter_ = make_unique<ParticleEmitter>("circle", planeTransform, particleVelocity, particleColor, 2.0f, 5, 2.0f);
 
@@ -151,6 +154,7 @@ void GamePlayScene::Update() {
 	particleManager_->Update();
 
 	// パーティクルエミッターの更新
+	fenceEmitter_->Update();
 	planeEmitter_->Update();
 	cylinderEmitter_->Update();
 

@@ -74,6 +74,7 @@ private:
 	ParticleManager* particleManager_ = nullptr;
 
 	// パーティクルエミッター
+	std::unique_ptr<ParticleEmitter> fenceEmitter_;
 	std::unique_ptr<ParticleEmitter> planeEmitter_;
 	std::unique_ptr<ParticleEmitter> cylinderEmitter_;
 
