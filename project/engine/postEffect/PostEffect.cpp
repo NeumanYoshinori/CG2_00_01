@@ -1,7 +1,9 @@
 #include "PostEffect.h"
 #include "RenderTextureCommon.h"
 #include "Logger.h"
+#ifdef USE_IMGUI
 #include "ImGuiManager.h"
+#endif
 
 using namespace Microsoft::WRL;
 using namespace Logger;
