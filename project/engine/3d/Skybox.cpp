@@ -31,7 +31,7 @@ void Skybox::Update() {
 	Matrix4x4 worldViewProjectionMatrix;
 	if (camera_) {
 		const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();
-		worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
+		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
 	}
 	else {
 		worldViewProjectionMatrix = worldMatrix;

@@ -140,7 +140,7 @@ namespace MathFunction {
 
     Matrix4x4 MakeRotateMatrix(const Vector3& radian) {
         Matrix4x4 result = {};
-        result = Multiply(Multiply(MakeRotateXMatrix(radian.x), MakeRotateYMatrix(radian.y)), MakeRotateZMatrix(radian.z));
+        result = MakeRotateXMatrix(radian.x) * MakeRotateYMatrix(radian.y) * MakeRotateZMatrix(radian.z);
 
         return result;
     }

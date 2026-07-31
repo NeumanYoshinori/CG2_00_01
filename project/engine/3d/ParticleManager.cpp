@@ -43,7 +43,7 @@ void ParticleManager::Initialize() {
 void ParticleManager::Update() {
 	// ビルボード行列
 	Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(pi_v<float>);
-	Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, camera_->GetWorldMatrix());
+	Matrix4x4 billboardMatrix = backToFrontMatrix * camera_->GetWorldMatrix();
 	billboardMatrix.m[3][0] = 0.0f;
 	billboardMatrix.m[3][1] = 0.0f;
 	billboardMatrix.m[3][2] = 0.0f;

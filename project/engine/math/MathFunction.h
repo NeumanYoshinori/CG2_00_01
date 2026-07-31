@@ -31,9 +31,6 @@ namespace MathFunction {
 	// 単位行列の作成
 	Matrix4x4 MakeIdentity4x4();
 
-	// 行列の積
-	Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
-
 	// 拡大縮小行列
 	Matrix4x4 MakeScaleMatrix(const Vector3& scale);
 

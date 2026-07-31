@@ -15,14 +15,14 @@ Camera::Camera()
 	, worldMatrix_(MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate))
 	, viewMatrix_(Inverse(worldMatrix_))
 	, projectionMatrix_(MakePerspectiveFovMatrix(fovY_, aspectRatio_, nearClip_, farClip_))
-	, viewProjectionMatrix_(Multiply(viewMatrix_, projectionMatrix_))
+	, viewProjectionMatrix_(viewMatrix_ * projectionMatrix_)
 {}
 
 void Camera::Update() {
 	worldMatrix_ = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
 	viewMatrix_ = Inverse(worldMatrix_);
 	projectionMatrix_ = MakePerspectiveFovMatrix(fovY_, aspectRatio_, nearClip_, farClip_);
-	viewProjectionMatrix_ = Multiply(viewMatrix_, projectionMatrix_);
+	viewProjectionMatrix_ = viewMatrix_ * projectionMatrix_;
 }
 
 void Camera::DebugUpdate() {
