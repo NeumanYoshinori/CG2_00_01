@@ -49,11 +49,14 @@ void GamePlayScene::Initialize() {
 	// 3dオブジェクトの初期化
 	terrain_ = make_unique<Object3d>();
 	terrain_->Initialize();
+	Vector3 terrainTransform{5.0f, 0.0f, 0.0f};
+	terrain_->SetTranslate(terrainTransform);
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	terrain_->SetModel("terrain.obj");
 	// インスタンス数を設定
 	terrain_->GetModel()->SetNumInstance(1);
+	terrain_->GetModel()->SetEnvironmentCoefficient(0.0f);
 	// スカイボックスを紐づける
 	terrain_->SetSkybox(skybox_.get());
 
@@ -74,6 +77,8 @@ void GamePlayScene::Initialize() {
 	// モンスターボールの初期化
 	primitive_ = make_unique<Object3d>();
 	primitive_->Initialize();
+	Vector3 primitiveTranslate{ 5.0f, 0.0f, 0.0f };
+	primitive_->SetTranslate(primitiveTranslate);
 
 	// 初期化済みの3Dオブジェクトにプリミティブを紐づける
 	primitive_->SetPrimitive(sphere_.get());
@@ -223,9 +228,6 @@ void GamePlayScene::Draw() {
 
 	// 球の描画
 	primitive_->Draw();
-
-	// パーティクルマネージャ描画
-	particleManager_->Draw();
 }
 
 void GamePlayScene::ImGuiDraw() {

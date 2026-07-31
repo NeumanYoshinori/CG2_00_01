@@ -1,5 +1,6 @@
 #include "TitleScene.h"
 #include "SceneManager.h"
+#include "PostEFfect.h"
 
 using namespace std;
 
@@ -40,50 +41,58 @@ void TitleScene::Update() {
 	sprite_->Update();
 
 	// ENTERキーを押したら
-	if (input_->TriggerKey(DIK_R)) {
+	if (input_->TriggerKey(DIK_RETURN)) {
 		// シーン切り替え
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 	}
 
 	imGuiManager_->Begin();
+
 #ifdef USE_IMGUI
+	ImGui::Begin("Setting");
+
 	// スプライトのImGuiの開始
-	ImGui::Begin("Sprite");
+	if (ImGui::CollapsingHeader("Sprite")) {
+		// 座標
+		Vector2 spritePos = sprite_->GetPosition();
+		ImGui::DragFloat2("Pos", &spritePos.x, 0.1f);
+		sprite_->SetPosition(spritePos);
 
-	// 座標
-	Vector2 spritePos = sprite_->GetPosition();
-	ImGui::DragFloat2("Pos", &spritePos.x, 0.1f);
-	sprite_->SetPosition(spritePos);
+		// 角度
+		float spriteRot = sprite_->GetRotation();
+		ImGui::DragFloat("Rot", &spriteRot, 0.1f);
+		sprite_->SetRotation(spriteRot);
 
-	// 角度
-	float spriteRot = sprite_->GetRotation();
-	ImGui::DragFloat("Rot", &spriteRot, 0.1f);
-	sprite_->SetRotation(spriteRot);
+		// アンカーポイント
+		Vector2 anchorPoint = sprite_->GetAnchorPoint();
+		ImGui::DragFloat2("AnchorPoint", &anchorPoint.x, 0.1f);
+		sprite_->SetAnchorPoint(anchorPoint);
 
-	// アンカーポイント
-	Vector2 anchorPoint = sprite_->GetAnchorPoint();
-	ImGui::DragFloat2("AnchorPoint", &anchorPoint.x, 0.1f);
-	sprite_->SetAnchorPoint(anchorPoint);
+		// x座標フリップ
+		bool flipX = sprite_->IsFlipX();
+		ImGui::Checkbox("flipX", &flipX);
+		sprite_->SetFlipX(flipX);
 
-	// x座標フリップ
-	bool flipX = sprite_->IsFlipX();
-	ImGui::Checkbox("flipX", &flipX);
-	sprite_->SetFlipX(flipX);
+		// Y座標フリップ
+		bool flipY = sprite_->IsFlipY();
+		ImGui::Checkbox("flipY", &flipY);
+		sprite_->SetFlipY(flipY);
 
-	// Y座標フリップ
-	bool flipY = sprite_->IsFlipY();
-	ImGui::Checkbox("flipY", &flipY);
-	sprite_->SetFlipY(flipY);
+		// テクスチャ左上座標
+		Vector2 textureLeftTop = sprite_->GetTextureLeftTop();
+		ImGui::DragFloat2("TextureLeftTop", &textureLeftTop.x, 0.1f);
+		sprite_->SetTextureLeftTop(textureLeftTop);
 
-	// テクスチャ左上座標
-	Vector2 textureLeftTop = sprite_->GetTextureLeftTop();
-	ImGui::DragFloat2("TextureLeftTop", &textureLeftTop.x, 0.1f);
-	sprite_->SetTextureLeftTop(textureLeftTop);
+		// テクスチャのサイズ
+		Vector2 textureSize = sprite_->GetTextureSize();
+		ImGui::DragFloat2("TextureSize", &textureSize.x, 0.1f);
+		sprite_->SetTextureSize(textureSize);
+	}
 
-	// テクスチャのサイズ
-	Vector2 textureSize = sprite_->GetTextureSize();
-	ImGui::DragFloat2("TextureSize", &textureSize.x, 0.1f);
-	sprite_->SetTextureSize(textureSize);
+	if (ImGui::CollapsingHeader("PostEffect")) {
+		PostEffect::GetInstance()->DebugUpdate();
+	}
+
 	ImGui::End();
 #endif
 	ImGuiManager::GetInstance()->End();

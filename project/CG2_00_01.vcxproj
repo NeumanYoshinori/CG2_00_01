@@ -159,7 +159,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application\scene\GamePlayScene.cpp" />
-    <ClCompile Include="Cylinder.cpp" />
+    <ClCompile Include="engine\3d\Cylinder.cpp" />
     <ClCompile Include="engine\3d\Primitive.cpp" />
     <ClCompile Include="engine\base\CrashHandler.cpp" />
     <ClCompile Include="engine\audio\Audio.cpp" />
@@ -201,7 +201,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\3d\Ring.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="engine\3d\Cylinder.h" />
     <ClInclude Include="engine\3d\Primitive.h" />
     <ClInclude Include="engine\game\AbstractSceneFactory.h" />
     <ClInclude Include="application\scene\GamePlayScene.h" />
