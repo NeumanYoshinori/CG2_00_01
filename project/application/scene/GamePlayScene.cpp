@@ -1,6 +1,5 @@
 #include "GamePlayScene.h"
 #include <random>
-#include <numbers>
 #include "PostEffect.h"
 #include "Vector4.h"
 #include "SceneManager.h"
@@ -10,7 +9,6 @@
 #include "Cylinder.h"
 
 using namespace std;
-using namespace numbers;
 
 void GamePlayScene::Initialize() {
 	// インスタンス取得
@@ -54,6 +52,9 @@ void GamePlayScene::Initialize() {
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	terrain_->SetModel("terrain.obj");
+	// インスタンス数を設定
+	terrain_->GetModel()->SetNumInstance(1);
+	// スカイボックスを紐づける
 	terrain_->SetSkybox(skybox_.get());
 
 	// 球の初期化

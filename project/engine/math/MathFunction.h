@@ -44,6 +44,9 @@ namespace MathFunction {
 	// Z軸回転行列
 	Matrix4x4 MakeRotateZMatrix(float radian);
 
+	// XYZ軸回転行列
+	Matrix4x4 MakeRotateMatrix(const Vector3& radian);
+
 	// 平行移動行列
 	Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 

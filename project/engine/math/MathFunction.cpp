@@ -138,6 +138,13 @@ namespace MathFunction {
         return result;
     }
 
+    Matrix4x4 MakeRotateMatrix(const Vector3& radian) {
+        Matrix4x4 result = {};
+        result = Multiply(Multiply(MakeRotateXMatrix(radian.x), MakeRotateYMatrix(radian.y)), MakeRotateZMatrix(radian.z));
+
+        return result;
+    }
+
     // 平行移動行列
     Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
         Matrix4x4 result = {};
@@ -153,20 +160,14 @@ namespace MathFunction {
         // 拡大縮小行列
         Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
 
-        // X軸回転行列
-        Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
-        // Y軸回転行列
-        Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
-        // Z軸回転行列
-        Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
         // XYZ軸回転行列
-        Matrix4x4 rotateXYZMatrix = Multiply(rotateXMatrix, Multiply(rotateYMatrix, rotateZMatrix));
+        Matrix4x4 rotateMatrix = MakeRotateMatrix(rotate);
 
         // 平行移動行列
         Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
 
         Matrix4x4 result = {};
-        result = Multiply(scaleMatrix, Multiply(rotateXYZMatrix, translateMatrix));
+        result = Multiply(scaleMatrix, Multiply(rotateMatrix, translateMatrix));
 
         return result;
     }

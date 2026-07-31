@@ -48,6 +48,8 @@ public: // メンバ関数
 	// setter
 	void SetPrimitive(Primitive* primitive) { primitive_ = primitive; }
 
+	Model* GetModel() { return model_; }
+
 private:
 	// 座標変換用行列
 	struct TransformationMatrix {

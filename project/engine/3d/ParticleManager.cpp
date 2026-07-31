@@ -32,7 +32,6 @@ void ParticleManager::Initialize() {
 	// シングルトンインスタンスを取得
 	dxBase_ = DirectXBase::GetInstance();
 	srvManager_ = SrvManager::GetInstance();
-	textureManager_ = TextureManager::GetInstance();
 
 	// 乱数生成器の初期化
 	randomEngine_ = mt19937(seedGenerator_());
@@ -73,11 +72,9 @@ void ParticleManager::Update() {
 			(*particleIterator).currentTime += kDeltaTime;
 
 			Matrix4x4 scaleMatrix = MakeScaleMatrix((*particleIterator).transform.scale);
-			Matrix4x4 rotateXMatrix = MakeRotateXMatrix((*particleIterator).transform.rotate.x);
-			Matrix4x4 rotateYMatrix = MakeRotateYMatrix((*particleIterator).transform.rotate.y);
-			Matrix4x4 rotateZMatrix = MakeRotateZMatrix((*particleIterator).transform.rotate.z);
+			Matrix4x4 rotateMatrix = MakeRotateMatrix((*particleIterator).transform.rotate);
 			Matrix4x4 translateMatrix = MakeTranslateMatrix((*particleIterator).transform.translate);
-			Matrix4x4 worldMatrix = scaleMatrix * rotateXMatrix * rotateYMatrix * rotateZMatrix * billboardMatrix * translateMatrix;
+			Matrix4x4 worldMatrix = scaleMatrix * rotateMatrix * billboardMatrix * translateMatrix;
 
 			Matrix4x4 worldViewProjectionMatrix = worldMatrix * viewMatrix * projectionMatrix;
 

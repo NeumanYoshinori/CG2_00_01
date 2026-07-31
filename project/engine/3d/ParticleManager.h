@@ -5,7 +5,6 @@
 #include "Transform.h"
 #include <unordered_map>
 #include "Camera.h"
-#include "TextureManager.h"
 #include "Primitive.h"
 #include <random>
 #include "Model.h"
@@ -79,7 +78,7 @@ private:
 		ParticleForGPU* instancingData = nullptr;
 		int32_t flipX = false;
 		int32_t flipY = false;
-		Model* model;
+		Model* model = nullptr;
 		std::unique_ptr<Primitive> primitive;
 	};
 
@@ -118,9 +117,6 @@ private:
 
 	// カメラ
 	Camera* camera_ = nullptr;
-
-	// テクスチャマネージャ
-	TextureManager* textureManager_ = nullptr;
 
 	~ParticleManager() = default;
 	ParticleManager(ParticleManager&) = delete;
