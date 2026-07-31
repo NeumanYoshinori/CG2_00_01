@@ -52,6 +52,7 @@ void PostEffect::Draw() {
 }
 
 void PostEffect::DebugUpdate() {
+#ifdef USE_IMGUI
 	static PostEffectType currentPostEffect = PostEffectType::FullScreen;
 	const char* postEffect[] = { "FullScreen", "Grayscale", "Vignette", "BoxFilter", "GaussianFilter" };
 	if (ImGui::BeginCombo("PostEffectType", postEffect[static_cast<int>(currentPostEffect)])) {
@@ -74,6 +75,7 @@ void PostEffect::DebugUpdate() {
 	}
 	ImGui::InputInt("kKernelSize", &materialData_->kKernelSize);
 	ImGui::DragFloat("sigma", &materialData_->sigma, 0.01f);
+#endif
 }
 
 void PostEffect::CreateRootSignature() {
