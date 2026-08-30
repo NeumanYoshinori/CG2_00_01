@@ -12,6 +12,7 @@
 #include "Skybox.h"
 #include "BaseScene.h"
 #include <random>
+#include "LevelDataLoader.h"
 
 // ゲームプレイシーン
 class GamePlayScene : public BaseScene {
@@ -44,11 +45,12 @@ private:
 	// モデルマネージャ
 	ModelManager* modelManager_ = nullptr;
 
+	std::map<std::string, Model*> models_;
+
 	// オブジェクト3D共通部
 	Object3dCommon* object3dCommon_ = nullptr;
 
-	// 地面
-	std::unique_ptr<Object3d> terrain_;
+	std::vector<Object3d*> objects_;
 
 	// 球
 	std::unique_ptr<Primitive> sphere_;
@@ -98,5 +100,9 @@ private:
 	float rgb[3] = { 1.0f, 1.0f, 1.0f };
 
 	bool useSepia = false;
+
+	std::unique_ptr<LevelDataLoader> levelDataLoader_;
+
+	LevelData* levelData_ = nullptr;
 };
 

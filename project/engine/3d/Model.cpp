@@ -136,6 +136,6 @@ void Model::CreateMaterialData() {
 	materialData_->enableLighting = true;
 	materialData_->uvTransform = MakeIdentity4x4();
 	materialData_->shininess = 10.0f;
-	materialData_->environmentCoefficient = 1.0f;
+	materialData_->environmentCoefficient = 0.0f;
 	materialData_->alphaReference = 0.0f;
 }
