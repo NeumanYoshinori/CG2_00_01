@@ -5,13 +5,14 @@
 #include "Object3d.h"
 #include "ModelManager.h"
 #include "ParticleManager.h"
-#include "ParticleEmitter.h"
 #include "ImGuiManager.h"
 #include "Audio.h"
 #include "SkyboxCommon.h"
 #include "Skybox.h"
 #include "BaseScene.h"
-#include <random>
+#include "SpriteCommon.h"
+#include "Sprite.h"
+#include "Gun.h"
 
 // ゲームプレイシーン
 class GamePlayScene : public BaseScene {
@@ -47,36 +48,17 @@ private:
 	// オブジェクト3D共通部
 	Object3dCommon* object3dCommon_ = nullptr;
 
-	// 地面
-	std::unique_ptr<Object3d> terrain_;
-
 	// 球
 	std::unique_ptr<Primitive> sphere_;
 
-	// 平面
-	std::unique_ptr<Primitive> plane_;
+	// スプライト共通部
+	SpriteCommon* spriteCommon_ = nullptr;
 
-	// リング
-	std::unique_ptr<Primitive> ring_;
-
-	// シリンダー
-	std::unique_ptr<Primitive> cylinder_;
-
-	// プリミティブ
-	std::unique_ptr<Object3d> primitive_;
-
-	std::random_device seedGenerator_;
-	std::mt19937 randomEngine_;
-
-	Transform planeTransform{};
+	// レティクル
+	std::unique_ptr<Sprite> crosshair_;
 
 	// パーティクルマネージャ
 	ParticleManager* particleManager_ = nullptr;
-
-	// パーティクルエミッター
-	std::unique_ptr<ParticleEmitter> fenceEmitter_;
-	std::unique_ptr<ParticleEmitter> planeEmitter_;
-	std::unique_ptr<ParticleEmitter> cylinderEmitter_;
 
 	// スカイボックス共通部
 	SkyboxCommon* skyboxCommon_ = nullptr;
@@ -89,14 +71,11 @@ private:
 
 	// オーディオ
 	Audio* audio_ = nullptr;
+	IXAudio2SourceVoice* bgm_;
 
-	// サウンドデータ2
-	Audio::SoundData soundData2;
+	POINT mousePosition_{};
 
-	IXAudio2SourceVoice* bgmVoice_ = nullptr;
-
-	float rgb[3] = { 1.0f, 1.0f, 1.0f };
-
-	bool useSepia = false;
+	// 銃
+	std::unique_ptr<Gun> gun_;
 };
 

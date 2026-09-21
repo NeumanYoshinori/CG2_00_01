@@ -3,13 +3,11 @@
 #include <MathFunction.h>
 #include <Transform.h>
 #include <wrl.h>
-#include <d3d12.h>
 #include "DirectXBase.h"
 #include "Model.h"
 #include "Camera.h"
 #include "LightManager.h"
-#include "Skybox.h"
-#include "Sphere.h"
+#include "Primitive.h"
 
 // 3Dオブジェクト
 class Object3d {
@@ -27,23 +25,23 @@ public: // メンバ関数
 	void DebugUpdate();
 
 	// setter
-	void SetScale(const Vector3& scale) { transform.scale = scale; }
-	void SetRotate(const Vector3& rotate) { transform.rotate = rotate; }
-	void SetTranslate(const Vector3& translate) { transform.translate = translate; }
+	void SetScale(const Vector3& scale) { transform_.scale = scale; }
+	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
+	void SetTranslate(const Vector3& translate) { transform_.translate = translate; }
 
 	// getter
-	const Vector3& GetScale() const { return transform.scale; }
-	const Vector3& GetRotate() const { return transform.rotate; }
-	const Vector3& GetTranslate() const { return transform.translate; }
+	const Vector3& GetScale() const { return transform_.scale; }
+	const Vector3& GetRotate() const { return transform_.rotate; }
+	const Vector3& GetTranslate() const { return transform_.translate; }
 
 	// setter
 	void SetModel(const std::string& filePath);
 
 	// setter
 	void SetCamera(Camera* camera) { camera_ = camera; }
-	
+
 	// setter
-	void SetSkybox(Skybox* skybox) { skybox_ = skybox; }
+	void SetEnvironmentMapTexture(const std::string& envMapFilePath) { environmentMapFilePath_ = envMapFilePath; }
 
 	// setter
 	void SetPrimitive(Primitive* primitive) { primitive_ = primitive; }
@@ -65,30 +63,42 @@ private:
 		Vector3 worldPosition;
 	};
 
+	struct EnvironmentMap {
+		int32_t useEnvironmentMap;
+	};
+
 	// 座標変換行列データ作成
 	void CreateTransformationMatrixData();
 
 	// カメラデータ作成
 	void CreateCameraData();
 
+	// 環境マップデータ作成
+	void CreateEnvironmentMapData();
+
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource; // 座標返還行列リソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_; // 座標返還行列リソース
 	// バッファリソース内のデータを指すポインタ
-	TransformationMatrix* transformationMatrixData = nullptr;
+	TransformationMatrix* transformationMatrixData_ = nullptr;
 
 	// バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource_;
 	// バッファリソース内のデータを指すポインタ
-	CameraForGPU* cameraData = nullptr;
+	CameraForGPU* cameraData_ = nullptr;
+
+	// バッファリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> environmentMapResource_;
+	// バッファリソース内のデータを指すポインタ
+	EnvironmentMap* environmentMapData_ = nullptr;
 
 	// Transform
-	Transform transform{};
+	Transform transform_{};
 
 	// コマンドリスト
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	// モデル
 	Model* model_ = nullptr;
@@ -99,10 +109,9 @@ private:
 	// ライトマネージャ
 	LightManager* lightManager_ = LightManager::GetInstance();
 
-	// スカイボックス
-	Skybox* skybox_ = nullptr;
-
 	// プリミティブ
 	Primitive* primitive_ = nullptr;
+
+	std::string environmentMapFilePath_;
 };
 

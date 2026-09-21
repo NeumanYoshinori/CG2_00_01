@@ -99,6 +99,6 @@ private:
 	// コマンドリスト
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 
-	uint32_t numInstance_ = 0;
+	uint32_t numInstance_ = 1;
 };
 

@@ -47,7 +47,13 @@ void Audio::Initialize() {
 	result = xAudio2_->CreateMasteringVoice(&masterVoice_);
 }
 
-Audio::SoundData Audio::SoundLoadFile(const string& filename) {
+void Audio::SoundLoadFile(const string& filename) {
+	// 読み込み済みサウンドを検索
+	if (soundDatas_.contains(filename)) {
+		// 読み込み済みなら早期return
+		return;
+	}
+
 	// フルパスをワイド文字列に変換
 	wstring filePathW = StringUtility::ConvertString(filename);
 	HRESULT result;
@@ -74,7 +80,7 @@ Audio::SoundData Audio::SoundLoadFile(const string& filename) {
 	MFCreateWaveFormatExFromMFMediaType(pOutType.Get(), &waveFormat, nullptr);
 
 	// コンテナに格納する音声データ
-	SoundData soundData = {};
+	SoundData& soundData = soundDatas_[filename];
 	soundData.wfex = *waveFormat;
 
 	// 生成したWaveフォーマットを解放
@@ -103,29 +109,36 @@ Audio::SoundData Audio::SoundLoadFile(const string& filename) {
 			pBuffer->Unlock();
 		}
 	}
-
-	return soundData;
 }
 
 // 音声データ解放
-void Audio::SoundUnload(SoundData* soundData) {
+void Audio::SoundUnload(const string& filename) {
+	// 範囲外指定違反チェック
+	assert(soundDatas_.contains(filename));
+
 	// バッファのメモリを解放
-	soundData->buffer.clear();
-	soundData->wfex = {};
+	soundDatas_[filename].buffer.clear();
+	soundDatas_[filename].wfex = {};
+
+	// サウンドを消す
+	soundDatas_.erase(filename);
 }
 
-IXAudio2SourceVoice* Audio::SoundPlayWave(const SoundData& soundData, bool loopFlag) {
+IXAudio2SourceVoice* Audio::SoundPlayWave(const string& filename, bool loopFlag, float volume) {
+	// 範囲外指定違反チェック
+	assert(soundDatas_.contains(filename));
+
 	HRESULT result;
 
 	// 波形フォーマットを基にSourceVoiceの生成
 	IXAudio2SourceVoice* pSourceVoice = nullptr;
-	result = xAudio2_->CreateSourceVoice(&pSourceVoice, &soundData.wfex);
+	result = xAudio2_->CreateSourceVoice(&pSourceVoice, &soundDatas_[filename].wfex);
 	assert(SUCCEEDED(result));
 
 	// 再生する波形データの設定
 	XAUDIO2_BUFFER buf{};
-	buf.pAudioData = soundData.buffer.data();
-	buf.AudioBytes = static_cast<UINT32>(soundData.buffer.size());
+	buf.pAudioData = soundDatas_[filename].buffer.data();
+	buf.AudioBytes = static_cast<UINT32>(soundDatas_[filename].buffer.size());
 	buf.Flags = XAUDIO2_END_OF_STREAM;
 
 	if (loopFlag) {
@@ -135,19 +148,31 @@ IXAudio2SourceVoice* Audio::SoundPlayWave(const SoundData& soundData, bool loopF
 	// 波形データの再生
 	result = pSourceVoice->SubmitSourceBuffer(&buf);
 	result = pSourceVoice->Start();
+	result = pSourceVoice->SetVolume(volume);
 
 	return pSourceVoice;
 }
 
 void Audio::SoundStopWave(IXAudio2SourceVoice* pSourceVoice) {
+	if (!pSourceVoice) {
+		// ソースボイスがnullptrなら早期return
+		return;
+	}
+
+	HRESULT result;
+
 	// 波形データの再生終了
-	pSourceVoice->Stop();
-	pSourceVoice->FlushSourceBuffers();
+	result = pSourceVoice->Stop();
+	result = pSourceVoice->FlushSourceBuffers();
 	pSourceVoice->DestroyVoice();
 }
 
 void Audio::SoundPauseWave(IXAudio2SourceVoice* pSourceVoice) {
 	// 波形データの再生停止
-	pSourceVoice->Stop();
+	HRESULT result = pSourceVoice->Stop();
 	pSourceVoice->DestroyVoice();
+}
+
+void Audio::SetVolume(IXAudio2SourceVoice* pSourceVoice, float volume) {
+	HRESULT result = pSourceVoice->SetVolume(volume);
 }

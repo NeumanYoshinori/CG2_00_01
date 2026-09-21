@@ -14,61 +14,68 @@ void Object3d::Initialize() {
 	CreateTransformationMatrixData();
 
 	// Transform変数を作る
-	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-	
+	transform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+
 	// デフォルトカメラをセットする
 	camera_ = Object3dCommon::GetInstance()->GetDefaultCamera();
 
 	// カメラデータ作成
 	CreateCameraData();
+
+	// 環境マップデータ作成
+	CreateEnvironmentMapData();
 }
 
 void Object3d::Update() {
-	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
 	Matrix4x4 worldViewProjectionMatrix;
 	if (camera_) {
 		const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();
 		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
-	} else {
+	}
+	else {
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
 	if (model_) {
-		transformationMatrixData->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
-		transformationMatrixData->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
+		transformationMatrixData_->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
+		transformationMatrixData_->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
 	}
 
 	if (primitive_) {
-		transformationMatrixData->WVP = worldViewProjectionMatrix;
-		transformationMatrixData->World = worldMatrix;
+		transformationMatrixData_->WVP = worldViewProjectionMatrix;
+		transformationMatrixData_->World = worldMatrix;
 	}
 
 	Matrix4x4 worldInverseMatrix = Inverse(worldMatrix);
-	transformationMatrixData->WorldInverseTranspose = Transpose(worldInverseMatrix);
+	transformationMatrixData_->WorldInverseTranspose = Transpose(worldInverseMatrix);
 }
 
 void Object3d::Draw() {
 	// コマンドリストを作成
-	commandList = dxBase_->GetCommandList();
+	commandList_ = dxBase_->GetCommandList();
 
 	// wvp用のCBufferの場所を設定
-	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+	commandList_->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
 
 	// ライトのcbufferの場所を設定
 	lightManager_->Draw();
 
 	// カメラのCBufferの場所を設定
-	commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
+	commandList_->SetGraphicsRootConstantBufferView(4, cameraResource_->GetGPUVirtualAddress());
 
 	// SRVのDescriptorTableの先頭を設定。5はrootParameter[5]である。
-	commandList->SetGraphicsRootDescriptorTable(5, TextureManager::GetInstance()->GetSrvHandleGPU(skybox_->GetFilePath()));
+	commandList_->SetGraphicsRootDescriptorTable(5, TextureManager::GetInstance()->GetSrvHandleGPU(environmentMapFilePath_));
+
+	// 環境マップのCBufferの場所を設定
+	commandList_->SetGraphicsRootConstantBufferView(6, environmentMapResource_->GetGPUVirtualAddress());
 
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {
 		model_->Draw();
 	}
 
-	// 球が割り当てられていれば描画する
+	// プリミティブが割り当てられていれば描画する
 	if (primitive_) {
 		primitive_->Draw();
 	}
@@ -76,11 +83,11 @@ void Object3d::Draw() {
 
 void Object3d::DebugUpdate() {
 #ifdef USE_IMGUI
-	ImGui::DragFloat3("Scale", &transform.scale.x, 0.01f);
-	ImGui::SliderAngle("RotateX", &transform.rotate.x);
-	ImGui::SliderAngle("RotateY", &transform.rotate.y);
-	ImGui::SliderAngle("RotateZ", &transform.rotate.z);
-	ImGui::DragFloat3("Translate", &transform.translate.x, 0.01f);
+	ImGui::DragFloat3("Scale", &transform_.scale.x, 0.01f);
+	ImGui::SliderAngle("RotateX", &transform_.rotate.x);
+	ImGui::SliderAngle("RotateY", &transform_.rotate.y);
+	ImGui::SliderAngle("RotateZ", &transform_.rotate.z);
+	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.01f);
 	if (model_) {
 		float modelEnvironmentCoeffcient = model_->GetEnvironmentCoefficient();
 		ImGui::DragFloat("EnvironmentCoefficient", &modelEnvironmentCoeffcient, 0.01f);
@@ -91,13 +98,13 @@ void Object3d::DebugUpdate() {
 		ImGui::DragFloat("EnvironmentCoefficient", &sphereEnvironmentCoeffcient, 0.01f);
 		primitive_->SetEnvironmentCoefficient(sphereEnvironmentCoeffcient);
 	}
-	bool flipX = transformationMatrixData->flipX;
+	bool flipX = transformationMatrixData_->flipX;
 	if (ImGui::Checkbox("FlipX", &flipX)) {
-		transformationMatrixData->flipX = flipX;
+		transformationMatrixData_->flipX = flipX;
 	}
-	bool flipY = transformationMatrixData->flipY;
+	bool flipY = transformationMatrixData_->flipY;
 	if (ImGui::Checkbox("FlipY", &flipY)) {
-		transformationMatrixData->flipY = flipY;
+		transformationMatrixData_->flipY = flipY;
 	}
 #endif
 }
@@ -109,27 +116,38 @@ void Object3d::SetModel(const std::string& filePath) {
 
 void Object3d::CreateTransformationMatrixData() {
 	// TransformationMatrix用のリソースを作る。
-	transformationMatrixResource = dxBase_->CreateBufferResource(sizeof(TransformationMatrix));
+	transformationMatrixResource_ = dxBase_->CreateBufferResource(sizeof(TransformationMatrix));
 
 	// 書き込むためのアドレスを取得
-	transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData));
+	transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
 
 	// 単位行列を書き込んでおく
-	transformationMatrixData->WVP = MakeIdentity4x4();
-	transformationMatrixData->World = MakeIdentity4x4();
-	transformationMatrixData->WorldInverseTranspose = MakeIdentity4x4();
-	transformationMatrixData->flipX = false;
-	transformationMatrixData->flipY = false;
+	transformationMatrixData_->WVP = MakeIdentity4x4();
+	transformationMatrixData_->World = MakeIdentity4x4();
+	transformationMatrixData_->WorldInverseTranspose = MakeIdentity4x4();
+	transformationMatrixData_->flipX = false;
+	transformationMatrixData_->flipY = false;
 }
 
 void Object3d::CreateCameraData() {
 	// カメラリソースを作る
-	cameraResource = dxBase_->CreateBufferResource(sizeof(CameraForGPU));
+	cameraResource_ = dxBase_->CreateBufferResource(sizeof(CameraForGPU));
 
 	// 書き込むためのアドレスを作る
-	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraData));
+	cameraResource_->Map(0, nullptr, reinterpret_cast<void**>(&cameraData_));
 
 	if (camera_) {
-		cameraData->worldPosition = camera_->GetTranslate();
+		cameraData_->worldPosition = camera_->GetTranslate();
 	}
+}
+
+void Object3d::CreateEnvironmentMapData() {
+	// 環境マップリソースを作る
+	environmentMapResource_ = dxBase_->CreateBufferResource(sizeof(EnvironmentMap));
+
+	// 書き込むためのアドレスを作る
+	environmentMapResource_->Map(0, nullptr, reinterpret_cast<void**>(&environmentMapData_));
+
+	// falseにしておく
+	environmentMapData_->useEnvironmentMap = false;
 }

@@ -1,5 +1,6 @@
 #include "MathFunction.h"
 #include <cmath>
+#include <cassert>
 
 using namespace std;
 
@@ -15,9 +16,19 @@ namespace MathFunction {
         return temp += v2;
     }
 
+    const Vector3 operator-(const Vector3& v1, const Vector3& v2) {
+        Vector3 temp(v1);
+        return temp -= v2;
+    }
+
     const Vector3 operator*(const Vector3& v1, const float f) {
         Vector3 temp(v1);
         return temp *= f;
+    }
+
+    const Vector3 operator/(const Vector3& v, float f) {
+        Vector3 temp(v);
+        return temp /= f;
     }
 
     Vector3& operator+=(Vector3& lhv, const Vector3& rhv) {
@@ -62,14 +73,14 @@ namespace MathFunction {
         return lhm;
     }
 
+    Vector3 operator+(const Vector3& v) { return v; }
+    Vector3 operator-(const Vector3& v) { return Vector3(-v.x, -v.y, -v.z); }
+
     Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) {
         Matrix4x4 result = m1;
 
         return result *= m2;
     }
-
-    Vector3 operator+(const Vector3& v) { return v; }
-    Vector3 operator-(const Vector3& v) { return Vector3(-v.x, -v.y, -v.z); }
 
     // 単位行列の作成
     Matrix4x4 MakeIdentity4x4() {
@@ -79,18 +90,6 @@ namespace MathFunction {
         result.m[1][0] = 0.0f; result.m[1][1] = 1.0f; result.m[1][2] = 0.0f; result.m[1][3] = 0.0f;
         result.m[2][0] = 0.0f; result.m[2][1] = 0.0f; result.m[2][2] = 1.0f; result.m[2][3] = 0.0f;
         result.m[3][0] = 0.0f; result.m[3][1] = 0.0f; result.m[3][2] = 0.0f; result.m[3][3] = 1.0f;
-
-        return result;
-    }
-
-    // 行列の積
-    Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
-        Matrix4x4 result = {};
-
-        result.m[0][0] = m1.m[0][0] * m2.m[0][0] + m1.m[0][1] * m2.m[1][0] + m1.m[0][2] * m2.m[2][0] + m1.m[0][3] * m2.m[3][0]; result.m[0][1] = m1.m[0][0] * m2.m[0][1] + m1.m[0][1] * m2.m[1][1] + m1.m[0][2] * m2.m[2][1] + m1.m[0][3] * m2.m[3][1]; result.m[0][2] = m1.m[0][0] * m2.m[0][2] + m1.m[0][1] * m2.m[1][2] + m1.m[0][2] * m2.m[2][2] + m1.m[0][3] * m2.m[3][2]; result.m[0][3] = m1.m[0][0] * m2.m[0][3] + m1.m[0][1] * m2.m[1][3] + m1.m[0][2] * m2.m[2][3] + m1.m[0][3] * m2.m[3][3];
-        result.m[1][0] = m1.m[1][0] * m2.m[0][0] + m1.m[1][1] * m2.m[1][0] + m1.m[1][2] * m2.m[2][0] + m1.m[1][3] * m2.m[3][0]; result.m[1][1] = m1.m[1][0] * m2.m[0][1] + m1.m[1][1] * m2.m[1][1] + m1.m[1][2] * m2.m[2][1] + m1.m[1][3] * m2.m[3][1]; result.m[1][2] = m1.m[1][0] * m2.m[0][2] + m1.m[1][1] * m2.m[1][2] + m1.m[1][2] * m2.m[2][2] + m1.m[1][3] * m2.m[3][2]; result.m[1][3] = m1.m[1][0] * m2.m[0][3] + m1.m[1][1] * m2.m[1][3] + m1.m[1][2] * m2.m[2][3] + m1.m[1][3] * m2.m[3][3];
-        result.m[2][0] = m1.m[2][0] * m2.m[0][0] + m1.m[2][1] * m2.m[1][0] + m1.m[2][2] * m2.m[2][0] + m1.m[2][3] * m2.m[3][0]; result.m[2][1] = m1.m[2][0] * m2.m[0][1] + m1.m[2][1] * m2.m[1][1] + m1.m[2][2] * m2.m[2][1] + m1.m[2][3] * m2.m[3][1]; result.m[2][2] = m1.m[2][0] * m2.m[0][2] + m1.m[2][1] * m2.m[1][2] + m1.m[2][2] * m2.m[2][2] + m1.m[2][3] * m2.m[3][2]; result.m[2][3] = m1.m[2][0] * m2.m[0][3] + m1.m[2][1] * m2.m[1][3] + m1.m[2][2] * m2.m[2][3] + m1.m[2][3] * m2.m[3][3];
-        result.m[3][0] = m1.m[3][0] * m2.m[0][0] + m1.m[3][1] * m2.m[1][0] + m1.m[3][2] * m2.m[2][0] + m1.m[3][3] * m2.m[3][0]; result.m[3][1] = m1.m[3][0] * m2.m[0][1] + m1.m[3][1] * m2.m[1][1] + m1.m[3][2] * m2.m[2][1] + m1.m[3][3] * m2.m[3][1]; result.m[3][2] = m1.m[3][0] * m2.m[0][2] + m1.m[3][1] * m2.m[1][2] + m1.m[3][2] * m2.m[2][2] + m1.m[3][3] * m2.m[3][2]; result.m[3][3] = m1.m[3][0] * m2.m[0][3] + m1.m[3][1] * m2.m[1][3] + m1.m[3][2] * m2.m[2][3] + m1.m[3][3] * m2.m[3][3];
 
         return result;
     }
@@ -139,10 +138,7 @@ namespace MathFunction {
     }
 
     Matrix4x4 MakeRotateMatrix(const Vector3& radian) {
-        Matrix4x4 result = {};
-        result = MakeRotateXMatrix(radian.x) * MakeRotateYMatrix(radian.y) * MakeRotateZMatrix(radian.z);
-
-        return result;
+        return MakeRotateYMatrix(radian.y) * MakeRotateXMatrix(radian.x) * MakeRotateZMatrix(radian.z);
     }
 
     // 平行移動行列
@@ -166,10 +162,7 @@ namespace MathFunction {
         // 平行移動行列
         Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
 
-        Matrix4x4 result = {};
-        result = Multiply(scaleMatrix, Multiply(rotateMatrix, translateMatrix));
-
-        return result;
+        return scaleMatrix * rotateMatrix * translateMatrix;
     }
 
     Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
@@ -223,11 +216,13 @@ namespace MathFunction {
         return result;
     }
 
+    Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth) {
+        return { width / 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, -height / 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, maxDepth - minDepth, 0.0f, left + width / 2.0f, top + height / 2.0f, minDepth, 1.0f };
+    }
+
     // 長さ(ノルム)
     float Length(const Vector3& v) {
-        float result = sqrtf(powf(v.x, 2) + powf(v.y, 2) + powf(v.z, 2));
-
-        return result;
+        return sqrtf(powf(v.x, 2) + powf(v.y, 2) + powf(v.z, 2));
     }
 
     bool IsCollision(const AABB& aabb1, const Vector3& point) {
@@ -262,6 +257,19 @@ namespace MathFunction {
         result.x = v.x / len;
         result.y = v.y / len;
         result.z = v.z / len;
+
+        return result;
+    }
+
+    // 座標変換
+    Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix4x4) {
+        Vector3 result = {};
+        result.x = vector.x * matrix4x4.m[0][0] + vector.y * matrix4x4.m[1][0] + vector.z * matrix4x4.m[2][0] + 1.0f * matrix4x4.m[3][0];
+        result.y = vector.x * matrix4x4.m[0][1] + vector.y * matrix4x4.m[1][1] + vector.z * matrix4x4.m[2][1] + 1.0f * matrix4x4.m[3][1];
+        result.z = vector.x * matrix4x4.m[0][2] + vector.y * matrix4x4.m[1][2] + vector.z * matrix4x4.m[2][2] + 1.0f * matrix4x4.m[3][2];
+        float w = vector.x * matrix4x4.m[0][3] + vector.y * matrix4x4.m[1][3] + vector.z * matrix4x4.m[2][3] + 1.0f * matrix4x4.m[3][3];
+        assert(w != 0.0f);
+        result /= w;
 
         return result;
     }

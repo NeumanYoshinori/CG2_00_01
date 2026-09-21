@@ -30,7 +30,8 @@ void Skybox::Update() {
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
 	Matrix4x4 worldViewProjectionMatrix;
 	if (camera_) {
-		const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();
+		const Matrix4x4& viewMatrix = Inverse(camera_->GetSRMatrix());
+		const Matrix4x4& viewProjectionMatrix = viewMatrix * camera_->GetProjectionMatrix();
 		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
 	}
 	else {

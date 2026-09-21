@@ -1,5 +1,6 @@
 #include "Sprite.h"
 #include "TextureManager.h"
+#include "ImGuiManager.h"
 
 using namespace Microsoft::WRL;
 using namespace MathFunction;
@@ -98,6 +99,31 @@ void Sprite::Draw() {
 
 	// 描画！（DrawCall/ドローコール）
 	commandList_->DrawIndexedInstanced(6, 1, 0, 0, 0);
+}
+
+void Sprite::DebugUpdate() {
+#ifdef USE_IMGUI
+	// 座標;
+	ImGui::DragFloat2("Pos", &transform_.translate.x, 0.1f);
+
+	// 角度
+	ImGui::DragFloat("Rot", &transform_.rotate.x, 0.1f);
+
+	// アンカーポイント
+	ImGui::DragFloat2("AnchorPoint", &anchorPoint_.x, 0.1f);
+
+	// x座標フリップ
+	ImGui::Checkbox("flipX", &isFlipX_);
+
+	// Y座標フリップ
+	ImGui::Checkbox("flipY", &isFlipY_);
+
+	// テクスチャ左上座標
+	ImGui::DragFloat2("TextureLeftTop", &textureLeftTop_.x, 0.1f);
+
+	// テクスチャのサイズ
+	ImGui::DragFloat2("TextureSize", &textureSize_.x, 0.1f);
+#endif
 }
 
 void Sprite::CreateVertexData() {

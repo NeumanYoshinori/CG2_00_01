@@ -61,6 +61,8 @@ public: // メンバ関数
 	// テクスチャ切り出しサイズのgetter
 	const Vector2& GetTextureSize() const { return textureSize_; }
 
+	void DebugUpdate();
+
 	// namespace省略
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
