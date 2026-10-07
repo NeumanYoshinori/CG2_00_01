@@ -5,6 +5,20 @@
 using namespace std;
 using namespace MathFunction;
 
+void Sphere::Initialize(const std::string& filename) {
+	dxBase_ = DirectXBase::GetInstance();
+
+	// 頂点データ作成
+	CreateVertexData();
+
+	// マテリアルデータ作成
+	CreateMaterialData();
+
+	// テクスチャファイル読み込み
+	modelData_.material.textureFilePath = filename;
+	modelData_.rootNode.localMatrix = MathFunction::MakeIdentity4x4();
+}
+
 void Sphere::Draw() {
 	// コマンドリストを作成
 	commandList_ = dxBase_->GetCommandList();
@@ -16,7 +30,7 @@ void Sphere::Draw() {
 	// マテリアルCBufferの場所を設定
 	commandList_->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭を設定
-	commandList_->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_));
+	commandList_->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData_.material.textureFilePath));
 	if (numInstance_ == 0) {
 		return;
 	}

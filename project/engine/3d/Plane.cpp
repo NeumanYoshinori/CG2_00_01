@@ -1,6 +1,20 @@
 #include "Plane.h"
 #include "TextureManager.h"
 
+void Plane::Initialize(const std::string& filename) {
+	dxBase_ = DirectXBase::GetInstance();
+
+	// 頂点データ作成
+	CreateVertexData();
+
+	// マテリアルデータ作成
+	CreateMaterialData();
+
+	// テクスチャファイル読み込み
+	modelData_.material.textureFilePath = filename;
+	modelData_.rootNode.localMatrix = MathFunction::MakeIdentity4x4();
+}
+
 void Plane::Draw() {
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = dxBase_->GetCommandList();
 	// VertexBufferViewを設定
@@ -9,7 +23,7 @@ void Plane::Draw() {
 	commandList->IASetIndexBuffer(&indexBufferView_);
 	// マテリアルCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_));
+	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData_.material.textureFilePath));
 	if (numInstance_ == 0) {
 		return;
 	}

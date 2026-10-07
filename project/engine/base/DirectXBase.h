@@ -30,37 +30,34 @@ public:
 	// 描画後処理
 	void PostDraw();
 
-	// namespace省略
-	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
-
 	// getter
-	ComPtr<ID3D12Device> GetDevice() const { return device_; }
-	ComPtr<ID3D12GraphicsCommandList> GetCommandList() const { return commandList_; }
-	ComPtr<ID3D12CommandQueue> GetCommandQueue() const { return commandQueue_; }
-	ComPtr<ID3D12CommandAllocator> GetCommandAllocator() const { return commandAllocator_; }
-	ComPtr<ID3D12Fence> GetFence() const { return fence_; }
+	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice() const { return device_; }
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> GetCommandList() const { return commandList_; }
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() const { return commandQueue_; }
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() const { return commandAllocator_; }
+	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence() const { return fence_; }
 	D3D12_VIEWPORT GetViewport() const { return viewport_; }
 	D3D12_RECT GetScissorRect() const { return scissorRect_; }
 	HANDLE GetFenceEvent() const { return fenceEvent_; }
 	D3D12_RENDER_TARGET_VIEW_DESC GetRtvDesc() const { return rtvDesc_; }
 	// スワップチェーンリソースの数を取得
 	size_t GetSwapChainResourcesNum() const { return swapChainResources_.size(); }
-	ComPtr<IDXGISwapChain> GetSwapChain() { return swapChain_; }
+	Microsoft::WRL::ComPtr<IDXGISwapChain> GetSwapChain() { return swapChain_; }
 
 	// シェーダーのコンパイル
-	ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
 
 	// バッファリソースの生成
-	ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
 
 	// テクスチャデータの転送
-	ComPtr<ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metadata);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metadata);
 
 	// テクスチャデータの転送
-	ComPtr<ID3D12Resource> UploadTextureData(const ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages);
+	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages);
 
 	// デスクリプタヒープを生成する
-	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
 	// GPU実行待ち
 	void WaitForGPU();
@@ -90,6 +87,11 @@ private:
 
 	// レンダーターゲットビューの初期化
 	void RenderTargetViewInitialize();
+
+
+	// namespace省略
+	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+
 
 	// 指定番号のCPUデスクリプタハンドルを取得する
 	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const ComPtr<ID3D12DescriptorHeap>& descriptorHeap,

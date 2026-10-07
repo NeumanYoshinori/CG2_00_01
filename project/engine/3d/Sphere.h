@@ -1,13 +1,16 @@
 #pragma once
 #include <string>
 #include <wrl.h>
-#include "Primitive.h"
+#include "ModelCommon.h"
 
 class Object3dCommon;
 
 // 球
-class Sphere : public Primitive {
+class Sphere : public ModelCommon {
 public: // メンバ関数
+	// 初期化
+	void Initialize(const std::string& filename) override;
+
 	// 描画
 	void Draw() override;
 

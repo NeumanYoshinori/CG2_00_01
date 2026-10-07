@@ -1,10 +1,10 @@
 #pragma once
 #include "Object3d.h"
-#include "Primitive.h"
+#include "Line.h"
 
 class Bullet {
 public:
-	void Initialize(const std::string& filePath, Primitive* primitive, Vector3 position, Vector3 velocity);
+	Bullet(Camera* camera, const std::string& envFilePath, Vector3 position, Vector3 velocity);
 
 	void Update();
 
@@ -14,20 +14,32 @@ public:
 
 	bool IsDead() const { return isDead_; }
 
+	AABB GetAABB() const { return aabb_; }
+
+	// 衝突時
+	void OnCollision();
+
+	// コライダー作成
+	void CreateCollider();
+
 private:
+	std::array<std::unique_ptr<Line>, 12> lines_;
+
 	// Object3d
 	std::unique_ptr<Object3d> object3d_;
-
-	// 寿命
-	static const int32_t kLifeTime = 60 * 5;
-
-	// デスタイマー
-	int32_t deathTimer_ = kLifeTime;
 
 	bool isDead_ = false;
 
 	Vector3 velocity_{};
 
 	Vector3 position_{};
+
+	AABB aabb_{};
+
+	float width_ = 0.0f;
+	float height_ = 0.0f;
+	float depth_ = 0.0f;
+
+	Camera* camera_ = nullptr;
 };
 

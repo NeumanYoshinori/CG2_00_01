@@ -54,8 +54,10 @@ void Audio::SoundLoadFile(const string& filename) {
 		return;
 	}
 
+	string filePath = "resources/audios/" + filename;
+
 	// フルパスをワイド文字列に変換
-	wstring filePathW = StringUtility::ConvertString(filename);
+	wstring filePathW = StringUtility::ConvertString(filePath);
 	HRESULT result;
 
 	// SourceReader作成

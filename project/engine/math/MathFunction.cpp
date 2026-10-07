@@ -225,11 +225,10 @@ namespace MathFunction {
         return sqrtf(powf(v.x, 2) + powf(v.y, 2) + powf(v.z, 2));
     }
 
-    bool IsCollision(const AABB& aabb1, const Vector3& point) {
-        if (aabb1.min.x <= point.x && aabb1.max.x >= point.x &&
-            aabb1.min.y <= point.y && aabb1.max.y >= point.y &&
-            aabb1.min.z <= point.z && aabb1.max.z >= point.z)
-        {
+    bool IsCollision(const AABB& a, const AABB& b) {
+        if(a.min.x <= b.max.x && a.max.x >= b.min.x &&
+           a.min.y <= b.max.y && a.max.y >= b.min.y &&
+           a.min.z <= b.max.z && a.max.z >= b.min.z) {
             // 衝突
             return true;
         }
@@ -262,7 +261,7 @@ namespace MathFunction {
     }
 
     // 座標変換
-    Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix4x4) {
+    Vector3 TransformNormal(const Vector3& vector, const Matrix4x4& matrix4x4) {
         Vector3 result = {};
         result.x = vector.x * matrix4x4.m[0][0] + vector.y * matrix4x4.m[1][0] + vector.z * matrix4x4.m[2][0] + 1.0f * matrix4x4.m[3][0];
         result.y = vector.x * matrix4x4.m[0][1] + vector.y * matrix4x4.m[1][1] + vector.z * matrix4x4.m[2][1] + 1.0f * matrix4x4.m[3][1];

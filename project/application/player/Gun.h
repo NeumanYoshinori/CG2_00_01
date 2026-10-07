@@ -1,15 +1,13 @@
 #pragma once
 #include "Bullet.h"
-#include "Input.h"
 #include "Audio.h"
 #include "camera.h"
 
 class Gun {
 public:
-	~Gun();
+	Gun(Camera* camera, const std::string& filePath, Vector3 position);
 
-	// 初期化
-	void Initialize(Camera* camera, const std::string& filePath, Primitive* primitive, Vector3 position);
+	~Gun();
 
 	// 更新
 	void Update(POINT mousePosition);
@@ -20,14 +18,16 @@ public:
 	// 描画
 	void Draw();
 
+	std::list<Bullet*> GetBullets() { return bullets_; }
+
+	AABB GetAABB() { return aabb_; }
+
+	Vector3 GetPosition() { return object3d_->GetTranslate(); }
+
 private:
 	std::unique_ptr<Object3d> object3d_;
 
-	Primitive* primitive_ = nullptr;
-
 	std::list<Bullet*> bullets_;
-
-	Input* input_ = nullptr;
 
 	Audio* audio_ = nullptr;
 
@@ -37,8 +37,16 @@ private:
 
 	Vector3 bulletVelocity_{};
 
-	float bulletSpeed_ = 5.0f;
+	float bulletSpeed_ = 50.0f;
+
+	const float kDeltaTime_ = 1.0f / 60.0f;
 
 	IXAudio2SourceVoice* gunSound_ = nullptr;
+
+	AABB aabb_{};
+
+	float width_ = 1.0f;
+	float height_ = 1.0f;
+	float depth_ = 1.0f;
 };
 

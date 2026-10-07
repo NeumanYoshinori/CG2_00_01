@@ -1,8 +1,11 @@
 #pragma once
-#include "Primitive.h"
+#include "ModelCommon.h"
 
-class Cylinder : public Primitive {
+class Cylinder : public ModelCommon {
 public:
+	// 初期化
+	void Initialize(const std::string& filename);
+
 	// 描画
 	void Draw() override;
 

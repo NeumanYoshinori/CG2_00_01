@@ -42,11 +42,6 @@ void Object3d::Update() {
 		transformationMatrixData_->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
 	}
 
-	if (primitive_) {
-		transformationMatrixData_->WVP = worldViewProjectionMatrix;
-		transformationMatrixData_->World = worldMatrix;
-	}
-
 	Matrix4x4 worldInverseMatrix = Inverse(worldMatrix);
 	transformationMatrixData_->WorldInverseTranspose = Transpose(worldInverseMatrix);
 }
@@ -74,11 +69,6 @@ void Object3d::Draw() {
 	if (model_) {
 		model_->Draw();
 	}
-
-	// プリミティブが割り当てられていれば描画する
-	if (primitive_) {
-		primitive_->Draw();
-	}
 }
 
 void Object3d::DebugUpdate() {
@@ -92,11 +82,6 @@ void Object3d::DebugUpdate() {
 		float modelEnvironmentCoeffcient = model_->GetEnvironmentCoefficient();
 		ImGui::DragFloat("EnvironmentCoefficient", &modelEnvironmentCoeffcient, 0.01f);
 		model_->SetEnvironmentCoefficient(modelEnvironmentCoeffcient);
-	}
-	if (primitive_) {
-		float sphereEnvironmentCoeffcient = primitive_->GetEnvironmentCoefficient();
-		ImGui::DragFloat("EnvironmentCoefficient", &sphereEnvironmentCoeffcient, 0.01f);
-		primitive_->SetEnvironmentCoefficient(sphereEnvironmentCoeffcient);
 	}
 	bool flipX = transformationMatrixData_->flipX;
 	if (ImGui::Checkbox("FlipX", &flipX)) {

@@ -3,10 +3,6 @@
 #include "Logger.h"
 #include "MathFunction.h"
 #include <numbers>
-#include "Sphere.h"
-#include "Plane.h"
-#include "Ring.h"
-#include "Cylinder.h"
 #include "ModelManager.h"
 
 using namespace std;
@@ -95,11 +91,6 @@ void ParticleManager::Update() {
 		if (particleGroup.model) {
 			particleGroup.model->SetNumInstance(particleGroup.numInstance);
 		}
-
-		if (particleGroup.primitive) {
-			// インスタンス数を渡す
-			particleGroup.primitive->SetNumInstance(particleGroup.numInstance);
-		}
 	}
 }
 
@@ -118,11 +109,6 @@ void ParticleManager::Draw() {
 		if (particleGroup.model) {
 			particleGroup.model->Draw();
 		}
-
-		if (particleGroup.primitive) {
-			// プリミティブの描画
-			particleGroup.primitive->Draw();
-		}
 	}
 }
 
@@ -140,27 +126,7 @@ void ParticleManager::CreateParticleGroup(const string type, const string name, 
 	particleGroup.srvIndex = srvManager_->Allocate();
 	particleGroup.flipX = flipX;
 	particleGroup.flipY = flipY;
-	if (type == "Model") {
-		particleGroup.model = ModelManager::GetInstance()->FindModel(textureFilePath);
-	}
-	else {
-		// 頂点データ作成
-		if (type == "Sphere") {
-			particleGroup.primitive = make_unique<Sphere>();
-		}
-		if (type == "Plane") {
-			particleGroup.primitive = make_unique<Plane>();
-		}
-		else if (type == "Ring") {
-			particleGroup.primitive = make_unique<Ring>();
-		}
-		else if (type == "Cylinder") {
-			particleGroup.primitive = make_unique<Cylinder>();
-		}
-
-		// プリミティブの初期化
-		particleGroup.primitive->Initialize(textureFilePath, particleGroup.numInstance);
-	}
+	particleGroup.model = ModelManager::GetInstance()->FindModel(textureFilePath);
 	// SRV生成（StructuredBuffer用設定）
 	srvManager_->CreateSRVforStructuredBuffer(particleGroup.srvIndex, particleGroup.instancingResource.Get(), kNumMaxInstance_, sizeof(ParticleForGPU));
 }

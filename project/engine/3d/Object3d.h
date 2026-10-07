@@ -4,10 +4,9 @@
 #include <Transform.h>
 #include <wrl.h>
 #include "DirectXBase.h"
-#include "Model.h"
+#include "ModelCommon.h"
 #include "Camera.h"
 #include "LightManager.h"
-#include "Primitive.h"
 
 // 3Dオブジェクト
 class Object3d {
@@ -43,10 +42,7 @@ public: // メンバ関数
 	// setter
 	void SetEnvironmentMapTexture(const std::string& envMapFilePath) { environmentMapFilePath_ = envMapFilePath; }
 
-	// setter
-	void SetPrimitive(Primitive* primitive) { primitive_ = primitive; }
-
-	Model* GetModel() { return model_; }
+	ModelCommon* GetModel() { return model_; }
 
 private:
 	// 座標変換用行列
@@ -101,16 +97,13 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	// モデル
-	Model* model_ = nullptr;
+	ModelCommon* model_ = nullptr;
 
 	// カメラ
 	Camera* camera_ = nullptr;
 
 	// ライトマネージャ
 	LightManager* lightManager_ = LightManager::GetInstance();
-
-	// プリミティブ
-	Primitive* primitive_ = nullptr;
 
 	std::string environmentMapFilePath_;
 };

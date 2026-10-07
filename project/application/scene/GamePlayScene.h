@@ -1,18 +1,17 @@
 #pragma once
-#include "Input.h"
 #include "TextureManager.h"
 #include "Object3dCommon.h"
-#include "Object3d.h"
 #include "ModelManager.h"
 #include "ParticleManager.h"
 #include "ImGuiManager.h"
 #include "Audio.h"
 #include "SkyboxCommon.h"
-#include "Skybox.h"
 #include "BaseScene.h"
 #include "SpriteCommon.h"
 #include "Sprite.h"
 #include "Gun.h"
+#include "Enemy.h"
+#include "LineCommon.h"
 
 // ゲームプレイシーン
 class GamePlayScene : public BaseScene {
@@ -33,9 +32,6 @@ public:
 	void ImGuiDraw() override;
 
 private:
-	// 入力
-	Input* input_ = nullptr;
-
 	// テクスチャマネージャ
 	TextureManager* textureManager_ = nullptr;
 
@@ -47,9 +43,6 @@ private:
 
 	// オブジェクト3D共通部
 	Object3dCommon* object3dCommon_ = nullptr;
-
-	// 球
-	std::unique_ptr<Primitive> sphere_;
 
 	// スプライト共通部
 	SpriteCommon* spriteCommon_ = nullptr;
@@ -63,19 +56,34 @@ private:
 	// スカイボックス共通部
 	SkyboxCommon* skyboxCommon_ = nullptr;
 
-	// スカイボックス
-	std::unique_ptr<Skybox> skybox_;
-
 	// ImGuiマネジャー
 	ImGuiManager* imGuiManager_ = nullptr;
 
 	// オーディオ
 	Audio* audio_ = nullptr;
-	IXAudio2SourceVoice* bgm_;
+	IXAudio2SourceVoice* bgm_ = nullptr;
 
 	POINT mousePosition_{};
 
 	// 銃
 	std::unique_ptr<Gun> gun_;
+
+	// 敵
+	std::list<Enemy*> enemies_;
+
+	// 敵発生頻度
+	const float enemySpawnFrequency_ = 600.0f;
+
+	// 敵発生タイマー
+	float enemySpawnTimer_ = 0;
+
+	// 地面
+	std::unique_ptr<Object3d> terrain_;
+
+	LineCommon* lineCommon_ = nullptr;
+
+	// 乱数生成器
+	std::random_device seedGenerator_;
+	std::mt19937 randomEngine_;
 };
 

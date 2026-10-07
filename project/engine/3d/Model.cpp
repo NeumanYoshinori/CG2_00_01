@@ -7,9 +7,9 @@
 using namespace std;
 using namespace MathFunction;
 
-void Model::Initialize(const string& directorypath, const string& filename) {
+void Model::Initialize(const string& filename) {
 	// モデル読み込み
-	modelData_ = LoadModelFile(directorypath, filename);
+	modelData_ = LoadModelFile(filename);
 
 	dxBase_ = DirectXBase::GetInstance();
 
@@ -40,12 +40,12 @@ void Model::Draw() {
 	commandList_->DrawInstanced(UINT(modelData_.vertices.size()), numInstance_, 0, 0);
 }
 
-Model::ModelData Model::LoadModelFile(const string& directoryPath, const string& filename) {
+Model::ModelData Model::LoadModelFile(const string& filename) {
 	// 中で必要となる変数の宣言
 	ModelData modelData; // 構築するModelData
 
 	Assimp::Importer importer;
-	string filePath = directoryPath + "/" + filename;
+	string filePath = "resources/" + filename;
 	const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs);
 	assert(scene->HasMeshes()); // メッシュがないのは対応しない
 
@@ -80,7 +80,7 @@ Model::ModelData Model::LoadModelFile(const string& directoryPath, const string&
 		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
 			aiString textureFilePath;
 			material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath);
-			modelData.material.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
+			modelData.material.textureFilePath = textureFilePath.C_Str();
 		}
 	}
 
@@ -121,21 +121,4 @@ void Model::CreateVertexData() {
 	// 書き込むためのアドレスを取得
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
 	memcpy(vertexData_, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
-}
-
-void Model::CreateMaterialData() {
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
-	materialResource_ = dxBase_->CreateBufferResource(sizeof(Material));
-
-	// マテリアルにデータを書き込む
-	// 書き込むためのアドレスを取得
-	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
-
-	// マテリアルデータの初期値を書き込む
-	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData_->enableLighting = true;
-	materialData_->uvTransform = MakeIdentity4x4();
-	materialData_->shininess = 10.0f;
-	materialData_->environmentCoefficient = 1.0f;
-	materialData_->alphaReference = 0.0f;
 }

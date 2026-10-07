@@ -1,89 +1,96 @@
 #include "GamePlayScene.h"
+#include "Input.h"
 #include "PostEffect.h"
 #include "SceneManager.h"
-#include "Sphere.h"
-#include "MathFunction.h"
+#include "Collider.h"
 
 using namespace std;
 using namespace MathFunction;
 
 void GamePlayScene::Initialize() {
-	// インスタンス取得
-	input_ = Input::GetInstance();
-
 	textureManager_ = TextureManager::GetInstance();
 
 	// テクスチャを読み込む
-	textureManager_->LoadTexture("resources/monsterBall.png");
-	textureManager_->LoadTexture("resources/rostock_laage_airport_4k.dds");
-	textureManager_->LoadTexture("resources/crosshair138.png");
+	textureManager_->LoadTexture("monsterBall.png");
+	textureManager_->LoadTexture("rostock_laage_airport_4k.dds");
+	textureManager_->LoadTexture("crosshair138.png");
 
 	// カメラの初期化
 	camera_ = make_unique<Camera>();
+	camera_->SetTranslate(Vector3(0.0f, 0.2f, 0.0f));
 
 	// スカイボックス共通部の初期化
 	skyboxCommon_ = SkyboxCommon::GetInstance();
 	skyboxCommon_->SetDefaultCamera(camera_.get());
 
-	// スカイボックスの初期化
-	skybox_ = make_unique<Skybox>();
-	skybox_->Initialize("resources/rostock_laage_airport_4k.dds");
-
 	// モデルマネージャのインスタンス取得
 	modelManager_ = ModelManager::GetInstance();
-	modelManager_->LoadModel("axis.obj");
+	modelManager_->LoadModel("terrain.obj");
+	modelManager_->LoadModel("uvCube.obj");
+	modelManager_->CreatePrimitive("monsterBall", "Sphere", "monsterBall.png");
 
 	// 3Dオブジェクト基盤部分のインスタンス取得
 	object3dCommon_ = Object3dCommon::GetInstance();
 	object3dCommon_->SetDefaultCamera(camera_.get());
 
-	// 球の初期化
-	sphere_ = make_unique<Sphere>();
-	sphere_->Initialize("resources/monsterBall.png", 1);
-
 	spriteCommon_ = SpriteCommon::GetInstance();
 
+	// 地面の初期化
+	terrain_ = make_unique<Object3d>();
+	terrain_->Initialize();
+	terrain_->SetModel("terrain.obj");
+	terrain_->SetEnvironmentMapTexture("rostock_laage_airport_4k.dds");
+
 	// 銃の初期化
-	gun_ = make_unique<Gun>();
-	gun_->Initialize(camera_.get(), "resources/rostock_laage_airport_4k.dds", sphere_.get(), camera_->GetTranslate());
+	gun_ = make_unique<Gun>(camera_.get(), "rostock_laage_airport_4k.dds", camera_->GetTranslate());
 
 	// レティクルの初期化
 	crosshair_ = make_unique<Sprite>();
-	crosshair_->Initialize("resources/crosshair138.png");
+	crosshair_->Initialize("crosshair138.png");
 	crosshair_->SetAnchorPoint({ 0.5f, 0.5f });
+
+	// ViewportMatrixを作る
+	Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 1.0f);
 
 	// ImGuiマネージャの初期化
 	imGuiManager_ = ImGuiManager::GetInstance();
 
 	// オーディオの初期化
 	audio_ = Audio::GetInstance();
-	audio_->SoundLoadFile("resources/audios/gunShoot.mp3");
-	audio_->SoundLoadFile("resources/audios/The_maze_of_aqua.mp3");
+	audio_->SoundLoadFile("gunShoot.mp3");
+	audio_->SoundLoadFile("The_maze_of_aqua.mp3");
+
+	// 乱数生成器の初期化
+	randomEngine_ = mt19937(seedGenerator_());
 }
 
 void GamePlayScene::Finalize() {
-	audio_->SoundUnload("resources/audios/gunShoot.mp3");
+	for (Enemy* enemy : enemies_) {
+		delete enemy;
+		enemy = nullptr;
+	}
+
+	audio_->SoundUnload("gunShoot.mp3");
 
 	audio_->SoundStopWave(bgm_);
-	audio_->SoundUnload("resources/audios/The_maze_of_aqua.mp3");
+	audio_->SoundUnload("The_maze_of_aqua.mp3");
 }
 
 void GamePlayScene::Update() {
 	// ENTERキーを押したら
-	if (input_->TriggerKey(DIK_R)) {
+	if (Input::GetInstance()->TriggerKey(DIK_R)) {
 		// シーン切り替え
 		SceneManager::GetInstance()->ChangeScene("TITLE");
 	}
 
 	if (!bgm_) {
-		bgm_ = audio_->SoundPlayWave("resources/audios/The_maze_of_aqua.mp3", true, 1.0f);
+		bgm_ = audio_->SoundPlayWave("The_maze_of_aqua.mp3", true, 1.0f);
 	}
 
 	// カメラの更新
 	camera_->Update();
 
-	// スカイボックスの更新
-	skybox_->Update();
+	terrain_->Update();
 
 	// マウス座標を取得
 	GetCursorPos(&mousePosition_);
@@ -93,6 +100,39 @@ void GamePlayScene::Update() {
 
 	// 銃の更新
 	gun_->Update(mousePosition_);
+
+	enemies_.remove_if([](Enemy* enemy) {
+		if (enemy->IsDead()) {
+			delete enemy;
+			enemy = nullptr;
+			return true;
+		}
+		return false;
+		});
+
+	if (enemySpawnTimer_ > 0) {
+		enemySpawnTimer_--;
+	}
+	else {
+		uniform_real_distribution<float> distribution(-4.0f, 4.0f);
+		Enemy* enemy = new Enemy(camera_.get(), "rostock_laage_airport_4k.dds", Vector3(distribution(randomEngine_), 0.0f, 20.0f));
+		enemy->SetGun(gun_.get());
+		enemies_.push_back(enemy);
+		enemySpawnTimer_ = enemySpawnFrequency_;
+	}
+
+	// 敵の更新
+	for (Enemy* enemy : enemies_) {
+		enemy->Update();
+	}
+
+	list<Bullet*> bullets = gun_->GetBullets();
+
+	for (Bullet* bullet : bullets) {
+		for (Enemy* enemy : enemies_) {
+			Collider::CheckBulletEnemyCollision(bullet, enemy);
+		}
+	}
 
 	// スプライトの座標をマウス位置に設定
 	crosshair_->SetPosition({ static_cast<float>(mousePosition_.x), static_cast<float>(mousePosition_.y) });
@@ -139,14 +179,10 @@ void GamePlayScene::Draw() {
 	// SRVマネージャの描画前処理
 	SrvManager::GetInstance()->PreDraw();
 
-	// スカイボックス描画前処理
-	skyboxCommon_->DrawSetting();
-
-	// スカイボックスの描画
-	skybox_->Draw();
-
-	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
-	object3dCommon_->DrawSetting();
+	for (Enemy* enemy : enemies_) {
+		// 敵の描画
+		enemy->Draw();
+	}
 
 	// 銃の描画
 	gun_->Draw();
