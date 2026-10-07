@@ -21,10 +21,5 @@ public:
 private:
 	// 頂点データ作成
 	void CreateVertexData() override;
-
-	// コマンドリスト
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
-
-	uint32_t numInstance_ = 1;
 };
 
