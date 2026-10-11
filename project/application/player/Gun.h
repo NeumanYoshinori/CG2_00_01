@@ -5,7 +5,7 @@
 
 class Gun {
 public:
-	Gun(Camera* camera, const std::string& filePath, Vector3 position);
+	void Initialize(Camera* camera, const std::string& filePath, Vector3 position);
 
 	~Gun();
 

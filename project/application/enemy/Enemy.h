@@ -6,7 +6,7 @@ class Gun;
 
 class Enemy {
 public:
-	Enemy(Gun* gun, Camera* camera, const std::string& filePath, Vector3 position);
+	void Initialize(Gun* gun, Camera* camera, const std::string& filePath, Vector3 position);
 
 	void Update();
 

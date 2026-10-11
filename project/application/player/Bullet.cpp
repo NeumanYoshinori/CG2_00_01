@@ -6,7 +6,7 @@
 using namespace std;
 using namespace MathFunction;
 
-Bullet::Bullet(Camera* camera, const std::string& envFilePath, Vector3 position, Vector3 velocity) {
+void Bullet::Initialize(Camera* camera, const std::string& envFilePath, Vector3 position, Vector3 velocity) {
 	object3d_ = make_unique<Object3d>();
 	object3d_->Initialize();
 	object3d_->SetEnvironmentMapTexture(envFilePath);

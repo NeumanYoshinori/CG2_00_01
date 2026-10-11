@@ -4,7 +4,7 @@
 
 class Bullet {
 public:
-	Bullet(Camera* camera, const std::string& envFilePath, Vector3 position, Vector3 velocity);
+	void Initialize(Camera* camera, const std::string& envFilePath, Vector3 position, Vector3 velocity);
 
 	void Update();
 
@@ -44,10 +44,10 @@ private:
 	float halfDepth_ = depth_ / 2.0f;
 
 	// 寿命
-	static const int32_t kLifeTime = 60 * 2;
+	static const int32_t kLifeTime_ = 60 * 2;
 
 	// デスタイマー
-	int32_t deathTimer_ = kLifeTime;
+	int32_t deathTimer_ = kLifeTime_;
 
 	Camera* camera_ = nullptr;
 };

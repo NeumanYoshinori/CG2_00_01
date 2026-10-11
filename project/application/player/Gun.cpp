@@ -7,7 +7,7 @@
 using namespace std;
 using namespace MathFunction;
 
-Gun::Gun(Camera* camera, const std::string& filePath, Vector3 position) {
+void Gun::Initialize(Camera* camera, const std::string& filePath, Vector3 position) {
 	object3d_ = make_unique<Object3d>();
 	object3d_->Initialize();
 	object3d_->SetEnvironmentMapTexture(filePath);
@@ -62,7 +62,8 @@ void Gun::Update(POINT mousePosition) {
 		});
 
 	if (Input::GetInstance()->TriggerKey(DIK_Z)) {
-		Bullet* bullet = new Bullet(camera_, filePath_, object3d_->GetTranslate(), bulletVelocity_);
+		Bullet* bullet = new Bullet();
+		bullet->Initialize(camera_, filePath_, object3d_->GetTranslate(), bulletVelocity_);
 		bullets_.push_back(bullet);
 
 		gunSound_ = audio_->SoundPlayWave("gunShoot.mp3", false, 1.0f);

@@ -6,7 +6,7 @@
 
 using namespace MathFunction;
 
-Enemy::Enemy(Gun* gun, Camera* camera, const std::string& filePath, Vector3 position) {
+void Enemy::Initialize(Gun* gun, Camera* camera, const std::string& filePath, Vector3 position) {
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Initialize();
 	object3d_->SetEnvironmentMapTexture(filePath);

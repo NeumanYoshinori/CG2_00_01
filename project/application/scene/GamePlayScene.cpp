@@ -42,7 +42,8 @@ void GamePlayScene::Initialize() {
 	terrain_->SetEnvironmentMapTexture("rostock_laage_airport_4k.dds");
 
 	// 銃の初期化
-	gun_ = make_unique<Gun>(camera_.get(), "rostock_laage_airport_4k.dds", camera_->GetTranslate());
+	gun_ = make_unique<Gun>();
+	gun_->Initialize(camera_.get(), "rostock_laage_airport_4k.dds", camera_->GetTranslate());
 
 	// レティクルの初期化
 	crosshair_ = make_unique<Sprite>();
@@ -112,7 +113,8 @@ void GamePlayScene::Update() {
 	}
 	else {
 		uniform_real_distribution<float> distribution(-4.0f, 4.0f);
-		Enemy* enemy = new Enemy(gun_.get(), camera_.get(), "rostock_laage_airport_4k.dds", Vector3(distribution(randomEngine_), 0.0f, 20.0f));
+		Enemy* enemy = new Enemy();
+		enemy->Initialize(gun_.get(), camera_.get(), "rostock_laage_airport_4k.dds", Vector3(distribution(randomEngine_), 0.0f, 20.0f));
 		enemies_.push_back(enemy);
 		enemySpawnTimer_ = enemySpawnFrequency_;
 	}
