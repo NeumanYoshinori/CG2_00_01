@@ -2,23 +2,26 @@
 #include "DirectXBase.h"
 #include "MathFunction.h"
 #include "Transform.h"
+#include "Camera.h"
 
 class Line {
 public:
 	// 初期化
-	void Initialize(Vector2 start, Vector2 end, Vector4 color);
+	void Initialize(Vector3 start, Vector3 end, Vector4 color);
 
 	void Update();
 
 	void Draw();
 
 	// 始点を設定
-	void SetStart(Vector2 start) { start_ = start; }
+	void SetStart(Vector3 start) { start_ = start; }
 	// 終点を設定
-	void SetEnd(Vector2 end) { end_ = end; }
+	void SetEnd(Vector3 end) { end_ = end; }
 
-	// 始点と終点を設定
-	void SetStartAndEnd(Vector2 start, Vector2 end) { start_ = start; end_ = end; }
+	// カメラをセット
+	void SetCamera(Camera* camera) { camera_ = camera; }
+
+	void SetTranslate(const Vector3& translate) { transform_.translate = translate; }
 
 private:
 	// 頂点データ
@@ -65,14 +68,17 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	// 始点
-	Vector2 start_{};
+	Vector3 start_{};
 	// 終点
-	Vector2 end_{};
+	Vector3 end_{};
 
 	// transform
 	Transform transform_{};
 
 	// 色
 	Vector4 color_{};
+
+	// カメラ
+	Camera* camera_ = nullptr;
 };
 

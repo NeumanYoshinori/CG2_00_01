@@ -122,7 +122,7 @@ void LineCommon::GenerateGraphicsPipeline() {
 	// DepthStencilStateの設定
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
 	depthStencilDesc.DepthEnable = true;
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
@@ -137,7 +137,7 @@ void LineCommon::GenerateGraphicsPipeline() {
 	// 書き込むRTVの情報
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	// 利用するトポロジ（形状）のタイプ。三角形
+	// 利用するトポロジ（形状）のタイプ。線形
 	graphicsPipelineStateDesc.PrimitiveTopologyType =
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 	// どのように画面に色を打ち込むかの設定

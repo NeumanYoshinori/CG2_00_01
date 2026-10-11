@@ -49,9 +49,6 @@ void GamePlayScene::Initialize() {
 	crosshair_->Initialize("crosshair138.png");
 	crosshair_->SetAnchorPoint({ 0.5f, 0.5f });
 
-	// ViewportMatrixを作る
-	Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 1.0f);
-
 	// ImGuiマネージャの初期化
 	imGuiManager_ = ImGuiManager::GetInstance();
 
@@ -115,8 +112,7 @@ void GamePlayScene::Update() {
 	}
 	else {
 		uniform_real_distribution<float> distribution(-4.0f, 4.0f);
-		Enemy* enemy = new Enemy(camera_.get(), "rostock_laage_airport_4k.dds", Vector3(distribution(randomEngine_), 0.0f, 20.0f));
-		enemy->SetGun(gun_.get());
+		Enemy* enemy = new Enemy(gun_.get(), camera_.get(), "rostock_laage_airport_4k.dds", Vector3(distribution(randomEngine_), 0.0f, 20.0f));
 		enemies_.push_back(enemy);
 		enemySpawnTimer_ = enemySpawnFrequency_;
 	}

@@ -11,7 +11,6 @@
 #include "Sprite.h"
 #include "Gun.h"
 #include "Enemy.h"
-#include "LineCommon.h"
 
 // ゲームプレイシーン
 class GamePlayScene : public BaseScene {
@@ -72,15 +71,13 @@ private:
 	std::list<Enemy*> enemies_;
 
 	// 敵発生頻度
-	const float enemySpawnFrequency_ = 600.0f;
+	const float enemySpawnFrequency_ = 120.0f;
 
 	// 敵発生タイマー
 	float enemySpawnTimer_ = 0;
 
 	// 地面
 	std::unique_ptr<Object3d> terrain_;
-
-	LineCommon* lineCommon_ = nullptr;
 
 	// 乱数生成器
 	std::random_device seedGenerator_;

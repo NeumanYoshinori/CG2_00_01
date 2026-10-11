@@ -36,9 +36,18 @@ private:
 
 	AABB aabb_{};
 
-	float width_ = 0.0f;
-	float height_ = 0.0f;
-	float depth_ = 0.0f;
+	float width_ = 1.0f;
+	float height_ = 1.0f;
+	float depth_ = 1.0f;
+	float halfWidth_ = width_ / 2.0f;
+	float halfHeight_ = height_ / 2.0f;
+	float halfDepth_ = depth_ / 2.0f;
+
+	// 寿命
+	static const int32_t kLifeTime = 60 * 2;
+
+	// デスタイマー
+	int32_t deathTimer_ = kLifeTime;
 
 	Camera* camera_ = nullptr;
 };

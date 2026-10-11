@@ -1,9 +1,6 @@
 #pragma once
 #include <string>
-#include <wrl.h>
 #include "ModelCommon.h"
-
-class Object3dCommon;
 
 // 球
 class Sphere : public ModelCommon {
@@ -13,12 +10,6 @@ public: // メンバ関数
 
 	// 描画
 	void Draw() override;
-
-	float GetEnvironmentCoefficient() { return materialData_->environmentCoefficient; }
-	void SetEnvironmentCoefficient(float environmentCoefficient) { materialData_->environmentCoefficient = environmentCoefficient; }
-
-	// namespace省略
-	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 private:
 	// 頂点データ作成

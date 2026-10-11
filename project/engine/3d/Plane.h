@@ -10,6 +10,7 @@ public:
 	void Draw() override;
 
 private:
+	// 頂点データ作成
 	void CreateVertexData() override;
 };
 

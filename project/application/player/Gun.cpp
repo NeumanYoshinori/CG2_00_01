@@ -18,9 +18,6 @@ Gun::Gun(Camera* camera, const std::string& filePath, Vector3 position) {
 	camera_ = camera;
 
 	filePath_ = filePath;
-
-	aabb_.min = { object3d_->GetTranslate().x - width_ / 2.0f, object3d_->GetTranslate().y - height_ / 2.0f, object3d_->GetTranslate().z - depth_ / 2.0f };
-	aabb_.max = { object3d_->GetTranslate().x + width_ / 2.0f, object3d_->GetTranslate().y + height_ / 2.0f, object3d_->GetTranslate().z + depth_ / 2.0f };
 }
 
 Gun::~Gun() {

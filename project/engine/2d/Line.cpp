@@ -3,7 +3,7 @@
 using namespace Microsoft::WRL;
 using namespace MathFunction;
 
-void Line::Initialize(Vector2 start, Vector2 end, Vector4 color) {
+void Line::Initialize(Vector3 start, Vector3 end, Vector4 color) {
 	dxBase_ = DirectXBase::GetInstance();
 
 	start_ = start;
@@ -12,7 +12,7 @@ void Line::Initialize(Vector2 start, Vector2 end, Vector4 color) {
 	color_ = color;
 
 	// Transform変数を作る
-	transform_ = { {1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+	transform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 
 	CreateVertexData();
 	CreateMaterialData();
@@ -20,16 +20,22 @@ void Line::Initialize(Vector2 start, Vector2 end, Vector4 color) {
 }
 
 void Line::Update() {
-	vertexData_[0].position = Vector4(start_.x, start_.y, 0.0f, 1.0f);
-	vertexData_[1].position = Vector4(end_.x, end_.y, 0.0f, 1.0f);
+	vertexData_[0].position = Vector4(start_.x, start_.y, start_.z, 1.0f);
+	vertexData_[1].position = Vector4(end_.x, end_.y, end_.z, 1.0f);
 
 	// transformからWorldMatrixを作る
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
-	// ViewMatrixを作って単位行列を書き込む
-	Matrix4x4 viewMatrix = MakeIdentity4x4();
-	// ProjectionMatrixを作って平行投影行列を書き込む
-	Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 100.0f);
-	transformationMatrixData_->WVP = worldMatrix * viewMatrix * projectionMatrix;
+	Matrix4x4 viewProjectionMatrix;
+	// カメラが設定してあるときは3D、そうでなければ2Dにする
+	if (camera_) {
+		viewProjectionMatrix = camera_->GetViewProjectionMatrix();
+	}
+	else {
+		Matrix4x4 viewMatrix = MakeIdentity4x4();
+		Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 100.0f);
+		viewProjectionMatrix = viewMatrix * projectionMatrix;
+	}
+	transformationMatrixData_->WVP = worldMatrix * viewProjectionMatrix;
 	transformationMatrixData_->World = worldMatrix;
 }
 

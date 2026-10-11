@@ -1,11 +1,12 @@
 #pragma once
 #include "Object3d.h"
+#include "Line.h"
 
 class Gun;
 
 class Enemy {
 public:
-	Enemy(Camera* camera, const std::string& filePath, Vector3 position);
+	Enemy(Gun* gun, Camera* camera, const std::string& filePath, Vector3 position);
 
 	void Update();
 
@@ -17,9 +18,9 @@ public:
 
 	void StartAttack();
 
-	Vector3 GetPosition() const { return position_; }
+	Vector3 GetTranslate() const { return object3d_->GetTranslate(); }
 
-	void SetGun(Gun* gun) { gun_ = gun; }
+	void CreateCollider();
 
 	bool IsDead() const { return isDead_; }
 
@@ -45,6 +46,9 @@ private:
 	float width_ = 1.0f;
 	float height_ = 1.0f;
 	float depth_ = 1.0f;
+	float halfWidth_ = width_ / 2.0f;
+	float halfHeight_ = height_ / 2.0f;
+	float halfDepth_ = depth_ / 2.0f;
 
 	uint32_t hp_ = 5;
 
@@ -53,5 +57,9 @@ private:
 	Gun* gun_ = nullptr;
 
 	bool isDead_ = false;
+
+	Camera* camera_ = nullptr;
+
+	std::array<std::unique_ptr<Line>, 12> lines_;
 };
 
