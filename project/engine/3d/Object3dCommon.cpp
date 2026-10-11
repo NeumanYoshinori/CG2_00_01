@@ -48,7 +48,7 @@ void Object3dCommon::CreateRootSignature() {
 	descriptorRangeEnv[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算
 
 	// RootParameter作成
-	D3D12_ROOT_PARAMETER rootParameters[6] = {};
+	D3D12_ROOT_PARAMETER rootParameters[7] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
 	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
@@ -69,6 +69,9 @@ void Object3dCommon::CreateRootSignature() {
 	rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
 	rootParameters[5].DescriptorTable.pDescriptorRanges = descriptorRangeEnv; // Tableの中身の配列を指定
 	rootParameters[5].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeEnv); // Tableで利用する数
+	rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
+	rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
+	rootParameters[6].Descriptor.ShaderRegister = 3; // レジスタ番号3を使う
 
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR; // バイリニアフィルタ

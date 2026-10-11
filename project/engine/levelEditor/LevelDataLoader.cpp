@@ -1,11 +1,8 @@
 #include "LevelDataLoader.h"
 #include <fstream>
 
-const std::string LevelDataLoader::kDefaultBaseDirectory = "resources/";
-const std::string LevelDataLoader::kExtension = ".json";
-
 LevelData* LevelDataLoader::LoadJson(const std::string filename) {
-	const std::string fullpath = kDefaultBaseDirectory + filename + kExtension;
+	const std::string fullpath = "resources/" + filename + ".json";
 
 	// ファイルストリーム
 	std::ifstream file;
@@ -18,25 +15,25 @@ LevelData* LevelDataLoader::LoadJson(const std::string filename) {
 	}
 
 	// JSON文字列から解凍したデータ
-	nlohmann::json jsonData;
+	nlohmann::json deserialized;
 
 	// 解凍
-	file >> jsonData;
+	file >> deserialized;
 
 	// 正しいレベルデータファイルかチェック
-	assert(jsonData.is_object());
-	assert(jsonData.contains("name"));
-	assert(jsonData["name"].is_string());
+	assert(deserialized.is_object());
+	assert(deserialized.contains("name"));
+	assert(deserialized["name"].is_string());
 
 	// "name"を文字列として取得
 	std::string name =
-		jsonData["name"].get<std::string>();
+		deserialized["name"].get<std::string>();
 	assert(name.compare("scene") == 0);
 
 	// レベルデータ格納用インスタンスを生成
 	LevelData* levelData = new LevelData();
 	// オブジェクト内の全オブジェクトを走査
-	for (nlohmann::json& object : jsonData["objects"]) {
+	for (nlohmann::json& object : deserialized["objects"]) {
 		assert(object.contains("type"));
 		ScanAllObject(object, levelData);
 	}

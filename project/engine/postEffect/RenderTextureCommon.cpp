@@ -176,7 +176,7 @@ void RenderTextureCommon::RenderTargetViewInitialize() {
 	// RTVの設定
 	rtvDesc_.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 出力結果をSRGBに変換して書き込む
 	rtvDesc_.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // 2dテクスチャとして書き込む
-	const Vector4 kRenderTargetClearValue{ 1.0f, 0.0f, 0.0f, 1.0f };
+	const Vector4 kRenderTargetClearValue{ 0.1f, 0.25f, 0.5f, 1.0f };
 	renderTextureResource_ = CreateRenderTextureResource(WinApp::kClientWidth, WinApp::kClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, kRenderTargetClearValue);
 	device_->CreateRenderTargetView(renderTextureResource_.Get(), &rtvDesc_, rtvHandle_);
 }

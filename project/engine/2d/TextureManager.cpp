@@ -30,11 +30,13 @@ void TextureManager::Initialize() {
 	srvManager_ = SrvManager::GetInstance();
 }
 
-void TextureManager::LoadTexture(const string& filePath) {
+void TextureManager::LoadTexture(const string& filename) {
 	// 読み込み済みテクスチャを検索
-	if (textureDatas_.contains(filePath)) {
+	if (textureDatas_.contains(filename)) {
 		return;
 	}
+
+	string filePath = "resources/" + filename;
 
 	// テクスチャ枚数上限チェック
 	assert(srvManager_->CheckMax());
@@ -61,7 +63,7 @@ void TextureManager::LoadTexture(const string& filePath) {
 	assert(SUCCEEDED(hr));
 
 	// テクスチャデータを追加して書き込む
-	TextureData& textureData = textureDatas_[filePath];
+	TextureData& textureData = textureDatas_[filename];
 	textureData.metadata = mipImages.GetMetadata();
 	textureData.resource = dxBase_->CreateTextureResource(textureData.metadata);
 	// SRV確保

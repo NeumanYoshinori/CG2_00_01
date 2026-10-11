@@ -19,7 +19,6 @@ void SpriteCommon::Finalize() {
 }
 
 void SpriteCommon::Initialize() {
-	// 引数で受け取ってメンバ変数に記録する
 	dxBase_ = DirectXBase::GetInstance();
 
 	// グラフィックスパイプラインの生成

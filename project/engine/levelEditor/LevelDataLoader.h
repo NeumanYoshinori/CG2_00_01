@@ -17,11 +17,8 @@ struct LevelData {
 
 class LevelDataLoader {
 public:
-	static const std::string kDefaultBaseDirectory;
-
-	static const std::string kExtension;
-
 	static LevelData* LoadJson(const std::string filename);
 
 	static void ScanAllObject(nlohmann::json& object, LevelData* levelData);
 };
+
