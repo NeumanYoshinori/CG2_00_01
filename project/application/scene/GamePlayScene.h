@@ -40,6 +40,8 @@ private:
 	// モデルマネージャ
 	ModelManager* modelManager_ = nullptr;
 
+	std::map<std::string, Model*> models_;
+
 	// オブジェクト3D共通部
 	Object3dCommon* object3dCommon_ = nullptr;
 
