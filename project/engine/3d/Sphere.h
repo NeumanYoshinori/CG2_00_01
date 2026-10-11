@@ -1,21 +1,15 @@
 #pragma once
 #include <string>
-#include <wrl.h>
-#include "Primitive.h"
-
-class Object3dCommon;
+#include "ModelCommon.h"
 
 // 球
-class Sphere : public Primitive {
+class Sphere : public ModelCommon {
 public: // メンバ関数
+	// 初期化
+	void Initialize(const std::string& filename) override;
+
 	// 描画
 	void Draw() override;
-
-	float GetEnvironmentCoefficient() { return materialData_->environmentCoefficient; }
-	void SetEnvironmentCoefficient(float environmentCoefficient) { materialData_->environmentCoefficient = environmentCoefficient; }
-
-	// namespace省略
-	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 private:
 	// 頂点データ作成

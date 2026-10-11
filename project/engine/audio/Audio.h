@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <unordered_map>
 
 #pragma comment(lib, "xaudio2.lib")
 
@@ -28,8 +29,18 @@ private:
 		WAVEFORMATEX fmt; // 波形フォーマット
 	};
 
+	// サウンドデータ
+	struct SoundData {
+		// 波形フォーマット
+		WAVEFORMATEX wfex{};
+		// バッファ
+		std::vector<BYTE> buffer;
+	};
+
 	// unique_ptr化したシングルトンインスタンス
 	static std::unique_ptr<Audio> instance_;
+
+	std::unordered_map<std::string, SoundData> soundDatas_;
 
 	Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
 	IXAudio2MasteringVoice* masterVoice_ = nullptr;
@@ -42,14 +53,6 @@ private:
 	friend struct std::default_delete<Audio>;
 
 public:
-	// サウンドデータ
-	struct SoundData {
-		// 波形フォーマット
-		WAVEFORMATEX wfex{};
-		// バッファ
-		std::vector<BYTE> buffer;
-	};
-
 	// シングルトンインスタンスの取得
 	static Audio* GetInstance();
 
@@ -70,16 +73,18 @@ public:
 	void Initialize();
 
 	// 音声ファイル読み込み
-	SoundData SoundLoadFile(const std::string& filename);
+	void SoundLoadFile(const std::string& filename);
 
 	// 音声データ解放
-	void SoundUnload(SoundData* soundData);
+	void SoundUnload(const std::string& filename);
 
 	// 音声再生
-	IXAudio2SourceVoice* SoundPlayWave(const SoundData& soundData, bool loopFlag);
+	IXAudio2SourceVoice* SoundPlayWave(const std::string& filename, bool loopFlag, float volume);
 
 	void SoundStopWave(IXAudio2SourceVoice* pSourceVoice);
 
 	void SoundPauseWave(IXAudio2SourceVoice* pSourceVoice);
+
+	void SetVolume(IXAudio2SourceVoice* pSourceVoice, float volume);
 };
 

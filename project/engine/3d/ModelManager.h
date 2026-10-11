@@ -2,8 +2,7 @@
 #include <map>
 #include <string>
 #include <memory>
-#include "Model.h"
-#include "Sphere.h"
+#include "ModelCommon.h"
 
 // モデルマネージャー
 class ModelManager {
@@ -19,18 +18,15 @@ public:
 	/// <param name="filePath">モデルファイルのパス</param>
 	void LoadModel(const std::string& filePath);
 
+	// プリミティブ作成
+	void CreatePrimitive(const std::string& name, const std::string& type, const std::string& filePath);
+
 	/// <summary>
 	/// モデルの検索
 	/// </summary>
 	/// <param name="filePath">モデルファイルのパス</param>
 	/// <returns></returns>
-	Model* FindModel(const std::string& filePath);
-
-	/// <summary>
-	/// 球生成
-	/// </summary>
-	/// <returns></returns>
-	Sphere* CreateSphere(const std::string& filePath);
+	ModelCommon* FindModel(const std::string& filePath);
 
 	// コンストラクタに渡すための鍵
 	class ConstructorKey {
@@ -47,7 +43,7 @@ private:
 	static std::unique_ptr<ModelManager> instance_;
 
 	// モデルデータ
-	std::map<std::string, std::unique_ptr<Model>> models_;
+	std::map<std::string, std::unique_ptr<ModelCommon>> models_;
 
 	~ModelManager() = default;
 	ModelManager(ModelManager&) = delete;

@@ -6,6 +6,9 @@
 #include "Audio.h"
 #include "BaseScene.h"
 #include "ImGuiManager.h"
+#include "SkyboxCommon.h"
+#include "Skybox.h"
+#include "Camera.h"
 
 // 前方宣言
 class SceneManager;
@@ -47,10 +50,15 @@ private:
 	// オーディオ
 	Audio* audio_ = nullptr;
 
-	// サウンドデータ1
-	Audio::SoundData soundData1;
-
 	IXAudio2SourceVoice* bgmVoice_ = nullptr;
+
+	SkyboxCommon* skyboxCommon_ = nullptr;
+	std::unique_ptr<Skybox> skybox_;
+
+	std::unique_ptr<Camera> camera_;
+
+	SpriteCommon* spriteCommon_ = nullptr;
+	std::unique_ptr<Sprite> title_;
 
 	// ImGuiマネージャ
 	ImGuiManager* imGuiManager_ = nullptr;

@@ -83,7 +83,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)application\collider;$(ProjectDir)application\enemy;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\levelEditor;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)application\player;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -110,7 +110,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)application\collider;$(ProjectDir)application\enemy;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\levelEditor;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)application\player;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,7 +140,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)application\collider;$(ProjectDir)application\enemy;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\levelEditor;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)application\player;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -158,9 +158,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="application\collider\Collider.cpp" />
+    <ClCompile Include="application\enemy\Enemy.cpp" />
     <ClCompile Include="application\scene\GamePlayScene.cpp" />
-    <ClCompile Include="Cylinder.cpp" />
-    <ClCompile Include="engine\3d\Primitive.cpp" />
+    <ClCompile Include="application\player\Bullet.cpp" />
+    <ClCompile Include="engine\2d\Line.cpp" />
+    <ClCompile Include="engine\2d\LineCommon.cpp" />
+    <ClCompile Include="engine\3d\Cylinder.cpp" />
+    <ClCompile Include="engine\3d\ModelCommon.cpp" />
     <ClCompile Include="engine\base\CrashHandler.cpp" />
     <ClCompile Include="engine\audio\Audio.cpp" />
     <ClCompile Include="engine\3d\Camera.cpp" />
@@ -175,6 +180,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\3d\LightManager.cpp" />
     <ClCompile Include="engine\game\Game.cpp" />
     <ClCompile Include="engine\game\Framework.cpp" />
+    <ClCompile Include="engine\levelEditor\LevelDataLoader.cpp" />
+    <ClCompile Include="application\player\Gun.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
@@ -201,8 +208,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\3d\Ring.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Cylinder.h" />
-    <ClInclude Include="engine\3d\Primitive.h" />
+    <ClInclude Include="application\collider\Collider.h" />
+    <ClInclude Include="application\enemy\Enemy.h" />
+    <ClInclude Include="application\player\Bullet.h" />
+    <ClInclude Include="engine\2d\Line.h" />
+    <ClInclude Include="engine\2d\LineCommon.h" />
+    <ClInclude Include="engine\3d\Cylinder.h" />
+    <ClInclude Include="engine\3d\ModelCommon.h" />
     <ClInclude Include="engine\game\AbstractSceneFactory.h" />
     <ClInclude Include="application\scene\GamePlayScene.h" />
     <ClInclude Include="engine\game\BaseScene.h" />
@@ -245,11 +257,18 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\postEffect\PostEffect.h" />
     <ClInclude Include="engine\3d\Plane.h" />
     <ClInclude Include="engine\3d\Ring.h" />
+    <ClInclude Include="engine\levelEditor\LevelDataLoader.h" />
+    <ClInclude Include="application\player\Gun.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\FullScreen.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="resources\shaders\Line.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
     <None Include="resources\shaders\Object3d.hlsli">
@@ -303,6 +322,16 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <FxCompile Include="resources\shaders\Grayscale.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\Line.PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\Line.VS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="resources\shaders\Object3d.PS.hlsl">

@@ -1,17 +1,16 @@
 #pragma once
-#include "Input.h"
 #include "TextureManager.h"
 #include "Object3dCommon.h"
-#include "Object3d.h"
 #include "ModelManager.h"
 #include "ParticleManager.h"
-#include "ParticleEmitter.h"
 #include "ImGuiManager.h"
 #include "Audio.h"
 #include "SkyboxCommon.h"
-#include "Skybox.h"
 #include "BaseScene.h"
-#include <random>
+#include "SpriteCommon.h"
+#include "Sprite.h"
+#include "Gun.h"
+#include "Enemy.h"
 
 // ゲームプレイシーン
 class GamePlayScene : public BaseScene {
@@ -32,9 +31,6 @@ public:
 	void ImGuiDraw() override;
 
 private:
-	// 入力
-	Input* input_ = nullptr;
-
 	// テクスチャマネージャ
 	TextureManager* textureManager_ = nullptr;
 
@@ -47,56 +43,44 @@ private:
 	// オブジェクト3D共通部
 	Object3dCommon* object3dCommon_ = nullptr;
 
-	// 地面
-	std::unique_ptr<Object3d> terrain_;
+	// スプライト共通部
+	SpriteCommon* spriteCommon_ = nullptr;
 
-	// 球
-	std::unique_ptr<Primitive> sphere_;
-
-	// 平面
-	std::unique_ptr<Primitive> plane_;
-
-	// リング
-	std::unique_ptr<Primitive> ring_;
-
-	// シリンダー
-	std::unique_ptr<Primitive> cylinder_;
-
-	// プリミティブ
-	std::unique_ptr<Object3d> primitive_;
-
-	std::random_device seedGenerator_;
-	std::mt19937 randomEngine_;
-
-	Transform planeTransform{};
+	// レティクル
+	std::unique_ptr<Sprite> crosshair_;
 
 	// パーティクルマネージャ
 	ParticleManager* particleManager_ = nullptr;
 
-	// パーティクルエミッター
-	std::unique_ptr<ParticleEmitter> fenceEmitter_;
-	std::unique_ptr<ParticleEmitter> planeEmitter_;
-	std::unique_ptr<ParticleEmitter> cylinderEmitter_;
-
 	// スカイボックス共通部
 	SkyboxCommon* skyboxCommon_ = nullptr;
-
-	// スカイボックス
-	std::unique_ptr<Skybox> skybox_;
 
 	// ImGuiマネジャー
 	ImGuiManager* imGuiManager_ = nullptr;
 
 	// オーディオ
 	Audio* audio_ = nullptr;
+	IXAudio2SourceVoice* bgm_ = nullptr;
 
-	// サウンドデータ2
-	Audio::SoundData soundData2;
+	POINT mousePosition_{};
 
-	IXAudio2SourceVoice* bgmVoice_ = nullptr;
+	// 銃
+	std::unique_ptr<Gun> gun_;
 
-	float rgb[3] = { 1.0f, 1.0f, 1.0f };
+	// 敵
+	std::list<Enemy*> enemies_;
 
-	bool useSepia = false;
+	// 敵発生頻度
+	const float enemySpawnFrequency_ = 120.0f;
+
+	// 敵発生タイマー
+	float enemySpawnTimer_ = 0;
+
+	// 地面
+	std::unique_ptr<Object3d> terrain_;
+
+	// 乱数生成器
+	std::random_device seedGenerator_;
+	std::mt19937 randomEngine_;
 };
 

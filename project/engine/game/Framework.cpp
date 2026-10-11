@@ -12,6 +12,7 @@
 #include "ImGuiManager.h"
 #include "ParticleManager.h"
 #include "SkyboxCommon.h"
+#include "LineCommon.h"
 
 void Framework::Initialize() {
 	// 誰も補足しなかった場合に(Unhandled)、補足する関数を登録
@@ -37,6 +38,9 @@ void Framework::Initialize() {
 
 	// スプライト共通部の初期化
 	SpriteCommon::GetInstance()->Initialize();
+
+	// 線共通部の初期化
+	LineCommon::GetInstance()->Initialize();
 
 	// ライトマネージャの初期化
 	LightManager::GetInstance()->Initialize();
@@ -71,6 +75,9 @@ void Framework::Finalize() {
 
 	// スプライト共通部の解放
 	SpriteCommon::GetInstance()->Finalize();
+
+	// 線共通部の解放
+	LineCommon::GetInstance()->Finalize();
 
 	// 3dオブジェクト共通部の解放
 	Object3dCommon::GetInstance()->Finalize();
