@@ -10,14 +10,14 @@ public:
 	// シングルトンインスタンスの取得
 	static Input* GetInstance();
 
+	// 終了
+	void Finalize();
+
 	// 初期化
 	void Initialize();
 
 	// 更新
 	void Update();
-
-	// namespace省略
-	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 	// キーを押したかをチェック
 	bool PushKey(BYTE keyNumber);
@@ -27,6 +27,11 @@ public:
 	bool TriggerKey(BYTE keyNumber);
 	// 離した瞬間の処理
 	bool ReleaseKey(BYTE keyNumber);
+
+	// マウスが押されているか
+	bool IsPressMouse(int buttonNumber);
+	// マウスを押した瞬間の処理
+	bool IsTriggerMouse(int buttonNumber);
 
 	// コンストラクタに渡すための鍵
 	class ConstructorKey {
@@ -39,18 +44,28 @@ public:
 	explicit Input(ConstructorKey) {}
 
 private:
+	// namespace省略
+	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+
 	// インスタンス
 	static std::unique_ptr<Input> instance_;
 
 	// キーボード
-	ComPtr<IDirectInputDevice8> keyboard;
+	ComPtr<IDirectInputDevice8> keyboard_;
 
 	// 全キーの状態
-	BYTE key[256] = {};
-	BYTE keyPre[256] = {};
+	BYTE key_[256] = {};
+	BYTE keyPre_[256] = {};
+
+	// マウス
+	ComPtr<IDirectInputDevice8> devMouse_;
+
+	// マウスの状態
+	DIMOUSESTATE2 mouse_{};
+	DIMOUSESTATE2 mousePre_{};
 
 	// DirectInputのインスタンス
-	ComPtr<IDirectInput8> directInput;
+	ComPtr<IDirectInput8> directInput_;
 
 	~Input() = default;
 	Input(Input&) = delete;

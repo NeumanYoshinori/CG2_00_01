@@ -75,11 +75,13 @@ void Gun::Update(POINT mousePosition) {
 }
 
 void Gun::DebugUpdate() {
+#ifdef USE_IMGUI
 	if (ImGui::CollapsingHeader("Bullet")) {
 		for (Bullet* bullet : bullets_) {
 			bullet->DebugUpdate();
 		}
 	}
+#endif
 }
 
 void Gun::Draw() {

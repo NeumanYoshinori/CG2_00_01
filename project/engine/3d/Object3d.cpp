@@ -2,7 +2,9 @@
 #include "Object3dCommon.h"
 #include "TextureManager.h"
 #include "ModelManager.h"
-#include "ImGuiManager.h"
+#ifdef USE_IMGUI
+#include <externals/imgui/imgui.h>
+#endif
 
 using namespace std;
 using namespace MathFunction;

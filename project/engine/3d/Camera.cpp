@@ -1,7 +1,7 @@
 #include "Camera.h"
 #include "WinApp.h"
 #ifdef USE_IMGUI
-#include "ImGuiManager.h"
+#include <externals/imgui/imgui.h>
 #endif
 
 using namespace MathFunction;

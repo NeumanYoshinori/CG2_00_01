@@ -1,5 +1,4 @@
 #pragma once
-#include <d3d12.h>
 #include "DirectXBase.h"
 
 // スプライト共通部

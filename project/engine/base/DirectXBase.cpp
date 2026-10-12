@@ -6,6 +6,10 @@
 #include "Logger.h"
 #include "StringUtility.h"
 
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "dxcompiler.lib")
+
 using namespace std;
 using namespace Microsoft::WRL;
 using namespace Logger;
@@ -15,6 +19,26 @@ using namespace chrono;
 
 unique_ptr<DirectXBase> DirectXBase::instance_ = nullptr;
 
+DirectXBase::~DirectXBase() {
+	if (fenceEvent_) {
+		CloseHandle(fenceEvent_);
+		fenceEvent_ = nullptr;
+	}
+
+	for (auto& resource : swapChainResources_) {
+		resource.Reset();
+	}
+	depthStencilResource_.Reset();
+	rtvDescriptorHeap_.Reset();
+	swapChain_.Reset();
+	commandList_.Reset();
+	commandAllocator_.Reset();
+	commandQueue_.Reset();
+	fence_.Reset();
+	device_.Reset();
+	dxgiFactory_.Reset();
+}
+
 DirectXBase* DirectXBase::GetInstance() {
 	if (instance_ == nullptr) {
 		instance_ = make_unique<DirectXBase>(ConstructorKey());
@@ -23,7 +47,11 @@ DirectXBase* DirectXBase::GetInstance() {
 }
 
 void DirectXBase::Finalize() {
-	instance_.reset();
+	if (instance_) {
+		instance_->WaitForGPU();
+
+		instance_.reset();
+	}
 }
 
 void DirectXBase::Initialize() {
@@ -132,17 +160,6 @@ void DirectXBase::DeviceInitialize() {
 		debugController->SetEnableGPUBasedValidation(TRUE);
 	}
 #endif
-
-	// 出力ウィンドウへの文字出力
-	Log("Hello,DirectX!\n");
-	Log(ConvertString(
-			format(
-				L"clientSize:{},{}\n",
-				WinApp::kClientWidth,
-				WinApp::kClientHeight
-			)
-		)
-	);
 
 	// 関数が成功したかどうかをSUCCEEDEDマクロで判定できる
 	hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory_));

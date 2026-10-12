@@ -2,8 +2,6 @@
 #include <string>
 #include <MathFunction.h>
 #include <Transform.h>
-#include <wrl.h>
-#include <d3d12.h>
 #include "DirectXBase.h"
 #include "Camera.h"
 
