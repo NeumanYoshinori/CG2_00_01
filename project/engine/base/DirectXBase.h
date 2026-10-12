@@ -9,13 +9,11 @@
 #include <externals/DirectXTex/DirectXTex.h>
 #include <cstdint>
 
-#pragma comment(lib, "dxcompiler.lib")
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "dxgi.lib")
-
 // DirectX基盤
 class DirectXBase {
 public:
+ 	 ~DirectXBase();
+
 	// シングルトンインスタンスの取得
 	static DirectXBase* GetInstance();
 
@@ -193,7 +191,6 @@ private:
 	// 記録時間
 	std::chrono::steady_clock::time_point reference_;
 
-	~DirectXBase() = default;
 	DirectXBase(const DirectXBase&) = delete;
 	const DirectXBase& operator=(const DirectXBase&) = delete;
 

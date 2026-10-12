@@ -1,8 +1,5 @@
 #pragma once
 #include "MathFunction.h"
-#include <d3d12.h>
-#include <wrl.h>
-#include <cstdint>
 #include <string>
 #include "Transform.h"
 #include "DirectXBase.h"

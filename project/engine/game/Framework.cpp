@@ -71,7 +71,17 @@ void Framework::Initialize() {
 }
 
 void Framework::Finalize() {
-	CloseHandle(DirectXBase::GetInstance()->GetFenceEvent());
+	// シーンマネージャの解放
+	sceneManager_->Finalize();
+
+	// ImGuiマネージャの初期化
+	ImGuiManager::GetInstance()->Finalize();
+
+	// ポストエフェクトの解放
+	PostEffect::GetInstance()->Finalize();
+
+	// レンダーテクスチャ基盤部分の解放
+	RenderTextureCommon::GetInstance()->Finalize();
 
 	// スプライト共通部の解放
 	SpriteCommon::GetInstance()->Finalize();
@@ -82,23 +92,17 @@ void Framework::Finalize() {
 	// 3dオブジェクト共通部の解放
 	Object3dCommon::GetInstance()->Finalize();
 
-	// テクスチャマネージャの終了
-	TextureManager::GetInstance()->Finalize();
+	// パーティクルマネージャの終了
+	ParticleManager::GetInstance()->Finalize();
+
+	// スカイボックス共通部の解放
+	SkyboxCommon::GetInstance()->Finalize();
 
 	// 3Dモデルマネージャの終了
 	ModelManager::GetInstance()->Finalize();
 
-	// パーティクルマネージャの終了
-	ParticleManager::GetInstance()->Finalize();
-
-	// ImGuiマネージャの解放
-	ImGuiManager::GetInstance()->Finalize();
-
-	// ポストエフェクトの解放
-	PostEffect::GetInstance()->Finalize();
-
-	// レンダーテクスチャ基盤部分の解放
-	RenderTextureCommon::GetInstance()->Finalize();
+	// テクスチャマネージャの終了
+	TextureManager::GetInstance()->Finalize();
 
 	// SRVマネージャの解放
 	SrvManager::GetInstance()->Finalize();
@@ -106,20 +110,17 @@ void Framework::Finalize() {
 	// ライトマネージャの解放
 	LightManager::GetInstance()->Finalize();
 
-	// スカイボックス共通部の解放
-	SkyboxCommon::GetInstance()->Finalize();
+	// オーディオマネジャーの解放
+	Audio::GetInstance()->Finalize();
+
+	// 入力処理解放
+	Input::GetInstance()->Finalize();
 
 	// DirectX解放
 	DirectXBase::GetInstance()->Finalize();
 
 	// WindowsAPIの終了処理
 	WinApp::GetInstance()->Finalize();
-
-	// シーンマネージャの解放
-	sceneManager_->Finalize();
-
-	// オーディオマネジャーの解放
-	Audio::GetInstance()->Finalize();
 }
 
 void Framework::Update() {

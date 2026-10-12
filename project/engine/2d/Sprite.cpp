@@ -1,6 +1,6 @@
 #include "Sprite.h"
 #include "TextureManager.h"
-#include "ImGuiManager.h"
+#include <externals/imgui/imgui.h>
 
 using namespace Microsoft::WRL;
 using namespace MathFunction;

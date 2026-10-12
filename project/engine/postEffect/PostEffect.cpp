@@ -2,7 +2,7 @@
 #include "RenderTextureCommon.h"
 #include "Logger.h"
 #ifdef USE_IMGUI
-#include "ImGuiManager.h"
+#include <externals/imgui/imgui.h>
 #endif
 
 using namespace Microsoft::WRL;

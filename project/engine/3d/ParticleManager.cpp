@@ -1,5 +1,4 @@
 #include "ParticleManager.h"
-#include <wrl.h>
 #include "Logger.h"
 #include "MathFunction.h"
 #include <numbers>

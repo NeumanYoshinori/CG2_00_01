@@ -1,8 +1,5 @@
 #pragma once
 #include <externals/DirectXTex/DirectXTex.h>
-#include <wrl.h>
-#include <d3d12.h>
-#include <cstdint>
 #include <string>
 #include "DirectXBase.h"
 #include "SrvManager.h"
