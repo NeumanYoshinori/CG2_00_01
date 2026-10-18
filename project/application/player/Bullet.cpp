@@ -1,7 +1,9 @@
 #include "Bullet.h"
 #include "MathFunction.h"
-#include "LineCommon.h"
 #include "Object3dCommon.h"
+#ifdef CREATE_COLLIDER
+#include "LineCommon.h"
+#endif
 
 using namespace std;
 using namespace MathFunction;
@@ -38,20 +40,24 @@ void Bullet::Update() {
 
 	object3d_->Update();
 
+#ifdef CREATE_COLLIDER
 	for (uint32_t i = 0; i < 12; ++i) {
 		lines_[i]->SetTranslate(object3d_->GetTranslate());
 		lines_[i]->Update();
 	}
+#endif
 }
 
 void Bullet::Draw() {
 	Object3dCommon::GetInstance()->DrawSetting();
 	object3d_->Draw();
 
+#ifdef CREATE_COLLIDER
 	LineCommon::GetInstance()->DrawSetting();
 	for (uint32_t i = 0; i < 8; ++i) {
 		lines_[i]->Draw();
 	}
+#endif
 }
 
 void Bullet::DebugUpdate() {
@@ -63,6 +69,7 @@ void Bullet::OnCollision() {
 }
 
 void Bullet::CreateCollider() {
+#ifdef CREATE_COLLIDER
 	Vector3 vertex[8] = {};
 	vertex[0] = { -width_, -height_, -depth_ };
 	vertex[1] = { width_, -height_, -depth_ };
@@ -90,4 +97,5 @@ void Bullet::CreateCollider() {
 	lines_[9]->Initialize(Vector3(vertex[4].x, vertex[4].y, vertex[4].z), Vector3(vertex[6].x, vertex[6].y, vertex[6].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
 	lines_[10]->Initialize(Vector3(vertex[5].x, vertex[5].y, vertex[5].z), Vector3(vertex[7].x, vertex[7].y, vertex[7].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
 	lines_[11]->Initialize(Vector3(vertex[6].x, vertex[6].y, vertex[6].z), Vector3(vertex[7].x, vertex[7].y, vertex[7].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
+#endif
 }
