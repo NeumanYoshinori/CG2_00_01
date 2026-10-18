@@ -20,10 +20,7 @@ using namespace chrono;
 unique_ptr<DirectXBase> DirectXBase::instance_ = nullptr;
 
 DirectXBase::~DirectXBase() {
-	if (fenceEvent_) {
-		CloseHandle(fenceEvent_);
-		fenceEvent_ = nullptr;
-	}
+	CloseHandle(fenceEvent_);
 
 	for (auto& resource : swapChainResources_) {
 		resource.Reset();

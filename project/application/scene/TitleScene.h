@@ -9,6 +9,7 @@
 #include "SkyboxCommon.h"
 #include "Skybox.h"
 #include "Camera.h"
+#include "PostEffect.h"
 
 // 前方宣言
 class SceneManager;
@@ -32,6 +33,12 @@ public:
 	void ImGuiDraw() override;
 
 private:
+	enum class Phase {
+		kFadeIn,
+		kMain,
+		KFadeOut
+	};
+
 	// WindowsAPI
 	WinApp* winApp_ = nullptr;
 
@@ -62,4 +69,14 @@ private:
 
 	// ImGuiマネージャ
 	ImGuiManager* imGuiManager_ = nullptr;
+
+	// フェーズ
+	Phase phase_{};
+
+	// フェードの持続時間
+	float duration_ = 1.0f;
+	// 経過時間カウンター
+	float counter_ = 0.0f;
+
+	PostEffect* postEffect_ = nullptr;
 };

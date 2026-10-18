@@ -1,6 +1,8 @@
 #pragma once
 #include "Object3d.h"
+#ifdef CREATE_COLLIDER
 #include "Line.h"
+#endif
 
 class Bullet {
 public:
@@ -23,7 +25,9 @@ public:
 	void CreateCollider();
 
 private:
+#ifdef CREATE_COLLIDER
 	std::array<std::unique_ptr<Line>, 12> lines_;
+#endif
 
 	// Object3d
 	std::unique_ptr<Object3d> object3d_;

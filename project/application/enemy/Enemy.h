@@ -1,6 +1,8 @@
 #pragma once
 #include "Object3d.h"
+#ifdef CREATE_COLLIDER
 #include "Line.h"
+#endif
 
 class Gun;
 
@@ -60,6 +62,8 @@ private:
 
 	Camera* camera_ = nullptr;
 
+#ifdef CREATE_COLLIDER
 	std::array<std::unique_ptr<Line>, 12> lines_;
+#endif
 };
 

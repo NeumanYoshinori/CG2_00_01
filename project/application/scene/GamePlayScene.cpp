@@ -60,6 +60,8 @@ void GamePlayScene::Initialize() {
 
 	// 乱数生成器の初期化
 	randomEngine_ = mt19937(seedGenerator_());
+
+	postEffect_ = PostEffect::GetInstance();
 }
 
 void GamePlayScene::Finalize() {
@@ -75,16 +77,6 @@ void GamePlayScene::Finalize() {
 }
 
 void GamePlayScene::Update() {
-	// ENTERキーを押したら
-	if (Input::GetInstance()->TriggerKey(DIK_R)) {
-		// シーン切り替え
-		SceneManager::GetInstance()->ChangeScene("TITLE");
-	}
-
-	if (!bgm_) {
-		bgm_ = audio_->SoundPlayWave("The_maze_of_aqua.mp3", true, 1.0f);
-	}
-
 	// カメラの更新
 	camera_->Update();
 
@@ -96,46 +88,79 @@ void GamePlayScene::Update() {
 	// クライエントに変換
 	ScreenToClient(WinApp::GetInstance()->GetHwnd(), &mousePosition_);
 
-	// 銃の更新
-	gun_->Update(mousePosition_);
-
-	enemies_.remove_if([](Enemy* enemy) {
-		if (enemy->IsDead()) {
-			delete enemy;
-			enemy = nullptr;
-			return true;
-		}
-		return false;
-		});
-
-	if (enemySpawnTimer_ > 0) {
-		enemySpawnTimer_--;
-	}
-	else {
-		uniform_real_distribution<float> distribution(-4.0f, 4.0f);
-		Enemy* enemy = new Enemy();
-		enemy->Initialize(gun_.get(), camera_.get(), "rostock_laage_airport_4k.dds", Vector3(distribution(randomEngine_), 0.0f, 20.0f));
-		enemies_.push_back(enemy);
-		enemySpawnTimer_ = enemySpawnFrequency_;
-	}
-
-	// 敵の更新
-	for (Enemy* enemy : enemies_) {
-		enemy->Update();
-	}
-
-	list<Bullet*> bullets = gun_->GetBullets();
-
-	for (Bullet* bullet : bullets) {
-		for (Enemy* enemy : enemies_) {
-			Collider::CheckBulletEnemyCollision(bullet, enemy);
-		}
-	}
-
 	// スプライトの座標をマウス位置に設定
 	crosshair_->SetPosition({ static_cast<float>(mousePosition_.x), static_cast<float>(mousePosition_.y) });
 	// スプライトの更新
 	crosshair_->Update();
+
+	list<Bullet*> bullets = gun_->GetBullets();
+
+	switch (phase_) {
+	case Phase::kFadeIn:
+		// 1フレーム分の秒数をカウントアップ
+		counter_ += 1.0f / 60.0f;
+		// フェード継続時間に達したら打ち止め
+		counter_ = min(counter_, duration_);
+		PostEffect::GetInstance()->SetColor(Vector3(clamp(counter_ / duration_, 0.0f, 1.0f), clamp(counter_ / duration_, 0.0f, 1.0f), clamp(counter_ / duration_, 0.0f, 1.0f)));
+		if (counter_ >= duration_) {
+			phase_ = Phase::kMain;
+		}
+
+		break;
+	case Phase::kMain:
+		// Rキーを押したら
+		if (Input::GetInstance()->TriggerKey(DIK_R)) {
+			counter_ = 0.0f;
+			phase_ = Phase::KFadeOut;
+		}
+
+		// 銃の更新
+		gun_->Update(mousePosition_);
+
+		enemies_.remove_if([](Enemy* enemy) {
+			if (enemy->IsDead()) {
+				delete enemy;
+				enemy = nullptr;
+				return true;
+			}
+			return false;
+			});
+
+		if (enemySpawnTimer_ > 0) {
+			enemySpawnTimer_--;
+		}
+		else {
+			uniform_real_distribution<float> distribution(-4.0f, 4.0f);
+			Enemy* enemy = new Enemy();
+			enemy->Initialize(gun_.get(), camera_.get(), "rostock_laage_airport_4k.dds", Vector3(distribution(randomEngine_), 0.0f, 20.0f));
+			enemies_.push_back(enemy);
+			enemySpawnTimer_ = enemySpawnFrequency_;
+		}
+
+		// 敵の更新
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
+
+		for (Bullet* bullet : bullets) {
+			for (Enemy* enemy : enemies_) {
+				Collider::CheckBulletEnemyCollision(bullet, enemy);
+			}
+		}
+
+		break;
+	case Phase::KFadeOut:
+		// 1フレーム分の秒数をカウントアップ
+		counter_ += 1.0f / 60.0f;
+		// フェード継続時間に達したら打ち止め
+		counter_ = min(counter_, duration_);
+		postEffect_->SetColor(Vector3(clamp(1.0f - counter_ / duration_, 0.0f, 1.0f), clamp(1.0f - counter_ / duration_, 0.0f, 1.0f), clamp(1.0f - counter_ / duration_, 0.0f, 1.0f)));
+
+		if (counter_ >= duration_) {
+			// シーン切り替え
+			SceneManager::GetInstance()->ChangeScene("TITLE");
+		}
+	}
 
 	// ImGui受付開始
 	imGuiManager_->Begin();

@@ -31,6 +31,8 @@ void PostEffect::Initialize() {
 	srvIndex_ = srvManager_->Allocate();
 	srvManager_->CreateSRVforTexture2D(srvIndex_, renderTextureResource_.Get(), DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, false);
 
+	postEffectType_ = PostEffectType::FullScreen;
+
 	GenerateGraphicsPipeline(L"resources/shaders/FullScreen.PS.hlsl", PostEffectType::FullScreen);
 	GenerateGraphicsPipeline(L"resources/shaders/Grayscale.PS.hlsl", PostEffectType::Grayscale);
 	GenerateGraphicsPipeline(L"resources/shaders/Vignette.PS.hlsl", PostEffectType::Vignette);

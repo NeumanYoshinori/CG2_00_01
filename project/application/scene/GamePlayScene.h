@@ -11,6 +11,7 @@
 #include "Sprite.h"
 #include "Gun.h"
 #include "Enemy.h"
+#include "PostEffect.h"
 
 // ゲームプレイシーン
 class GamePlayScene : public BaseScene {
@@ -31,6 +32,12 @@ public:
 	void ImGuiDraw() override;
 
 private:
+	enum class Phase {
+		kFadeIn,
+		kMain,
+		KFadeOut
+	};
+
 	// テクスチャマネージャ
 	TextureManager* textureManager_ = nullptr;
 
@@ -82,5 +89,15 @@ private:
 	// 乱数生成器
 	std::random_device seedGenerator_;
 	std::mt19937 randomEngine_;
+
+	// フェーズ
+	Phase phase_{};
+
+	// フェードの持続時間
+	float duration_ = 1.0f;
+	// 経過時間カウンター
+	float counter_ = 0.0f;
+
+	PostEffect* postEffect_ = nullptr;
 };
 
