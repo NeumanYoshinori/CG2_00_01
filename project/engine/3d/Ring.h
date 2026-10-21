@@ -1,11 +1,8 @@
 #pragma once
-#include "ModelCommon.h"
+#include "Primitive.h"
 
-class Ring : public ModelCommon {
+class Ring : public Primitive {
 public:
-	// 初期化
-	void Initialize(const std::string& filename);
-
 	// 描画
 	void Draw() override;
 

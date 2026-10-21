@@ -90,6 +90,10 @@ void ParticleManager::Update() {
 		if (particleGroup.model) {
 			particleGroup.model->SetNumInstance(particleGroup.numInstance);
 		}
+
+		if (particleGroup.primitive) {
+			particleGroup.primitive->SetNumInstance(particleGroup.numInstance);
+		}
 	}
 }
 
@@ -108,10 +112,14 @@ void ParticleManager::Draw() {
 		if (particleGroup.model) {
 			particleGroup.model->Draw();
 		}
+
+		if (particleGroup.primitive) {
+			particleGroup.primitive->Draw();
+		}
 	}
 }
 
-void ParticleManager::CreateParticleGroup(const string type, const string name, const string textureFilePath, int32_t flipX, int32_t flipY) {
+void ParticleManager::CreateParticleGroup(const string type, const string name, const string modelName, int32_t flipX, int32_t flipY) {
 	// 登録済みの名前かチェックしてreturn
 	if (particleGroups_.contains(name)) {
 		return;
@@ -125,7 +133,11 @@ void ParticleManager::CreateParticleGroup(const string type, const string name, 
 	particleGroup.srvIndex = srvManager_->Allocate();
 	particleGroup.flipX = flipX;
 	particleGroup.flipY = flipY;
-	particleGroup.model = ModelManager::GetInstance()->FindModel(textureFilePath);
+	if (type == "Model") {
+		particleGroup.model = ModelManager::GetInstance()->FindModel(modelName);
+	} else if (type == "Primitive") {
+		particleGroup.primitive = ModelManager::GetInstance()->FindPrimitive(modelName);
+	}
 	// SRV生成（StructuredBuffer用設定）
 	srvManager_->CreateSRVforStructuredBuffer(particleGroup.srvIndex, particleGroup.instancingResource.Get(), kNumMaxInstance_, sizeof(ParticleForGPU));
 }

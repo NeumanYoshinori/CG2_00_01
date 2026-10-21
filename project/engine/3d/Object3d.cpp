@@ -34,14 +34,17 @@ void Object3d::Update() {
 	if (camera_) {
 		const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();
 		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
-	}
-	else {
+	} else {
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
 	if (model_) {
+		//model_->PlayAnimation();
 		transformationMatrixData_->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
 		transformationMatrixData_->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
+	} else {
+		transformationMatrixData_->WVP = worldViewProjectionMatrix;
+		transformationMatrixData_->World = worldMatrix;
 	}
 
 	Matrix4x4 worldInverseMatrix = Inverse(worldMatrix);
@@ -71,6 +74,11 @@ void Object3d::Draw() {
 	if (model_) {
 		model_->Draw();
 	}
+
+	// プリミティブが割り当てられていれば描画する
+	if (primitive_) {
+		primitive_->Draw();
+	}
 }
 
 void Object3d::DebugUpdate() {
@@ -81,9 +89,14 @@ void Object3d::DebugUpdate() {
 	ImGui::SliderAngle("RotateZ", &transform_.rotate.z);
 	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.01f);
 	if (model_) {
-		float modelEnvironmentCoeffcient = model_->GetEnvironmentCoefficient();
-		ImGui::DragFloat("EnvironmentCoefficient", &modelEnvironmentCoeffcient, 0.01f);
-		model_->SetEnvironmentCoefficient(modelEnvironmentCoeffcient);
+		float environmentCoeffcient = model_->GetEnvironmentCoefficient();
+		ImGui::DragFloat("EnvironmentCoefficient", &environmentCoeffcient, 0.01f);
+		model_->SetEnvironmentCoefficient(environmentCoeffcient);
+	}
+	if (primitive_) {
+		float environmentCoeffcient = primitive_->GetEnvironmentCoefficient();
+		ImGui::DragFloat("EnvironmentCoefficient", &environmentCoeffcient, 0.01f);
+		primitive_->SetEnvironmentCoefficient(environmentCoeffcient);
 	}
 	bool flipX = transformationMatrixData_->flipX;
 	if (ImGui::Checkbox("FlipX", &flipX)) {
@@ -97,8 +110,24 @@ void Object3d::DebugUpdate() {
 }
 
 void Object3d::SetModel(const std::string& filePath) {
+	if (isModelSet_) {
+		return;
+	}
+
 	// モデルを検索
 	model_ = ModelManager::GetInstance()->FindModel(filePath);
+
+	isModelSet_ = true;
+}
+
+void Object3d::SetPrimitive(const std::string& name) {
+	if (isModelSet_) {
+		return;
+	}
+
+	primitive_ = ModelManager::GetInstance()->FindPrimitive(name);
+
+	isModelSet_ = true;
 }
 
 void Object3d::CreateTransformationMatrixData() {

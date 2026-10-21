@@ -1,6 +1,19 @@
-#include "ModelCommon.h"
+#include "Primitive.h"
 
-void ModelCommon::CreateMaterialData() {
+void Primitive::Initialize(std::string textureFilePath) {
+	dxBase_ = DirectXBase::GetInstance();
+
+	// 頂点データ作成
+	CreateVertexData();
+
+	// マテリアルデータ作成
+	CreateMaterialData();
+
+	// テクスチャファイル読み込み
+	textureFilePath_ = textureFilePath;
+}
+
+void Primitive::CreateMaterialData() {
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
 	materialResource_ = dxBase_->CreateBufferResource(sizeof(Material));
 
@@ -10,9 +23,9 @@ void ModelCommon::CreateMaterialData() {
 
 	// マテリアルデータの初期値を書き込む
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData_->enableLighting = true;
+	materialData_->enableLighting = false;
 	materialData_->uvTransform = MathFunction::MakeIdentity4x4();
 	materialData_->shininess = 10.0f;
-	materialData_->environmentCoefficient = 1.0f;
+	materialData_->environmentCoefficient = 0.0f;
 	materialData_->alphaReference = 0.0f;
 }

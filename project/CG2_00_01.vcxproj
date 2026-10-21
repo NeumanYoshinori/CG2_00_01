@@ -165,7 +165,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\2d\Line.cpp" />
     <ClCompile Include="engine\2d\LineCommon.cpp" />
     <ClCompile Include="engine\3d\Cylinder.cpp" />
-    <ClCompile Include="engine\3d\ModelCommon.cpp" />
     <ClCompile Include="engine\base\CrashHandler.cpp" />
     <ClCompile Include="engine\audio\Audio.cpp" />
     <ClCompile Include="engine\3d\Camera.cpp" />
@@ -206,6 +205,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\postEffect\PostEffect.cpp" />
     <ClCompile Include="engine\3d\Plane.cpp" />
     <ClCompile Include="engine\3d\Ring.cpp" />
+    <ClCompile Include="engine\3d\Primitive.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\collider\Collider.h" />
@@ -214,7 +214,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\2d\Line.h" />
     <ClInclude Include="engine\2d\LineCommon.h" />
     <ClInclude Include="engine\3d\Cylinder.h" />
-    <ClInclude Include="engine\3d\ModelCommon.h" />
     <ClInclude Include="engine\game\AbstractSceneFactory.h" />
     <ClInclude Include="application\scene\GamePlayScene.h" />
     <ClInclude Include="engine\game\BaseScene.h" />
@@ -231,6 +230,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\math\Matrix4x4.h" />
     <ClInclude Include="engine\2d\Sprite.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
+    <ClInclude Include="engine\math\Quaternion.h" />
     <ClInclude Include="engine\math\Transform.h" />
     <ClInclude Include="engine\math\Vector2.h" />
     <ClInclude Include="engine\math\Vector3.h" />
@@ -259,6 +259,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\3d\Ring.h" />
     <ClInclude Include="engine\levelEditor\LevelDataLoader.h" />
     <ClInclude Include="application\player\Gun.h" />
+    <ClInclude Include="engine\3d\Primitive.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\FullScreen.hlsli">

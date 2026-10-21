@@ -53,8 +53,8 @@ private:
 	AbstractSceneFactory* sceneFactory_ = nullptr;
 
 	~SceneManager() = default;
-	SceneManager(const SceneManager&) = delete;
-	const SceneManager& operator=(const SceneManager&) = delete;
+	SceneManager(SceneManager&) = delete;
+	SceneManager& operator=(SceneManager&) = delete;
 
 	// default_delete にアクセスを許可する
 	friend struct std::default_delete<SceneManager>;

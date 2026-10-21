@@ -28,8 +28,8 @@ void ModelManager::LoadModel(const std::string& filePath) {
 	}
 
 	// モデルの生成とファイル読み込み、初期化
-	unique_ptr<ModelCommon> model = make_unique<Model>();
-	model->Initialize(filePath);
+	unique_ptr<Model> model = make_unique<Model>();
+	model->Initialize("resources", filePath);
 
 	// モデルをmapコンテナに格納する
 	models_.insert(make_pair(filePath, move(model)));
@@ -37,37 +37,46 @@ void ModelManager::LoadModel(const std::string& filePath) {
 
 void ModelManager::CreatePrimitive(const std::string& name, const std::string& type, const std::string& filePath) {
 	// 読み込み済みモデルを検索
-	if (models_.contains(name)) {
+	if (primitives_.contains(name)) {
 		// 読み込み済みなら早期return
 		return;
 	}
 	
 	// モデルの生成
-	unique_ptr<ModelCommon> model;
+	unique_ptr<Primitive> primitive;
 	if (type == "Sphere") {
-		model = make_unique<Sphere>();
+		primitive = make_unique<Sphere>();
 	}
 	else if (type == "Plane") {
-		model = make_unique<Plane>();
+		primitive = make_unique<Plane>();
 	}
 	else if (type == "Ring") {
-		model = make_unique<Ring>();
+		primitive = make_unique<Ring>();
 	}
 	else if (type == "Cylinder") {
-		model = make_unique<Cylinder>();
+		primitive = make_unique<Cylinder>();
 	}
 
-	model->Initialize(filePath);
+	primitive->Initialize(filePath);
 
-	models_.insert(make_pair(name, move(model)));
+	primitives_.insert(make_pair(name, move(primitive)));
 }
 
-ModelCommon* ModelManager::FindModel(const string& filePath) {
+Model* ModelManager::FindModel(const string& filePath) {
 	// 読み込み済みモデルを検索
 	if (models_.contains(filePath)) {
 		return models_.at(filePath).get();
 	}
 
 	// ファイル名一致なし
+	return nullptr;
+}
+
+Primitive* ModelManager::FindPrimitive(const string& name) {
+	if (primitives_.contains(name)) {
+		return primitives_.at(name).get();
+	}
+
+	// 名前一致なし
 	return nullptr;
 }

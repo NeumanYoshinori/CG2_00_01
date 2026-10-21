@@ -12,7 +12,7 @@ void Bullet::Initialize(Camera* camera, const std::string& envFilePath, Vector3 
 	object3d_ = make_unique<Object3d>();
 	object3d_->Initialize();
 	object3d_->SetEnvironmentMapTexture(envFilePath);
-	object3d_->SetModel("monsterBall");
+	object3d_->SetPrimitive("monsterBall");
 
 	position_ = position;
 	object3d_->SetTranslate(position_);
