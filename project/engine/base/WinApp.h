@@ -50,8 +50,8 @@ private:
 	WNDCLASS wc_{};
 
 	~WinApp() = default;
-	WinApp(const WinApp&) = delete;
-	const WinApp& operator=(const WinApp&) = delete;
+	WinApp(WinApp&) = delete;
+	WinApp& operator=(WinApp&) = delete;
 
 	// default_delete にアクセスを許可する
 	friend struct std::default_delete<WinApp>;

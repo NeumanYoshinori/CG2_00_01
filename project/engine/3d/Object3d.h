@@ -3,7 +3,8 @@
 #include <MathFunction.h>
 #include <Transform.h>
 #include "DirectXBase.h"
-#include "ModelCommon.h"
+#include "Model.h"
+#include "Primitive.h"
 #include "Camera.h"
 #include "LightManager.h"
 
@@ -35,13 +36,15 @@ public: // メンバ関数
 	// setter
 	void SetModel(const std::string& filePath);
 
+	void SetPrimitive(const std::string& name);
+
 	// setter
 	void SetCamera(Camera* camera) { camera_ = camera; }
 
 	// setter
 	void SetEnvironmentMapTexture(const std::string& envMapFilePath) { environmentMapFilePath_ = envMapFilePath; }
 
-	ModelCommon* GetModel() { return model_; }
+	Model* GetModel() { return model_; }
 
 private:
 	// 座標変換用行列
@@ -96,7 +99,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	// モデル
-	ModelCommon* model_ = nullptr;
+	Model* model_ = nullptr;
+
+	// プリミティブ
+	Primitive* primitive_ = nullptr;
 
 	// カメラ
 	Camera* camera_ = nullptr;
@@ -105,5 +111,9 @@ private:
 	LightManager* lightManager_ = LightManager::GetInstance();
 
 	std::string environmentMapFilePath_;
+
+	float animationTime_ = 0.0f;
+
+	bool isModelSet_ = false;
 };
 

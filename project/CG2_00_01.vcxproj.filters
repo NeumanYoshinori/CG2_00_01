@@ -243,11 +243,11 @@
     <ClCompile Include="engine\2d\LineCommon.cpp">
       <Filter>ソース ファイル\engine\3d</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\ModelCommon.cpp">
-      <Filter>ソース ファイル\engine\3d</Filter>
-    </ClCompile>
     <ClCompile Include="application\collider\Collider.cpp">
       <Filter>ソース ファイル\application\collider</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\3d\Primitive.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -389,9 +389,6 @@
     <ClInclude Include="engine\3d\ModelManager.h">
       <Filter>ヘッダー ファイル\engine\3d</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\ModelCommon.h">
-      <Filter>ヘッダー ファイル\engine\3d</Filter>
-    </ClInclude>
     <ClInclude Include="engine\3d\Model.h">
       <Filter>ヘッダー ファイル\engine\3d</Filter>
     </ClInclude>
@@ -403,6 +400,12 @@
     </ClInclude>
     <ClInclude Include="application\collider\Collider.h">
       <Filter>ヘッダー ファイル\application\collider</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\math\Quaternion.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\3d\Primitive.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

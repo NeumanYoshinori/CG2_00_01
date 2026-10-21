@@ -82,6 +82,44 @@ namespace MathFunction {
         return result *= m2;
     }
 
+    Quaternion& operator+=(Quaternion& q0, const Quaternion& q1) {
+        q0.x += q1.x;
+        q0.y += q1.y;
+        q0.z += q1.z;
+        q0.w += q1.w;
+
+        return q0;
+    }
+
+    Quaternion& operator*=(Quaternion& q, float s) {
+        q.x *= s;
+        q.y *= s;
+        q.z *= s;
+        q.w *= s;
+
+        return q;
+    }
+
+    const Quaternion operator+(const Quaternion& q0, const Quaternion& q1) {
+        Quaternion temp(q0);
+
+        return temp += q1;
+    }
+
+    const Quaternion operator*(const Quaternion& q, const float f) {
+        Quaternion temp(q);
+
+        return temp *= f;
+    }
+
+    const Quaternion operator*(const float f, const Quaternion& q) {
+        Quaternion temp(q);
+
+        return temp *= f;
+    }
+
+    Quaternion operator-(const Quaternion& q) { return Quaternion(-q.x, -q.y, -q.z, -q.w); }
+
     // 単位行列の作成
     Matrix4x4 MakeIdentity4x4() {
         Matrix4x4 result = {};
@@ -165,6 +203,25 @@ namespace MathFunction {
         return scaleMatrix * rotateMatrix * translateMatrix;
     }
 
+    Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion) {
+        Matrix4x4 result = {};
+
+        result.m[0][0] = powf(quaternion.w, 2.0f) + powf(quaternion.x, 2.0f) - powf(quaternion.y, 2.0f) - powf(quaternion.z, 2.0f); result.m[0][1] = 2 * (quaternion.x * quaternion.y + quaternion.w * quaternion.z); result.m[0][2] = 2 * (quaternion.x * quaternion.z - quaternion.w * quaternion.y); result.m[0][3] = 0.0f;
+        result.m[1][0] = 2 * (quaternion.x * quaternion.y - quaternion.w * quaternion.z); result.m[1][1] = powf(quaternion.w, 2.0f) - powf(quaternion.x, 2.0f) + powf(quaternion.y, 2.0f) - powf(quaternion.z, 2.0f); result.m[1][2] = 2 * (quaternion.y * quaternion.z + quaternion.w * quaternion.x); result.m[1][3] = 0.0f;
+        result.m[2][0] = 2 * (quaternion.x * quaternion.z + quaternion.w * quaternion.y); result.m[2][1] = 2 * (quaternion.y * quaternion.z - quaternion.w * quaternion.x); result.m[2][2] = powf(quaternion.w, 2.0f) - powf(quaternion.x, 2.0f) - powf(quaternion.y, 2.0f) + powf(quaternion.z, 2.0f); result.m[2][3] = 0.0f;
+        result.m[3][0] = 0.0f; result.m[3][1] = 0.0f; result.m[3][2] = 0.0f; result.m[3][3] = 1.0f;
+
+        return result;
+    }
+
+    Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const Vector3& translate) {
+        Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
+        Matrix4x4 rotateMatrix = MakeRotateMatrix(rotate);
+        Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
+
+        return scaleMatrix * rotateMatrix * translateMatrix;
+    }
+
     Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
         Matrix4x4 result = { 1.0f / aspectRatio * (1.0f / tan(fovY / 2.0f)), 0.0f, 0.0f, 0.0f,
                             0.0f, 1.0f / tan(fovY / 2.0f), 0.0f, 0.0f,
@@ -186,7 +243,6 @@ namespace MathFunction {
             m.m[0][3] * m.m[1][2] * m.m[2][1] * m.m[3][0] + m.m[0][2] * m.m[1][1] * m.m[2][3] * m.m[3][0] + m.m[0][1] * m.m[1][3] * m.m[2][2] * m.m[3][0];
 
         Matrix4x4 result = {};
-
         result.m[0][0] = 1.0f / A * (m.m[1][1] * m.m[2][2] * m.m[3][3] + m.m[1][2] * m.m[2][3] * m.m[3][1] + m.m[1][3] * m.m[2][1] * m.m[3][2] - m.m[1][3] * m.m[2][2] * m.m[3][1] - m.m[1][2] * m.m[2][1] * m.m[3][3] - m.m[1][1] * m.m[2][3] * m.m[3][2]);
         result.m[0][1] = 1.0f / A * (-m.m[0][1] * m.m[2][2] * m.m[3][3] - m.m[0][1] * m.m[2][3] * m.m[3][1] - m.m[0][3] * m.m[2][1] * m.m[3][2] + m.m[0][3] * m.m[2][2] * m.m[3][1] + m.m[0][2] * m.m[2][1] * m.m[3][3] + m.m[0][1] * m.m[2][3] * m.m[3][2]);
         result.m[0][2] = 1.0f / A * (m.m[0][1] * m.m[1][2] * m.m[3][3] + m.m[0][2] * m.m[1][3] * m.m[3][1] + m.m[0][3] * m.m[1][1] * m.m[3][2] - m.m[0][3] * m.m[1][2] * m.m[3][1] - m.m[0][2] * m.m[1][1] * m.m[3][3] - m.m[0][1] * m.m[1][3] * m.m[3][2]);
@@ -271,5 +327,50 @@ namespace MathFunction {
         result /= w;
 
         return result;
+    }
+
+    // 内積
+    float Dot(const Vector3& v1, const Vector3& v2) { return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z; }
+
+    float Dot(const Quaternion& q0, const Quaternion& q1) { return q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w; }
+
+    // 線形補間(Vector3)
+    Vector3 Lerp(const Vector3& a, const Vector3& b, float t) {
+        Vector3 result = {};
+        result.x = (1.0f - t) * a.x + t * b.x;
+        result.y = (1.0f - t) * a.y + t * b.y;
+        result.z = (1.0f - t) * a.z + t * b.z;
+
+        return result;
+    }
+
+    // 線形補間(float)
+    float Lerp(float x1, float x2, float t) { return (1.0f - t) * x1 + t * x2; }
+
+    // 球面線形補間(Quaternion)
+    Quaternion Slerp(Quaternion q0, Quaternion q1, float t) {
+        // 内積を求める
+        float dot = Dot(q0, q1);
+
+        if (dot < 0) {
+            q0 = -q0; // もう片方の回転を利用する
+            dot = -dot; // 内積も反転
+        }
+
+        // なす角を求める
+        float theta = acos(dot);
+
+        // θの角度からsinθを求める
+        float sinTheta = sin(theta);
+        // サイン(θ(1-t))を求める
+        float sinThetaFrom = sin((1.0f - t) * theta);
+        // サインθtを求める
+        float sinThetaTo = sin(t * theta);
+
+        // thetaとsinを使って補間係数scale0,scale1を求める
+        float scale0 = sinThetaFrom / sinTheta;
+        float scale1 = sinThetaTo / sinTheta;
+
+        return scale0 * q0 + scale1 * q1;
     }
 }

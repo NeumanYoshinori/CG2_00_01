@@ -6,7 +6,8 @@
 #include <unordered_map>
 #include "Camera.h"
 #include <random>
-#include "ModelCommon.h"
+#include "Model.h"
+#include "Primitive.h"
 
 class ParticleManager {
 public:
@@ -31,7 +32,7 @@ public:
 	void Draw();
 
 	// パーティクルグループの生成
-	void CreateParticleGroup(const std::string type, const std::string name, const std::string textureFilePath, int32_t flipX, int32_t flipY);
+	void CreateParticleGroup(const std::string type, const std::string name, const std::string modelName, int32_t flipX, int32_t flipY);
 
 	// パーティクルの生成
 	void Emit(const std::string name, const Vector3& size, const Vector3& angle, const Vector3& position, const Vector3& velocity, const Vector4& color, float lifeTime, uint32_t count);
@@ -77,7 +78,8 @@ private:
 		ParticleForGPU* instancingData = nullptr;
 		int32_t flipX = false;
 		int32_t flipY = false;
-		ModelCommon* model = nullptr;
+		Model* model = nullptr;
+		Primitive* primitive = nullptr;
 	};
 
 	// ルートシグネチャの作成

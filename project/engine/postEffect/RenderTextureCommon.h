@@ -110,8 +110,8 @@ private:
 	uint32_t srvIndex_ = 0;
 
 	~RenderTextureCommon() = default;
-	RenderTextureCommon(const RenderTextureCommon&) = delete;
-	const RenderTextureCommon& operator=(const RenderTextureCommon&) = delete;
+	RenderTextureCommon(RenderTextureCommon&) = delete;
+	RenderTextureCommon& operator=(RenderTextureCommon&) = delete;
 
 	// default_delete にアクセスを許可する
 	friend struct std::default_delete<RenderTextureCommon>;

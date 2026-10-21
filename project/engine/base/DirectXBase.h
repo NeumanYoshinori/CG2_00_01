@@ -12,8 +12,6 @@
 // DirectX基盤
 class DirectXBase {
 public:
- 	 ~DirectXBase();
-
 	// シングルトンインスタンスの取得
 	static DirectXBase* GetInstance();
 
@@ -86,10 +84,8 @@ private:
 	// レンダーターゲットビューの初期化
 	void RenderTargetViewInitialize();
 
-
 	// namespace省略
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
-
 
 	// 指定番号のCPUデスクリプタハンドルを取得する
 	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const ComPtr<ID3D12DescriptorHeap>& descriptorHeap,
@@ -191,8 +187,9 @@ private:
 	// 記録時間
 	std::chrono::steady_clock::time_point reference_;
 
-	DirectXBase(const DirectXBase&) = delete;
-	const DirectXBase& operator=(const DirectXBase&) = delete;
+	~DirectXBase() = default;
+	DirectXBase(DirectXBase&) = delete;
+	DirectXBase& operator=(DirectXBase&) = delete;
 
 	// default_delete にアクセスを許可する
 	friend struct std::default_delete<DirectXBase>;

@@ -2,7 +2,8 @@
 #include <map>
 #include <string>
 #include <memory>
-#include "ModelCommon.h"
+#include "Model.h"
+#include "Primitive.h"
 
 // モデルマネージャー
 class ModelManager {
@@ -26,7 +27,14 @@ public:
 	/// </summary>
 	/// <param name="filePath">モデルファイルのパス</param>
 	/// <returns></returns>
-	ModelCommon* FindModel(const std::string& filePath);
+	Model* FindModel(const std::string& filePath);
+
+	/// <summary>
+	/// プリミティブの検索
+	/// </summary>
+	/// <param name="filePath">プリミティブの名前</param>
+	/// <returns></returns>
+	Primitive* FindPrimitive(const std::string& name);
 
 	// コンストラクタに渡すための鍵
 	class ConstructorKey {
@@ -43,7 +51,9 @@ private:
 	static std::unique_ptr<ModelManager> instance_;
 
 	// モデルデータ
-	std::map<std::string, std::unique_ptr<ModelCommon>> models_;
+	std::map<std::string, std::unique_ptr<Model>> models_;
+
+	std::map<std::string, std::unique_ptr<Primitive>> primitives_;
 
 	~ModelManager() = default;
 	ModelManager(ModelManager&) = delete;

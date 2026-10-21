@@ -3,6 +3,7 @@
 #include "Vector3.h"
 #include "Vector4.h"
 #include "Matrix4x4.h"
+#include "Quaternion.h"
 
 struct AABB {
 	Vector3 min; // 最小点
@@ -31,6 +32,16 @@ namespace MathFunction {
 	// 2項演算子オーバーロード
 	Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2);
 
+	const Quaternion operator+(const Quaternion& q0, const Quaternion& q1);
+	const Quaternion operator*(const Quaternion& q, const float f);
+
+	Quaternion& operator+=(Quaternion& q0, const Quaternion& q1);
+	Quaternion& operator*=(Quaternion& q, float s);
+
+	const Quaternion operator*(const float f, const Quaternion& q);
+
+	Quaternion operator-(const Quaternion& q);
+
 	// 単位行列の作成
 	Matrix4x4 MakeIdentity4x4();
 
@@ -52,6 +63,9 @@ namespace MathFunction {
 
 	// アフィン変換
 	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
+
+	Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion);
+	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const Vector3& translate);
 
 	// 透視投影行列
 	Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farclip);
@@ -75,7 +89,19 @@ namespace MathFunction {
 	// 正規化
 	Vector3 Normalize(const Vector3& v);
 
-	// 座標返還
+	// 座標変換
 	Vector3 TransformNormal(const Vector3& vector, const Matrix4x4& matrix4x4);
+
+	float Dot(const Vector3& v1, const Vector3& v2);
+
+	float Dot(const Quaternion& q0, const Quaternion& q1);
+
+	// 線形補間(Vector3)
+	Vector3 Lerp(const Vector3& a, const Vector3& b, float t);
+	// 線形補間(float)
+	float Lerp(float x1, float x2, float t);
+
+	// 球面線形補間(Quaternion)
+	Quaternion Slerp(Quaternion q1, Quaternion q2, float t);
 }
 

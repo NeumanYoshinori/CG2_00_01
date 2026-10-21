@@ -19,23 +19,6 @@ using namespace chrono;
 
 unique_ptr<DirectXBase> DirectXBase::instance_ = nullptr;
 
-DirectXBase::~DirectXBase() {
-	CloseHandle(fenceEvent_);
-
-	for (auto& resource : swapChainResources_) {
-		resource.Reset();
-	}
-	depthStencilResource_.Reset();
-	rtvDescriptorHeap_.Reset();
-	swapChain_.Reset();
-	commandList_.Reset();
-	commandAllocator_.Reset();
-	commandQueue_.Reset();
-	fence_.Reset();
-	device_.Reset();
-	dxgiFactory_.Reset();
-}
-
 DirectXBase* DirectXBase::GetInstance() {
 	if (instance_ == nullptr) {
 		instance_ = make_unique<DirectXBase>(ConstructorKey());
@@ -44,11 +27,11 @@ DirectXBase* DirectXBase::GetInstance() {
 }
 
 void DirectXBase::Finalize() {
-	if (instance_) {
-		instance_->WaitForGPU();
+	WaitForGPU();
 
-		instance_.reset();
-	}
+	CloseHandle(fenceEvent_);
+
+	instance_.reset();
 }
 
 void DirectXBase::Initialize() {
