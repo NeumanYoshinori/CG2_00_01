@@ -66,7 +66,7 @@ private:
 	};
 
 	struct Animation {
-		float duration; // アニメーション全体の尺（単位は秒）
+		float duration = 0.0f; // アニメーション全体の尺（単位は秒）
 		// NodeAnimationの集合。Node名でひけるようにしておく
 		std::map<std::string, NodeAnimation> nodeAnimations;
 	};
@@ -87,8 +87,6 @@ public:
 	void SetEnvironmentCoefficient(float environmentCoefficient) { materialData_->environmentCoefficient = environmentCoefficient; }
 
 	void SetNumInstance(uint32_t numInstance) { numInstance_ = numInstance; }
-
-	Matrix4x4 GetLocalMatrix() { return localMatrix_; }
 
 private:
 	// 頂点データ作成
@@ -136,7 +134,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	uint32_t numInstance_ = 1;
-
-	Matrix4x4 localMatrix_{};
 };
 

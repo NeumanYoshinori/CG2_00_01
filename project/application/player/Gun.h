@@ -18,7 +18,7 @@ public:
 	// 描画
 	void Draw();
 
-	std::list<Bullet*> GetBullets() { return bullets_; }
+	const std::list<Bullet*> GetBullets() { return bullets_; }
 
 	Vector3 GetTranslate() { return object3d_->GetTranslate(); }
 

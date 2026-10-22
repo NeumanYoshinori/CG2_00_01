@@ -11,7 +11,7 @@ void Model::Initialize(const std::string& directoryPath, const string& filename)
 	// モデル読み込み
 	modelData_ = LoadModelFile(directoryPath, filename);
 	// アニメーション読み込み
-	//animation_ = LoadAnimationFile(directoryPath, filename);
+	animation_ = LoadAnimationFile(directoryPath, filename);
 
 	dxBase_ = DirectXBase::GetInstance();
 
@@ -43,13 +43,17 @@ void Model::Draw() {
 }
 
 void Model::PlayAnimation() {
+	// アニメーションがない場合return
+	if (animation_.nodeAnimations.size() == 0) {
+		return;
+	}
 	animationTime_ += 1.0f / 60.0f;
 	animationTime_ = fmod(animationTime_, animation_.duration);
 	NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[modelData_.rootNode.name];
 	Vector3 translate = CalculateValue(rootNodeAnimation.translate.keyframes, animationTime_);
 	Quaternion rotate = CalculateValue(rootNodeAnimation.rotate.keyframes, animationTime_);
 	Vector3 scale = CalculateValue(rootNodeAnimation.scale.keyframes, animationTime_);
-	localMatrix_ = MakeAffineMatrix(scale, rotate, translate);
+	modelData_.rootNode.localMatrix = MakeAffineMatrix(scale, rotate, translate);
 }
 
 Model::ModelData Model::LoadModelFile(const string& directoryPath, const string& filename) {
@@ -124,7 +128,9 @@ Model::Animation Model::LoadAnimationFile(const std::string& directoryPath, cons
 	Assimp::Importer importer;
 	std::string filePath = directoryPath + "/" + filename;
 	const aiScene* scene = importer.ReadFile(filePath.c_str(), 0);
-	assert(scene->mNumAnimations != 0); // アニメーションがない
+	if (scene->mNumAnimations == 0) { // アニメーションがない
+		return animation;
+	}
 	aiAnimation* animationAssimp = scene->mAnimations[0]; // 最初のアニメーションだけ採用。もちろん複数対応するに越したことはない
 	animation.duration = float(animationAssimp->mDuration / animationAssimp->mTicksPerSecond); // 時間の単位を秒に変換
 
@@ -139,6 +145,7 @@ Model::Animation Model::LoadAnimationFile(const std::string& directoryPath, cons
 			keyframe.value = { -keyAssimp.mValue.x, keyAssimp.mValue.y, keyAssimp.mValue.z }; // 右手->左手
 			nodeAnimation.translate.keyframes.push_back(keyframe);
 		}
+
 		// RotateはmNumRotationKeys/mRotationKeys、ScaleはmNumScalingKeysで取得できるので同様に行う。
 		// RotateはQuaternionで、右手->左手に変換するために、yとzを反転させる必要がある。Scaleはそのままで良い。
 		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumRotationKeys; ++keyIndex) {
@@ -148,6 +155,7 @@ Model::Animation Model::LoadAnimationFile(const std::string& directoryPath, cons
 			keyframe.value = { keyAssimp.mValue.x, -keyAssimp.mValue.y, -keyAssimp.mValue.z, keyAssimp.mValue.w }; // 右手->左手
 			nodeAnimation.rotate.keyframes.push_back(keyframe);
 		}
+
 		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumScalingKeys; ++keyIndex) {
 			aiVectorKey keyAssimp = nodeAnimationAssimp->mScalingKeys[keyIndex];
 			KeyframeVector3 keyframe;

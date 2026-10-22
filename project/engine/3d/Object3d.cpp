@@ -39,7 +39,7 @@ void Object3d::Update() {
 	}
 
 	if (model_) {
-		//model_->PlayAnimation();
+		model_->PlayAnimation();
 		transformationMatrixData_->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
 		transformationMatrixData_->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
 	} else {

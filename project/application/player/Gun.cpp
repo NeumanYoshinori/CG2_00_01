@@ -61,7 +61,7 @@ void Gun::Update(POINT mousePosition) {
 		return false;
 		});
 
-	if (Input::GetInstance()->TriggerKey(DIK_Z)) {
+	if (Input::GetInstance()->IsTriggerMouse(0)) {
 		Bullet* bullet = new Bullet();
 		bullet->Initialize(camera_, filePath_, object3d_->GetTranslate(), bulletVelocity_);
 		bullets_.push_back(bullet);

@@ -14,6 +14,7 @@ void GamePlayScene::Initialize() {
 	textureManager_->LoadTexture("monsterBall.png");
 	textureManager_->LoadTexture("rostock_laage_airport_4k.dds");
 	textureManager_->LoadTexture("crosshair138.png");
+	textureManager_->LoadTexture("Shoot.png");
 
 	// カメラの初期化
 	camera_ = make_unique<Camera>();
@@ -25,7 +26,7 @@ void GamePlayScene::Initialize() {
 
 	// モデルマネージャのインスタンス取得
 	modelManager_ = ModelManager::GetInstance();
-	modelManager_->LoadModel("terrain.obj");
+	modelManager_->LoadModel("AnimatedCube.gltf");
 	modelManager_->LoadModel("uvCube.obj");
 	modelManager_->CreatePrimitive("monsterBall", "Sphere", "monsterBall.png");
 
@@ -62,6 +63,9 @@ void GamePlayScene::Initialize() {
 	randomEngine_ = mt19937(seedGenerator_());
 
 	postEffect_ = PostEffect::GetInstance();
+
+	shoot_ = make_unique<Sprite>();
+	shoot_->Initialize("Shoot.png");
 }
 
 void GamePlayScene::Finalize() {
@@ -93,7 +97,7 @@ void GamePlayScene::Update() {
 	// スプライトの更新
 	crosshair_->Update();
 
-	list<Bullet*> bullets = gun_->GetBullets();
+	const list<Bullet*> bullets = gun_->GetBullets();
 
 	switch (phase_) {
 	case Phase::kFadeIn:
@@ -103,13 +107,22 @@ void GamePlayScene::Update() {
 		counter_ = min(counter_, duration_);
 		PostEffect::GetInstance()->SetColor(Vector3(clamp(counter_ / duration_, 0.0f, 1.0f), clamp(counter_ / duration_, 0.0f, 1.0f), clamp(counter_ / duration_, 0.0f, 1.0f)));
 		if (counter_ >= duration_) {
+			phase_ = Phase::kStart;
+		}
+
+		break;
+	case Phase::kStart:
+		shootTimer_--;
+		if (shootTimer_ == 0) {
 			phase_ = Phase::kMain;
 		}
+
+		shoot_->Update();
 
 		break;
 	case Phase::kMain:
 		// Rキーを押したら
-		if (Input::GetInstance()->TriggerKey(DIK_R)) {
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 			counter_ = 0.0f;
 			phase_ = Phase::KFadeOut;
 		}
@@ -202,19 +215,33 @@ void GamePlayScene::Draw() {
 	// SRVマネージャの描画前処理
 	SrvManager::GetInstance()->PreDraw();
 
-	for (Enemy* enemy : enemies_) {
-		// 敵の描画
-		enemy->Draw();
+	switch (phase_) {
+	case Phase::kFadeIn:
+		break;
+	case Phase::kStart:
+		SpriteCommon::GetInstance()->DrawSetting();
+		shoot_->Draw();
+
+		break;
+	case Phase::kMain:
+		for (Enemy* enemy : enemies_) {
+			// 敵の描画
+			enemy->Draw();
+		}
+
+		// 銃の描画
+		gun_->Draw();
+
+		// スプライト描画前処理
+		spriteCommon_->GetInstance()->DrawSetting();
+
+		// スプライトの描画
+		crosshair_->Draw();
+
+		break;
+	case Phase::KFadeOut:
+		break;
 	}
-
-	// 銃の描画
-	gun_->Draw();
-
-	// スプライト描画前処理
-	spriteCommon_->GetInstance()->DrawSetting();
-
-	// スプライトの描画
-	crosshair_->Draw();
 }
 
 void GamePlayScene::ImGuiDraw() {
