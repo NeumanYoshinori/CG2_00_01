@@ -43,6 +43,8 @@ void Model::Draw() {
 
 	// vertexBufferView_を設定
 	commandList_->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	// IndexBufferViewを設定
+	commandList_->IASetIndexBuffer(&indexBufferView_);
 	// マテリアルCBufferの場所を設定
 	commandList_->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
@@ -51,7 +53,7 @@ void Model::Draw() {
 		return;
 	}
 	// 描画！（フォローコール）
-	commandList_->DrawInstanced(UINT(modelData_.vertices.size()), numInstance_, 0, 0);
+	commandList_->DrawIndexedInstanced(UINT(modelData_.indices.size()), numInstance_, 0, 0, 0);
 }
 
 Model::ModelData Model::LoadModelFile(const string& directoryPath, const string& filename) {
@@ -67,6 +69,16 @@ Model::ModelData Model::LoadModelFile(const string& directoryPath, const string&
 		aiMesh* mesh = scene->mMeshes[meshIndex];
 		assert(mesh->HasNormals()); // 法線がないMeshは今回は非対応
 		assert(mesh->HasTextureCoords(0)); // TexcoordがないMeshは今回は非対応
+		modelData.vertices.resize(mesh->mNumVertices); // 最初に頂点数分のメモリを確保しておく
+		for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex) {
+			aiVector3D& position = mesh->mVertices[vertexIndex];
+			aiVector3D& normal = mesh->mNormals[vertexIndex];
+			aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+			// 右手系->左手系への変換を忘れずに
+			modelData.vertices[vertexIndex].position = { -position.x, position.y, position.z, 1.0f };
+			modelData.vertices[vertexIndex].normal = { -normal.x, normal.y, normal.z };
+			modelData.vertices[vertexIndex].texcoord = { texcoord.x, texcoord.y };
+		}
 		// ここからFaceの中身(face)の解析を行っていく
 		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
 			aiFace& face = mesh->mFaces[faceIndex];
@@ -74,17 +86,7 @@ Model::ModelData Model::LoadModelFile(const string& directoryPath, const string&
 			// ここからFaceの中身(Vertex)の解析を行っていく
 			for (uint32_t element = 0; element < face.mNumIndices; ++element) {
 				uint32_t vertexIndex = face.mIndices[element];
-				aiVector3D& position = mesh->mVertices[vertexIndex];
-				aiVector3D& normal = mesh->mNormals[vertexIndex];
-				aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
-				VertexData vertex{};
-				vertex.position = { position.x, position.y, position.z, 1.0f };
-				vertex.normal = { normal.x, normal.y, normal.z };
-				vertex.texcoord = { texcoord.x, texcoord.y };
-				// ai_Process_MakeLeftHandedはz*=-1で、右手->左手に変換するので手動で対処
-				vertex.position.x *= -1.0f;
-				vertex.normal.x *= -1.0f;
-				modelData.vertices.push_back(vertex);
+				modelData.indices.push_back(vertexIndex);
 			}
 		}
 	}
@@ -262,7 +264,7 @@ void Model::CreateVertexData() {
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ
+	// 使用するリソースのサイズはモデルの頂点のサイズ
 	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
 	// 1頂点あたりのサイズ
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
@@ -270,6 +272,20 @@ void Model::CreateVertexData() {
 	// 書き込むためのアドレスを取得
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
 	memcpy(vertexData_, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
+
+	// インデックスリソースを作る
+	indexResource_ = dxBase_->CreateBufferResource(sizeof(uint32_t) * modelData_.indices.size());
+
+	// リソースの先頭のアドレスから使う
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはモデルの頂点のサイズ
+	indexBufferView_.SizeInBytes = UINT(sizeof(uint32_t) * modelData_.indices.size());
+	// 1頂点あたりのサイズ
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+	// 書き込むためのアドレスを取得
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
+	memcpy(indexData_, modelData_.indices.data(), sizeof(uint32_t) * modelData_.indices.size());
 }
 
 void Model::CreateMaterialData() {

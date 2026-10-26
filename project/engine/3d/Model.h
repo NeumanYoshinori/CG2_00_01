@@ -58,6 +58,7 @@ public:
 	// モデルデータ
 	struct ModelData {
 		std::vector<VertexData> vertices;
+		std::vector<int32_t> indices;
 		MaterialData material;
 		Node rootNode;
 	};
@@ -158,6 +159,12 @@ private:
 	VertexData* vertexData_ = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_; // インデックスリソース
+	// バッファリソース内のデータを指すポインタ
+	uint32_t* indexData_ = nullptr;
+	// バッファリソースの使い道を補足するバッファビュー
+	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_; // マテリアルリソース

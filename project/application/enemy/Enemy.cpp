@@ -20,7 +20,7 @@ void Enemy::Initialize(Gun* gun, Camera* camera, const std::string& filePath, Ve
 	object3d_->Initialize();
 	object3d_->SetEnvironmentMapTexture(filePath);
 	object3d_->SetTranslate(position);
-	object3d_->SetModel("uvCube.obj");
+	object3d_->SetModel("AnimatedCube.gltf");
 	position_ = position;
 
 	gun_ = gun;
