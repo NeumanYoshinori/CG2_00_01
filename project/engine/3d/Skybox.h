@@ -107,7 +107,7 @@ private:
 	TransformationMatrix* transformationMatrixData_ = nullptr;
 
 	// Transform
-	Transform transform_{};
+	EulerTransform transform_{};
 
 	// コマンドリスト
 	ComPtr<ID3D12GraphicsCommandList> commandList_;

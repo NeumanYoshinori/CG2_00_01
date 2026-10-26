@@ -8,12 +8,19 @@
 
 using namespace MathFunction;
 
+Enemy::~Enemy() {
+	for (Line* line : skeleton_) {
+		delete line;
+		line = nullptr;
+	}
+}
+
 void Enemy::Initialize(Gun* gun, Camera* camera, const std::string& filePath, Vector3 position) {
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Initialize();
 	object3d_->SetEnvironmentMapTexture(filePath);
 	object3d_->SetTranslate(position);
-	object3d_->SetModel("AnimatedCube.gltf");
+	object3d_->SetModel("uvCube.obj");
 	position_ = position;
 
 	gun_ = gun;
@@ -23,6 +30,7 @@ void Enemy::Initialize(Gun* gun, Camera* camera, const std::string& filePath, Ve
 	aabb_.max = { object3d_->GetTranslate().x + halfWidth_, object3d_->GetTranslate().y + halfHeight_, object3d_->GetTranslate().z + halfDepth_ };
 
 	CreateCollider();
+	CreateSkeletonLine(object3d_->GetSkeleton());
 }
 
 void Enemy::Update() {
@@ -52,6 +60,33 @@ void Enemy::Update() {
 		lines_[i]->Update();
 	}
 #endif
+
+	const auto& joints = object3d_->GetSkeleton().joints;
+	size_t lineIndex = 0;
+
+	for (const Model::Joint& joint : joints) {
+		if (!joint.parent) {
+			continue;
+		}
+
+		const Model::Joint& parent = object3d_->GetSkeleton().joints[*joint.parent];
+
+		Vector3 start = GetWorldJointPosition(parent);
+		Vector3 end = GetWorldJointPosition(joint);
+
+		if (lineIndex < skeleton_.size()) {
+			skeleton_[lineIndex]->SetStart(start);
+			skeleton_[lineIndex]->SetEnd(end);
+			++lineIndex;
+		}
+	}
+
+	for (Line* line : skeleton_) {
+		line->SetTranslate({ 0.0f, 0.0f, 0.0f });
+		line->SetRotate({ 0.0f, 0.0f, 0.0f });
+		line->SetScale({ 1.0f, 1.0f, 1.0f });
+		line->Update();
+	}
 }
 
 void Enemy::Draw() {
@@ -60,10 +95,14 @@ void Enemy::Draw() {
 
 #ifdef CREATE_COLLIDER
 	LineCommon::GetInstance()->DrawSetting();
-	for (uint32_t i = 0; i < 8; ++i) {
+	for (uint32_t i = 0; i < 12; ++i) {
 		lines_[i]->Draw();
 	}
 #endif
+
+	for (Line* line : skeleton_) {
+		line->Draw();
+	}
 }
 
 void Enemy::OnCollision() {
@@ -114,4 +153,36 @@ void Enemy::CreateCollider() {
 	lines_[10]->Initialize(Vector3(vertex[5].x, vertex[5].y, vertex[5].z), Vector3(vertex[7].x, vertex[7].y, vertex[7].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
 	lines_[11]->Initialize(Vector3(vertex[6].x, vertex[6].y, vertex[6].z), Vector3(vertex[7].x, vertex[7].y, vertex[7].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
 #endif
+}
+
+void Enemy::CreateSkeletonLine(Model::Skeleton skeleton) {
+	for (Model::Joint& joint : skeleton.joints) {
+		if (!joint.parent) {
+			continue;
+		}
+
+		const Model::Joint& parent = skeleton.joints[*joint.parent];
+
+		Vector3 start = GetWorldJointPosition(parent);
+		Vector3 end = GetWorldJointPosition(joint);
+
+		Line* line = new Line();
+		line->Initialize(start, end, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+		line->SetCamera(camera_);
+		skeleton_.push_back(line);
+	}
+}
+
+Vector3 Enemy::GetWorldJointPosition(const Model::Joint& joint) {
+	Vector3 localPosition =
+		object3d_->GetModel()->GetJointPosition(joint);
+
+	Matrix4x4 worldMatrix = MakeAffineMatrix(
+		object3d_->GetScale(),
+		object3d_->GetRotate(),
+		object3d_->GetTranslate()
+	);
+
+	Vector3 worldPosition = TransformNormal(localPosition, worldMatrix);
+	return worldPosition;
 }

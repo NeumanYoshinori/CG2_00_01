@@ -15,6 +15,7 @@ void GamePlayScene::Initialize() {
 	textureManager_->LoadTexture("rostock_laage_airport_4k.dds");
 	textureManager_->LoadTexture("crosshair138.png");
 	textureManager_->LoadTexture("Shoot.png");
+	textureManager_->LoadTexture("uvChecker.png");
 
 	// カメラの初期化
 	camera_ = make_unique<Camera>();
@@ -28,6 +29,9 @@ void GamePlayScene::Initialize() {
 	modelManager_ = ModelManager::GetInstance();
 	modelManager_->LoadModel("AnimatedCube.gltf");
 	modelManager_->LoadModel("uvCube.obj");
+	modelManager_->LoadModel("simpleSkin.gltf");
+	modelManager_->LoadModel("sneakWalk.gltf");
+	modelManager_->LoadModel("walk.gltf");
 	modelManager_->CreatePrimitive("monsterBall", "Sphere", "monsterBall.png");
 
 	// 3Dオブジェクト基盤部分のインスタンス取得

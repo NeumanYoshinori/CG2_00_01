@@ -7,7 +7,7 @@
 using namespace std;
 using namespace MathFunction;
 
-void Model::Initialize(const std::string& directoryPath, const string& filename) {
+void Model::Initialize(const string& directoryPath, const string& filename) {
 	// モデル読み込み
 	modelData_ = LoadModelFile(directoryPath, filename);
 	// アニメーション読み込み
@@ -25,6 +25,18 @@ void Model::Initialize(const std::string& directoryPath, const string& filename)
 	TextureManager::GetInstance()->LoadTexture(modelData_.material.textureFilePath);
 }
 
+void Model::Update(Skeleton& skeleton) {
+	// すべてのJointを更新。親が若いので通常ループで処理可能になっている
+	for (Joint& joint : skeleton.joints) {
+		joint.localMatrix = MakeAffineMatrix(joint.transform.scale, joint.transform.rotate, joint.transform.translate);
+		if (joint.parent) { // 親はいれば親の行列を掛ける
+			joint.skeletonSpaceMatrix = joint.localMatrix * skeleton.joints[*joint.parent].skeletonSpaceMatrix;
+		} else { // 親がいないのでlocalMatrixとskeletonSpaceMatrixは一致する
+			joint.skeletonSpaceMatrix = joint.localMatrix;
+		}
+	}
+}
+
 void Model::Draw() {
 	// コマンドリストを作成
 	commandList_ = dxBase_->GetCommandList();
@@ -40,20 +52,6 @@ void Model::Draw() {
 	}
 	// 描画！（フォローコール）
 	commandList_->DrawInstanced(UINT(modelData_.vertices.size()), numInstance_, 0, 0);
-}
-
-void Model::PlayAnimation() {
-	// アニメーションがない場合return
-	if (animation_.nodeAnimations.size() == 0) {
-		return;
-	}
-	animationTime_ += 1.0f / 60.0f;
-	animationTime_ = fmod(animationTime_, animation_.duration);
-	NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[modelData_.rootNode.name];
-	Vector3 translate = CalculateValue(rootNodeAnimation.translate.keyframes, animationTime_);
-	Quaternion rotate = CalculateValue(rootNodeAnimation.rotate.keyframes, animationTime_);
-	Vector3 scale = CalculateValue(rootNodeAnimation.scale.keyframes, animationTime_);
-	modelData_.rootNode.localMatrix = MakeAffineMatrix(scale, rotate, translate);
 }
 
 Model::ModelData Model::LoadModelFile(const string& directoryPath, const string& filename) {
@@ -107,13 +105,13 @@ Model::ModelData Model::LoadModelFile(const string& directoryPath, const string&
 
 Model::Node Model::ReadNode(aiNode* node) {
 	Node result;
-	aiMatrix4x4 aiLocalMatrix = node->mTransformation; // nodeのlocalMatrixを取得
-	aiLocalMatrix.Transpose(); // 列ベクトル形式を行ベクトルに転置
-	for (uint32_t i = 0; i < 4; i++) {
-		for (uint32_t j = 0; j < 4; j++) {
-			result.localMatrix.m[i][j] = aiLocalMatrix[i][j]; // 他の要素も同様に
-		}
-	}
+	aiVector3D scale, translate;
+	aiQuaternion rotate;
+	node->mTransformation.Decompose(scale, rotate, translate); // assimpの行列からSRTを抽出する関数を利用
+	result.transform.scale = { scale.x, scale.y, scale.z };
+	result.transform.rotate = { rotate.x, -rotate.y, -rotate.z, rotate.w };
+	result.transform.translate = { -translate.x, translate.y, translate.z };
+	result.localMatrix = MakeAffineMatrix(result.transform.scale, result.transform.rotate, result.transform.translate);
 	result.name = node->mName.C_Str(); // Node名を格納
 	result.children.resize(node->mNumChildren); // 子供の数だけ確保
 	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex) {
@@ -123,10 +121,10 @@ Model::Node Model::ReadNode(aiNode* node) {
 	return result;
 }
 
-Model::Animation Model::LoadAnimationFile(const std::string& directoryPath, const std::string& filename) {
+Model::Animation Model::LoadAnimationFile(const string& directoryPath, const string& filename) {
 	Animation animation; // 今回作るアニメーション
 	Assimp::Importer importer;
-	std::string filePath = directoryPath + "/" + filename;
+	string filePath = directoryPath + "/" + filename;
 	const aiScene* scene = importer.ReadFile(filePath.c_str(), 0);
 	if (scene->mNumAnimations == 0) { // アニメーションがない
 		return animation;
@@ -168,7 +166,7 @@ Model::Animation Model::LoadAnimationFile(const std::string& directoryPath, cons
 	return animation;
 }
 
-Vector3 Model::CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time) {
+Vector3 Model::CalculateValue(const vector<KeyframeVector3>& keyframes, float time) {
 	assert(!keyframes.empty()); // キーがないものは返す値がわからないのでダメ
 	if (keyframes.size() == 1 || time <= keyframes[0].time) { // キーが1つか、時刻がキーフレーム前なら最初の値とする
 		return keyframes[0].value;
@@ -179,7 +177,7 @@ Vector3 Model::CalculateValue(const std::vector<KeyframeVector3>& keyframes, flo
 		// indexとnextIndexの2つのkeyframeを取得して範囲内に時刻があるかを判定
 		if (keyframes[index].time <= time && time <= keyframes[nextIndex].time) {
 			// 範囲内を補間する
-			float t = time - keyframes[index].time / (keyframes[nextIndex].time - keyframes[index].time);
+			float t = (time - keyframes[index].time) / (keyframes[nextIndex].time - keyframes[index].time);
 			return Lerp(keyframes[index].value, keyframes[nextIndex].value, t);
 		}
 	}
@@ -187,7 +185,7 @@ Vector3 Model::CalculateValue(const std::vector<KeyframeVector3>& keyframes, flo
 	return (*keyframes.rbegin()).value;
 }
 
-Quaternion Model::CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time) {
+Quaternion Model::CalculateValue(const vector<KeyframeQuaternion>& keyframes, float time) {
 	assert(!keyframes.empty()); // キーがないものは返す値がわからないのでダメ
 	if (keyframes.size() == 1 || time <= keyframes[0].time) { // キーが1つか、時刻がキーフレーム前なら最初の値とする
 		return keyframes[0].value;
@@ -198,12 +196,64 @@ Quaternion Model::CalculateValue(const std::vector<KeyframeQuaternion>& keyframe
 		// indexとnextIndexの2つのkeyframeを取得して範囲内に時刻があるかを判定
 		if (keyframes[index].time <= time && time <= keyframes[nextIndex].time) {
 			// 範囲内を補間する
-			float t = time - keyframes[index].time / (keyframes[nextIndex].time - keyframes[index].time);
+			float t = (time - keyframes[index].time) / (keyframes[nextIndex].time - keyframes[index].time);
 			return Slerp(keyframes[index].value, keyframes[nextIndex].value, t);
 		}
 	}
 	// ここまで来た場合は一番後の時刻よりも後ろなので最後の値を返すことにする
 	return (*keyframes.rbegin()).value;
+}
+
+Model::Skeleton Model::CreateSkeleton(const Node& rootNode) {
+	Skeleton skeleton;
+	skeleton.root = CreateJoint(rootNode, {}, skeleton.joints);
+
+	// 名前とindexのマッピングを行いアクセスしやすくなる
+	for (const Joint& joint : skeleton.joints) {
+		skeleton.jointMap.emplace(joint.name, joint.index);
+	}
+
+	Update(skeleton);
+
+	return skeleton;
+}
+
+int32_t Model::CreateJoint(const Node& node, const optional<int32_t>& parent, vector<Joint>& joints) {
+	Joint joint;
+	joint.name = node.name;
+	joint.localMatrix = node.localMatrix;
+	joint.skeletonSpaceMatrix = MakeIdentity4x4();
+	joint.transform = node.transform;
+	joint.index = int32_t(joints.size()); // 現在登録されている数をIndexに
+	joint.parent = parent;
+	joints.push_back(joint); // SkeletonのJoint列に追加
+	for (const Node& child : node.children) {
+		// 子Jointを作成し、そのIndexを登録
+		int32_t childIndex = CreateJoint(child, joint.index, joints);
+		joints[joint.index].children.push_back(childIndex);
+	}
+	// 自身のIndexを返す
+	return joint.index;
+}
+
+void Model::ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime) {
+	for (Joint& joint : skeleton.joints) {
+		// 対象のJointのAnimationがあれば、値の適用を行う。下記のif文はC++17から可能になった初期化付きif文。
+		if (auto it = animation.nodeAnimations.find(joint.name); it != animation.nodeAnimations.end()) {
+			const NodeAnimation& rootNodeAnimation = (*it).second;
+			joint.transform.translate = CalculateValue(rootNodeAnimation.translate.keyframes, animationTime);
+			joint.transform.rotate = CalculateValue(rootNodeAnimation.rotate.keyframes, animationTime);
+			joint.transform.scale = CalculateValue(rootNodeAnimation.scale.keyframes, animationTime);
+		}
+	}
+}
+
+Vector3 Model::GetJointPosition(const Joint& joint) {
+	return {
+		joint.skeletonSpaceMatrix.m[3][0],
+		joint.skeletonSpaceMatrix.m[3][1],
+		joint.skeletonSpaceMatrix.m[3][2]
+	};
 }
 
 void Model::CreateVertexData() {
@@ -233,7 +283,7 @@ void Model::CreateMaterialData() {
 	// マテリアルデータの初期値を書き込む
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData_->enableLighting = true;
-	materialData_->uvTransform = MathFunction::MakeIdentity4x4();
+	materialData_->uvTransform = MakeIdentity4x4();
 	materialData_->shininess = 10.0f;
 	materialData_->environmentCoefficient = 1.0f;
 	materialData_->alphaReference = 0.0f;

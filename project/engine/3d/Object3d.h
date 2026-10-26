@@ -46,6 +46,9 @@ public: // メンバ関数
 
 	Model* GetModel() { return model_; }
 
+	const Model::Skeleton& GetSkeleton() { return skeleton_; }
+	Model::Animation GetAnimation() { return animation_; }
+
 private:
 	// 座標変換用行列
 	struct TransformationMatrix {
@@ -93,7 +96,7 @@ private:
 	EnvironmentMap* environmentMapData_ = nullptr;
 
 	// Transform
-	Transform transform_{};
+	EulerTransform transform_{};
 
 	// コマンドリスト
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
@@ -115,5 +118,10 @@ private:
 	float animationTime_ = 0.0f;
 
 	bool isModelSet_ = false;
+
+	Model::Skeleton skeleton_;
+	Model::Animation animation_;
+
+	bool hasSkeleton_ = false;
 };
 

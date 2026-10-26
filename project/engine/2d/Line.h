@@ -22,6 +22,8 @@ public:
 	void SetCamera(Camera* camera) { camera_ = camera; }
 
 	void SetTranslate(const Vector3& translate) { transform_.translate = translate; }
+	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
+	void SetScale(const Vector3&scale) { transform_.scale = scale; }
 
 private:
 	// 頂点データ
@@ -73,7 +75,7 @@ private:
 	Vector3 end_{};
 
 	// transform
-	Transform transform_{};
+	EulerTransform transform_{};
 
 	// 色
 	Vector4 color_{};

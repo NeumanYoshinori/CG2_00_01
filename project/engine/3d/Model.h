@@ -4,6 +4,7 @@
 #include "DirectXBase.h"
 #include "MathFunction.h"
 #include <map>
+#include "Transform.h"
 
 // 3Dモデル
 class Model {
@@ -32,20 +33,6 @@ private:
 		std::string textureFilePath;
 	};
 
-	// ノード
-	struct Node {
-		Matrix4x4 localMatrix{};
-		std::string name;
-		std::vector<Node> children;
-	};
-
-	// モデルデータ
-	struct ModelData {
-		std::vector<VertexData> vertices;
-		MaterialData material;
-		Node rootNode;
-	};
-
 	template <typename tValue>
 	struct Keyframe {
 		float time; // キーフレームの時刻（単位は秒）
@@ -57,6 +44,22 @@ private:
 	template<typename tValue>
 	struct AnimationCurve {
 		std::vector<Keyframe<tValue>> keyframes;
+	};
+
+public:
+	// ノード
+	struct Node {
+		QuaternionTransform transform{};
+		Matrix4x4 localMatrix{};
+		std::string name{};
+		std::vector<Node> children;
+	};
+
+	// モデルデータ
+	struct ModelData {
+		std::vector<VertexData> vertices;
+		MaterialData material;
+		Node rootNode;
 	};
 
 	struct NodeAnimation {
@@ -71,22 +74,54 @@ private:
 		std::map<std::string, NodeAnimation> nodeAnimations;
 	};
 
-public:
+	struct Joint {
+		QuaternionTransform transform{}; // Transform情報
+		Matrix4x4 localMatrix{}; // localMatrix
+		Matrix4x4 skeletonSpaceMatrix{}; // skeletonSpaceでの変換行列
+		std::string name; // 名前
+		std::vector<int32_t> children; // 子jointのIndexのリスト。いなければ空
+		int32_t index = 0; // 自身のIndex
+		std::optional<int32_t> parent; // 親JointのIndex。いなければnull
+	};
+
+	struct Skeleton {
+		int32_t root = 0; // RootJointのIndex
+		std::map<std::string, int32_t> jointMap{}; // Joint名とIndexとの辞書
+		std::vector<Joint> joints; // 所属しているジョイント
+	};
+
 	// 初期化
 	void Initialize(const std::string& directoryPath, const std::string& filename);
+
+	// 更新
+	void Update(Skeleton& skeleton);
 
 	// 描画
 	void Draw();
 
-	// アニメーション再生
-	void PlayAnimation();
-
-	ModelData GetModelData() const { return modelData_; }
+	const ModelData& GetModelData() { return modelData_; }
 
 	float GetEnvironmentCoefficient() { return materialData_->environmentCoefficient; }
 	void SetEnvironmentCoefficient(float environmentCoefficient) { materialData_->environmentCoefficient = environmentCoefficient; }
 
 	void SetNumInstance(uint32_t numInstance) { numInstance_ = numInstance; }
+
+	// localMatrixをセット
+	void SetLocalMatrix(Matrix4x4 localMatrix) { modelData_.rootNode.localMatrix = localMatrix; }
+
+	// 任意の時刻の値を取得する
+	Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
+	Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
+
+	// skeleton作成
+	Skeleton CreateSkeleton(const Node& rootNode);
+
+	// Animation適用
+	void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
+
+	Animation GetAnimation() const { return animation_; }
+
+	Vector3 GetJointPosition(const Joint& joint);
 
 private:
 	// 頂点データ作成
@@ -104,9 +139,8 @@ private:
 	// アニメーションを読み込む
 	Animation LoadAnimationFile(const std::string& directoryPath, const std::string& filename);
 
-	// 任意の時刻の値を取得する
-	Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
-	Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
+	// Joint作成
+	int32_t CreateJoint(const Node& node, const std::optional<int32_t>& parent, std::vector<Joint>& joints);
 
 	// objファイルのデータ
 	ModelData modelData_;

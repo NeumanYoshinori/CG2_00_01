@@ -8,6 +8,8 @@ class Gun;
 
 class Enemy {
 public:
+	~Enemy();
+
 	void Initialize(Gun* gun, Camera* camera, const std::string& filePath, Vector3 position);
 
 	void Update();
@@ -26,12 +28,16 @@ public:
 
 	bool IsDead() const { return isDead_; }
 
+	void CreateSkeletonLine(Model::Skeleton skeleton);
+
 private:
 	enum struct State {
 		kApproach,
 		kAttack,
 		kDead
 	};
+
+	Vector3 GetWorldJointPosition(const Model::Joint& joint);
 
 	std::unique_ptr<Object3d> object3d_;
 
@@ -61,6 +67,8 @@ private:
 	bool isDead_ = false;
 
 	Camera* camera_ = nullptr;
+
+	std::vector<Line*> skeleton_;
 
 #ifdef CREATE_COLLIDER
 	std::array<std::unique_ptr<Line>, 12> lines_;

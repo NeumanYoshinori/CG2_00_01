@@ -39,13 +39,30 @@ void Object3d::Update() {
 	}
 
 	if (model_) {
-		model_->PlayAnimation();
-		transformationMatrixData_->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
-		transformationMatrixData_->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
-	} else {
-		transformationMatrixData_->WVP = worldViewProjectionMatrix;
-		transformationMatrixData_->World = worldMatrix;
+		if (!animation_.nodeAnimations.empty()) {
+			animationTime_ += 1.0f / 60.0f;
+			animationTime_ = fmod(animationTime_, animation_.duration);
+			if (hasSkeleton_) {
+				model_->ApplyAnimation(skeleton_, animation_, animationTime_);
+				model_->Update(skeleton_);
+			}
+			else {
+				Model::NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[model_->GetModelData().rootNode.name];
+				Vector3 translate = model_->CalculateValue(rootNodeAnimation.translate.keyframes, animationTime_);
+				Quaternion rotate = model_->CalculateValue(rootNodeAnimation.rotate.keyframes, animationTime_);
+				Vector3 scale = model_->CalculateValue(rootNodeAnimation.scale.keyframes, animationTime_);
+				model_->SetLocalMatrix(MakeAffineMatrix(scale, rotate, translate));
+			}
+		}
+
+		if (!hasSkeleton_) {
+			worldViewProjectionMatrix = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
+			worldMatrix = model_->GetModelData().rootNode.localMatrix * worldMatrix;
+		}
 	}
+
+	transformationMatrixData_->WVP = worldViewProjectionMatrix;
+	transformationMatrixData_->World = worldMatrix;
 
 	Matrix4x4 worldInverseMatrix = Inverse(worldMatrix);
 	transformationMatrixData_->WorldInverseTranspose = Transpose(worldInverseMatrix);
@@ -116,6 +133,15 @@ void Object3d::SetModel(const std::string& filePath) {
 
 	// モデルを検索
 	model_ = ModelManager::GetInstance()->FindModel(filePath);
+
+	if (model_) {
+		animation_ = model_->GetAnimation();
+		skeleton_ = model_->CreateSkeleton(model_->GetModelData().rootNode);
+		// ジョイントの数が1より上の場合スケルトンがあると判断する
+		if (skeleton_.joints.size() > 1) {
+			hasSkeleton_ = true;
+		}
+	}
 
 	isModelSet_ = true;
 }
