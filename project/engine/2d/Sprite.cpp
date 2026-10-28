@@ -123,6 +123,10 @@ void Sprite::DebugUpdate() {
 
 	// テクスチャのサイズ
 	ImGui::DragFloat2("TextureSize", &textureSize_.x, 0.1f);
+
+	ImGui::DragFloat2("Size", &size_.x, 0.1f);
+
+	ImGui::ColorEdit4("color", &materialData_->color.x);
 #endif
 }
 

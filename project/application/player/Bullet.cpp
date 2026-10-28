@@ -4,6 +4,7 @@
 #ifdef CREATE_COLLIDER
 #include "LineCommon.h"
 #endif
+#include "Gun.h"
 
 using namespace std;
 using namespace MathFunction;
@@ -11,6 +12,7 @@ using namespace MathFunction;
 void Bullet::Initialize(Camera* camera, const std::string& envFilePath, Vector3 position, Vector3 velocity) {
 	object3d_ = make_unique<Object3d>();
 	object3d_->Initialize();
+	object3d_->SetScale(Vector3(width_, height_, depth_));
 	object3d_->SetEnvironmentMapTexture(envFilePath);
 	object3d_->SetPrimitive("monsterBall");
 

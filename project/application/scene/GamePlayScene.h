@@ -6,6 +6,7 @@
 #include "ImGuiManager.h"
 #include "Audio.h"
 #include "SkyboxCommon.h"
+#include "Skybox.h"
 #include "BaseScene.h"
 #include "SpriteCommon.h"
 #include "Sprite.h"
@@ -36,6 +37,8 @@ private:
 		kFadeIn,
 		kStart,
 		kMain,
+		kGameClear,
+		kGameOver,
 		KFadeOut
 	};
 
@@ -79,7 +82,7 @@ private:
 	std::list<Enemy*> enemies_;
 
 	// 敵発生頻度
-	const float enemySpawnFrequency_ = 120.0f;
+	const float enemySpawnFrequency_ = 90.0f;
 
 	// 敵発生タイマー
 	float enemySpawnTimer_ = 0;
@@ -104,5 +107,15 @@ private:
 	uint32_t shootTimer_ = 120;
 
 	std::unique_ptr<Sprite> shoot_;
+
+	std::unique_ptr<Sprite> gameOver_;
+
+	std::unique_ptr<Skybox> skybox_;
+
+	int32_t score_ = 0;
+
+	std::unique_ptr<Sprite> gameClear_;
+
+	Vector4 spriteColor_ = { 1.0f, 1.0f, 1.0f, 0.1f };
 };
 

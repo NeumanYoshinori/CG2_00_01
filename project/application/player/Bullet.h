@@ -40,9 +40,9 @@ private:
 
 	AABB aabb_{};
 
-	float width_ = 1.0f;
-	float height_ = 1.0f;
-	float depth_ = 1.0f;
+	float width_ = 0.1f;
+	float height_ = 0.1f;
+	float depth_ = 0.1f;
 	float halfWidth_ = width_ / 2.0f;
 	float halfHeight_ = height_ / 2.0f;
 	float halfDepth_ = depth_ / 2.0f;

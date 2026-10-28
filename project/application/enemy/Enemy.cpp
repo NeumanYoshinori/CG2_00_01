@@ -75,12 +75,14 @@ void Enemy::OnCollision() {
 
 	if (hp_ <= 0) {
 		isDead_ = true;
+		score_++;
 	}
 }
 
 void Enemy::StartAttack() {
 	if (Length(object3d_->GetTranslate() - gun_->GetTranslate()) <= 10.0f) {
 		state_ = State::kAttack;
+		gun_->SetIsDead(true);
 	}
 }
 

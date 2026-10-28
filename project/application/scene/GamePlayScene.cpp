@@ -15,6 +15,8 @@ void GamePlayScene::Initialize() {
 	textureManager_->LoadTexture("rostock_laage_airport_4k.dds");
 	textureManager_->LoadTexture("crosshair138.png");
 	textureManager_->LoadTexture("Shoot.png");
+	textureManager_->LoadTexture("GameOver.png");
+	textureManager_->LoadTexture("GameClear.png");
 
 	// カメラの初期化
 	camera_ = make_unique<Camera>();
@@ -23,6 +25,9 @@ void GamePlayScene::Initialize() {
 	// スカイボックス共通部の初期化
 	skyboxCommon_ = SkyboxCommon::GetInstance();
 	skyboxCommon_->SetDefaultCamera(camera_.get());
+
+	skybox_ = make_unique<Skybox>();
+	skybox_->Initialize("rostock_laage_airport_4k.dds");
 
 	// モデルマネージャのインスタンス取得
 	modelManager_ = ModelManager::GetInstance();
@@ -66,6 +71,12 @@ void GamePlayScene::Initialize() {
 
 	shoot_ = make_unique<Sprite>();
 	shoot_->Initialize("Shoot.png");
+
+	gameOver_ = make_unique<Sprite>();
+	gameOver_->Initialize("GameOver.png");
+
+	gameClear_ = make_unique<Sprite>();
+	gameClear_->Initialize("GameClear.png");
 }
 
 void GamePlayScene::Finalize() {
@@ -84,18 +95,9 @@ void GamePlayScene::Update() {
 	// カメラの更新
 	camera_->Update();
 
+	skybox_->Update();
+
 	terrain_->Update();
-
-	// マウス座標を取得
-	GetCursorPos(&mousePosition_);
-
-	// クライエントに変換
-	ScreenToClient(WinApp::GetInstance()->GetHwnd(), &mousePosition_);
-
-	// スプライトの座標をマウス位置に設定
-	crosshair_->SetPosition({ static_cast<float>(mousePosition_.x), static_cast<float>(mousePosition_.y) });
-	// スプライトの更新
-	crosshair_->Update();
 
 	const list<Bullet*> bullets = gun_->GetBullets();
 
@@ -121,14 +123,26 @@ void GamePlayScene::Update() {
 
 		break;
 	case Phase::kMain:
-		// Rキーを押したら
-		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+		// ENTERキーを押したら
+		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
 			counter_ = 0.0f;
 			phase_ = Phase::KFadeOut;
 		}
 
+		// マウス座標を取得
+		GetCursorPos(&mousePosition_);
+
+		// クライエントに変換
+		ScreenToClient(WinApp::GetInstance()->GetHwnd(), &mousePosition_);
+
+		// スプライトの座標をマウス位置に設定
+		crosshair_->SetPosition({ static_cast<float>(mousePosition_.x), static_cast<float>(mousePosition_.y) });
+		// スプライトの更新
+		crosshair_->Update();
+
 		// 銃の更新
 		gun_->Update(mousePosition_);
+		gun_->GetEnemys(enemies_);
 
 		enemies_.remove_if([](Enemy* enemy) {
 			if (enemy->IsDead()) {
@@ -160,6 +174,36 @@ void GamePlayScene::Update() {
 				Collider::CheckBulletEnemyCollision(bullet, enemy);
 			}
 		}
+
+		score_ = gun_->GetScore();
+
+		if (score_ >= 20) {
+			phase_ = Phase::kGameClear;
+		}
+
+		if (gun_->IsDead()) {
+			phase_ = Phase::kGameOver;
+		}
+
+		break;
+	case Phase::kGameClear:
+		// SPACEキーを押したら
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			counter_ = 0.0f;
+			phase_ = Phase::KFadeOut;
+		}
+
+		gameClear_->Update();
+
+		break;
+	case Phase::kGameOver:
+		// SPACEキーを押したら
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			counter_ = 0.0f;
+			phase_ = Phase::KFadeOut;
+		}
+
+		gameOver_->Update();
 
 		break;
 	case Phase::KFadeOut:
@@ -204,6 +248,10 @@ void GamePlayScene::Update() {
 		crosshair_->DebugUpdate();
 	}
 
+	if (ImGui::CollapsingHeader("GameOver")) {
+		gameOver_->DebugUpdate();
+	}
+
 	ImGui::End();
 #endif
 
@@ -215,6 +263,17 @@ void GamePlayScene::Draw() {
 	// SRVマネージャの描画前処理
 	SrvManager::GetInstance()->PreDraw();
 
+	skyboxCommon_->DrawSetting();
+	skybox_->Draw();
+
+	// 銃の描画
+	gun_->Draw();
+
+	for (Enemy* enemy : enemies_) {
+		// 敵の描画
+		enemy->Draw();
+	}
+
 	switch (phase_) {
 	case Phase::kFadeIn:
 		break;
@@ -224,19 +283,21 @@ void GamePlayScene::Draw() {
 
 		break;
 	case Phase::kMain:
-		for (Enemy* enemy : enemies_) {
-			// 敵の描画
-			enemy->Draw();
-		}
-
-		// 銃の描画
-		gun_->Draw();
-
 		// スプライト描画前処理
 		spriteCommon_->GetInstance()->DrawSetting();
 
 		// スプライトの描画
 		crosshair_->Draw();
+
+		break;
+	case Phase::kGameClear:
+		spriteCommon_->GetInstance()->DrawSetting();
+		gameClear_->Draw();
+
+		break;
+	case Phase::kGameOver:
+		spriteCommon_->GetInstance()->DrawSetting();
+		gameOver_->Draw();
 
 		break;
 	case Phase::KFadeOut:

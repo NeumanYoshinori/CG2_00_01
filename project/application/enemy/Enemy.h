@@ -26,6 +26,8 @@ public:
 
 	bool IsDead() const { return isDead_; }
 
+	int32_t GetScore() { return score_; }
+
 private:
 	enum struct State {
 		kApproach,
@@ -37,7 +39,7 @@ private:
 
 	Vector3 position_{};
 
-	float speed_ = 2.0f;
+	float speed_ = 5.0f;
 
 	const float kDeltaTime_ = 1.0f / 60.0f;
 
@@ -61,6 +63,8 @@ private:
 	bool isDead_ = false;
 
 	Camera* camera_ = nullptr;
+
+	int32_t score_ = 0;
 
 #ifdef CREATE_COLLIDER
 	std::array<std::unique_ptr<Line>, 12> lines_;

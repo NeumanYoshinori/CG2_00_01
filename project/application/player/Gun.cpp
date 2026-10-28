@@ -3,6 +3,7 @@
 #include "ImGuiManager.h"
 #include "Input.h"
 #include "Object3dCommon.h"
+#include "Enemy.h"
 
 using namespace std;
 using namespace MathFunction;
@@ -71,6 +72,12 @@ void Gun::Update(POINT mousePosition) {
 
 	for (Bullet* bullet : bullets_) {
 		bullet->Update();
+	}
+
+	for (Enemy* enemy : enemy_) {
+		if (enemy->IsDead()) {
+			score_++;
+		}
 	}
 }
 
