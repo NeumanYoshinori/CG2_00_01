@@ -134,6 +134,12 @@ void GamePlayScene::Update() {
 		// 銃の更新
 		gun_->Update(mousePosition_);
 
+		for (Enemy* enemy : enemies_) {
+			if (enemy->IsDead()) {
+				enemyCount--;
+			}
+		}
+
 		enemies_.remove_if([](Enemy* enemy) {
 			if (enemy->IsDead()) {
 				delete enemy;
@@ -145,13 +151,13 @@ void GamePlayScene::Update() {
 
 		if (enemySpawnTimer_ > 0) {
 			enemySpawnTimer_--;
-		}
-		else {
+		} else if (enemySpawnTimer_ <= 0 && enemyCount < kMaxEnemyCount) {
 			uniform_real_distribution<float> distribution(-4.0f, 4.0f);
 			Enemy* enemy = new Enemy();
 			enemy->Initialize(gun_.get(), camera_.get(), "rostock_laage_airport_4k.dds", Vector3(distribution(randomEngine_), 0.0f, 20.0f));
 			enemies_.push_back(enemy);
 			enemySpawnTimer_ = enemySpawnFrequency_;
+			enemyCount++;
 		}
 
 		// 敵の更新

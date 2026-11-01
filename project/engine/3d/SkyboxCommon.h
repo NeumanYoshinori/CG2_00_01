@@ -36,7 +36,7 @@ private:
 	// ルートシグネチャの作成
 	void CreateRootSignature();
 	// グラフィックスパイプラインの生成
-	void GenerateGraphicsPipeLine();
+	void GenerateGraphicsPipeline();
 
 	// シングルトンインスタンス
 	static std::unique_ptr<SkyboxCommon> instance_;
@@ -52,9 +52,6 @@ private:
 
 	// グラフィックスパイプラインステート
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_ = nullptr;
-
-	// ブレンドデスク
-	D3D12_BLEND_DESC blendDesc_ = {};
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc_ = {};
 

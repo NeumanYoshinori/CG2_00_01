@@ -30,7 +30,7 @@ private:
 	// ルートシグネチャの作成
 	void CreateRootSignature();
 	// グラフィックスパイプラインの生成
-	void GenerateGraphicsPipeLine();
+	void GenerateGraphicsPipeline();
 
 	// インスタンス
 	static std::unique_ptr<SpriteCommon> instance_;

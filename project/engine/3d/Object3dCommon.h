@@ -37,6 +37,9 @@ public: // メンバ関数
 	// 共通描画設定
 	void DrawSetting();
 
+	// Skinning用共通描画設定
+	void SkinningDrawSetting();
+
 	// setter
 	void SetDefaultCamera(Camera* camera) { defaultCamera_ = camera; }
 	// getter
@@ -56,7 +59,12 @@ private:
 	// ルートシグネチャの作成
 	void CreateRootSignature();
 	// グラフィックスパイプラインの生成
-	void GenerateGraphicsPipeLine();
+	void GenerateGraphicsPipeline();
+
+	// Skinning用ルートシグネチャの作成
+	void CreateSkinningRootSignature();
+	// グラフィックスパイプラインの生成
+	void GenerateSkinningGraphicsPipeline();
 
 	// インスタンス
 	static std::unique_ptr<Object3dCommon> instance_;
@@ -72,6 +80,12 @@ private:
 
 	// グラフィックスパイプラインステート
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_;
+
+	// ルートシグネチャ
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> skinningRootSignature_;
+
+	// グラフィックスパイプラインステート
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> skinningGraphicsPipelineState_;
 
 	// デフォルトカメラ
 	Camera* defaultCamera_ = nullptr;

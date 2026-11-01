@@ -5,6 +5,8 @@
 #include "MathFunction.h"
 #include <map>
 #include "Transform.h"
+#include <span>
+#include "SrvManager.h"
 
 // 3Dモデル
 class Model {
@@ -33,6 +35,33 @@ private:
 		std::string textureFilePath;
 	};
 
+	// ノード
+	struct Node {
+		QuaternionTransform transform{};
+		Matrix4x4 localMatrix{};
+		std::string name{};
+		std::vector<Node> children;
+	};
+
+	struct VertexWeightData {
+		float weight;
+		uint32_t vertexIndex;
+	};
+
+	struct JointWeightData {
+		Matrix4x4 inverseBindPoseMatrix{};
+		std::vector<VertexWeightData> vertexWeights;
+	};
+
+	// モデルデータ
+	struct ModelData {
+		std::map<std::string, JointWeightData> skinClusterData;
+		std::vector<VertexData> vertices;
+		std::vector<int32_t> indices;
+		MaterialData material;
+		Node rootNode;
+	};
+
 	template <typename tValue>
 	struct Keyframe {
 		float time; // キーフレームの時刻（単位は秒）
@@ -46,23 +75,18 @@ private:
 		std::vector<Keyframe<tValue>> keyframes;
 	};
 
+	static const uint32_t kNumMaxInfluence = 4;
+	struct VertexInfluence {
+		std::array<float, kNumMaxInfluence> weights;
+		std::array<int32_t, kNumMaxInfluence> jointIndices;
+	};
+
+	struct WellForGPU {
+		Matrix4x4 skeletonSpaceMatrix; // 位置用
+		Matrix4x4 skeletonSpaceInverseTransposeMatrix; // 法線用
+	};
+
 public:
-	// ノード
-	struct Node {
-		QuaternionTransform transform{};
-		Matrix4x4 localMatrix{};
-		std::string name{};
-		std::vector<Node> children;
-	};
-
-	// モデルデータ
-	struct ModelData {
-		std::vector<VertexData> vertices;
-		std::vector<int32_t> indices;
-		MaterialData material;
-		Node rootNode;
-	};
-
 	struct NodeAnimation {
 		AnimationCurve<Vector3> translate;
 		AnimationCurve<Quaternion> rotate;
@@ -91,11 +115,24 @@ public:
 		std::vector<Joint> joints; // 所属しているジョイント
 	};
 
+	struct SkinCluster {
+		std::vector<Matrix4x4> inverseBindPoseMatrices;
+		Microsoft::WRL::ComPtr<ID3D12Resource> influenceResource;
+		D3D12_VERTEX_BUFFER_VIEW influenceBufferView{};
+		std::span<VertexInfluence> mappedInfluence;
+		Microsoft::WRL::ComPtr<ID3D12Resource> paletteResource;
+		std::span<WellForGPU> mappedPalette;
+		uint32_t srvIndex = 0;
+	};
+
 	// 初期化
 	void Initialize(const std::string& directoryPath, const std::string& filename);
 
-	// 更新
+	// Skeletonの更新
 	void Update(Skeleton& skeleton);
+
+	// SkinClusterの更新
+	void Update(SkinCluster& skinCluster, const Skeleton& skeleton);
 
 	// 描画
 	void Draw();
@@ -114,15 +151,12 @@ public:
 	Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
 	Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
 
-	// skeleton作成
-	Skeleton CreateSkeleton(const Node& rootNode);
-
 	// Animation適用
 	void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
 
 	Animation GetAnimation() const { return animation_; }
-
-	Vector3 GetJointPosition(const Joint& joint);
+	Skeleton GetSkeleton() const { return skeleton_; }
+	SkinCluster GetSkinCluster() const { return skinCluster_; }
 
 private:
 	// 頂点データ作成
@@ -140,8 +174,14 @@ private:
 	// アニメーションを読み込む
 	Animation LoadAnimationFile(const std::string& directoryPath, const std::string& filename);
 
+	// skeleton作成
+	Skeleton CreateSkeleton();
+
 	// Joint作成
 	int32_t CreateJoint(const Node& node, const std::optional<int32_t>& parent, std::vector<Joint>& joints);
+
+	// SkinCluster作成
+	SkinCluster CreateSkinCluster();
 
 	// objファイルのデータ
 	ModelData modelData_;
@@ -150,8 +190,10 @@ private:
 
 	// アニメーション
 	Animation animation_{};
-	// アニメーション時間
-	float animationTime_ = 0.0f;
+	// スケルトン
+	Skeleton skeleton_{};
+	// スキンクラスター
+	SkinCluster skinCluster_{};
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_; // 頂点リソース
@@ -175,5 +217,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	uint32_t numInstance_ = 1;
+
+	// SRVマネージャ
+	SrvManager* srvManager_ = nullptr;
 };
 

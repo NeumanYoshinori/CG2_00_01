@@ -55,8 +55,6 @@ private:
 		Matrix4x4 WVP;
 		Matrix4x4 World;
 		Matrix4x4 WorldInverseTranspose;
-		int32_t flipX;
-		int32_t flipY;
 	};
 
 	// カメラ
@@ -121,6 +119,7 @@ private:
 
 	Model::Skeleton skeleton_;
 	Model::Animation animation_;
+	Model::SkinCluster skinCluster_;
 
 	bool hasSkeleton_ = false;
 };

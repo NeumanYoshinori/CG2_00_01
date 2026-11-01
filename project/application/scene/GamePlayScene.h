@@ -104,5 +104,8 @@ private:
 	uint32_t shootTimer_ = 120;
 
 	std::unique_ptr<Sprite> shoot_;
+
+	const uint32_t kMaxEnemyCount = 10;
+	uint32_t enemyCount = 0;
 };
 

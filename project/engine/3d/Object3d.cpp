@@ -45,6 +45,7 @@ void Object3d::Update() {
 			if (hasSkeleton_) {
 				model_->ApplyAnimation(skeleton_, animation_, animationTime_);
 				model_->Update(skeleton_);
+				model_->Update(skinCluster_, skeleton_);
 			}
 			else {
 				Model::NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[model_->GetModelData().rootNode.name];
@@ -115,14 +116,6 @@ void Object3d::DebugUpdate() {
 		ImGui::DragFloat("EnvironmentCoefficient", &environmentCoeffcient, 0.01f);
 		primitive_->SetEnvironmentCoefficient(environmentCoeffcient);
 	}
-	bool flipX = transformationMatrixData_->flipX;
-	if (ImGui::Checkbox("FlipX", &flipX)) {
-		transformationMatrixData_->flipX = flipX;
-	}
-	bool flipY = transformationMatrixData_->flipY;
-	if (ImGui::Checkbox("FlipY", &flipY)) {
-		transformationMatrixData_->flipY = flipY;
-	}
 #endif
 }
 
@@ -136,7 +129,8 @@ void Object3d::SetModel(const std::string& filePath) {
 
 	if (model_) {
 		animation_ = model_->GetAnimation();
-		skeleton_ = model_->CreateSkeleton(model_->GetModelData().rootNode);
+		skeleton_ = model_->GetSkeleton();
+		skinCluster_ = model_->GetSkinCluster();
 		// ジョイントの数が1より上の場合スケルトンがあると判断する
 		if (skeleton_.joints.size() > 1) {
 			hasSkeleton_ = true;
@@ -167,8 +161,6 @@ void Object3d::CreateTransformationMatrixData() {
 	transformationMatrixData_->WVP = MakeIdentity4x4();
 	transformationMatrixData_->World = MakeIdentity4x4();
 	transformationMatrixData_->WorldInverseTranspose = MakeIdentity4x4();
-	transformationMatrixData_->flipX = false;
-	transformationMatrixData_->flipY = false;
 }
 
 void Object3d::CreateCameraData() {
