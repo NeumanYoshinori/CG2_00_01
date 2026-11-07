@@ -1,6 +1,7 @@
 #include "MathFunction.h"
 #include <cmath>
 #include <cassert>
+#include <algorithm>
 
 using namespace std;
 
@@ -91,6 +92,15 @@ namespace MathFunction {
         return q0;
     }
 
+    Quaternion& operator-=(Quaternion & q0, const Quaternion & q1) {
+        q0.x -= q1.x;
+        q0.y -= q1.y;
+        q0.z -= q1.z;
+        q0.w -= q1.w;
+
+        return q0;
+    }
+
     Quaternion& operator*=(Quaternion& q, float s) {
         q.x *= s;
         q.y *= s;
@@ -104,6 +114,12 @@ namespace MathFunction {
         Quaternion temp(q0);
 
         return temp += q1;
+    }
+
+    const Quaternion operator-(const Quaternion& q0, const Quaternion& q1) {
+        Quaternion temp(q0);
+
+        return temp -= q1;
     }
 
     const Quaternion operator*(const Quaternion& q, const float f) {
@@ -349,12 +365,21 @@ namespace MathFunction {
 
     // 球面線形補間(Quaternion)
     Quaternion Slerp(Quaternion q0, Quaternion q1, float t) {
+        // tを0~1にclamp
+        t = clamp(t, 0.0f, 1.0f);
+
         // 内積を求める
         float dot = Dot(q0, q1);
 
-        if (dot < 0) {
+        if (dot < 0.0f) {
             q0 = -q0; // もう片方の回転を利用する
             dot = -dot; // 内積も反転
+        }
+
+        if (dot >= 0.99995f) {
+            return {
+                (1.0f - t) * q0 + t * q1
+            };
         }
 
         // なす角を求める
@@ -362,14 +387,10 @@ namespace MathFunction {
 
         // θの角度からsinθを求める
         float sinTheta = sin(theta);
-        // サイン(θ(1-t))を求める
-        float sinThetaFrom = sin((1.0f - t) * theta);
-        // サインθtを求める
-        float sinThetaTo = sin(t * theta);
 
         // thetaとsinを使って補間係数scale0,scale1を求める
-        float scale0 = sinThetaFrom / sinTheta;
-        float scale1 = sinThetaTo / sinTheta;
+        float scale0 = sin((1.0f - t) * theta) / sinTheta;
+        float scale1 = sin(t * theta) / sinTheta;
 
         return scale0 * q0 + scale1 * q1;
     }

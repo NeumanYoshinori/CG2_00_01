@@ -2,7 +2,7 @@
 #include "Gun.h"
 #include "MathFunction.h"
 #include "Object3dCommon.h"
-#ifdef CREATE_COLLIDER
+#ifdef CREATE_HITBOX
 #include "LineCommon.h"
 #endif
 
@@ -14,16 +14,19 @@ void Enemy::Initialize(Gun* gun, Camera* camera, const std::string& filePath, Ve
 	object3d_->SetEnvironmentMapTexture(filePath);
 	object3d_->SetTranslate(position);
 	object3d_->SetRotate({ 0.0f, 3.14f, 0.0f });
-	object3d_->SetModel("AnimatedCube.gltf");
+	object3d_->SetModel("sneakWalk.gltf");
 	position_ = position;
 
 	gun_ = gun;
 	camera_ = camera;
 
 	aabb_.min = { object3d_->GetTranslate().x - halfWidth_, object3d_->GetTranslate().y - halfHeight_, object3d_->GetTranslate().z - halfDepth_ };
-	aabb_.max = { object3d_->GetTranslate().x + halfWidth_, object3d_->GetTranslate().y + halfHeight_, object3d_->GetTranslate().z + halfDepth_ };
+	aabb_.max = { object3d_->GetTranslate().x + halfWidth_, object3d_->GetTranslate().y + height_ * 2, object3d_->GetTranslate().z + halfDepth_ };
 
-	CreateCollider();
+#ifdef CREATE_HITBOX
+	hitBox_ = std::make_unique<HitBox>();
+	hitBox_->Initialize(width_, height_, depth_, camera_);
+#endif
 }
 
 void Enemy::Update() {
@@ -43,15 +46,13 @@ void Enemy::Update() {
 	}
 
 	aabb_.min = { object3d_->GetTranslate().x - halfWidth_, object3d_->GetTranslate().y - halfHeight_, object3d_->GetTranslate().z - halfDepth_ };
-	aabb_.max = { object3d_->GetTranslate().x + halfWidth_, object3d_->GetTranslate().y + halfHeight_, object3d_->GetTranslate().z + halfDepth_ };
+	aabb_.max = { object3d_->GetTranslate().x + halfWidth_, object3d_->GetTranslate().y + height_ * 2, object3d_->GetTranslate().z + halfDepth_ };
 
 	object3d_->Update();
 
-#ifdef CREATE_COLLIDER
-	for (uint32_t i = 0; i < 12; ++i) {
-		lines_[i]->SetTranslate(object3d_->GetTranslate());
-		lines_[i]->Update();
-	}
+#ifdef CREATE_HITBOX
+	hitBox_->SetTranslate({ position_.x, position_.y + height_, position_.z });
+	hitBox_->Update();
 #endif
 }
 
@@ -59,11 +60,9 @@ void Enemy::Draw() {
 	Object3dCommon::GetInstance()->SkinningDrawSetting();
 	object3d_->Draw();
 
-#ifdef CREATE_COLLIDER
+#ifdef CREATE_HITBOX
 	LineCommon::GetInstance()->DrawSetting();
-	for (uint32_t i = 0; i < 12; ++i) {
-		lines_[i]->Draw();
-	}
+	hitBox_->Draw();
 #endif
 }
 
@@ -83,36 +82,4 @@ void Enemy::StartAttack() {
 	if (Length(object3d_->GetTranslate() - gun_->GetTranslate()) <= 10.0f) {
 		state_ = State::kAttack;
 	}
-}
-
-void Enemy::CreateCollider() {
-#ifdef CREATE_COLLIDER
-	Vector3 vertex[8] = {};
-	vertex[0] = { -width_, -height_, -depth_ };
-	vertex[1] = { width_, -height_, -depth_ };
-	vertex[2] = { -width_, height_, -depth_ };
-	vertex[3] = { width_, height_, -depth_ };
-	vertex[4] = { -width_, -height_, depth_ };
-	vertex[5] = { width_, -height_, depth_ };
-	vertex[6] = { -width_, height_, depth_ };
-	vertex[7] = { width_, height_, depth_ };
-
-	for (uint32_t i = 0; i < 12; ++i) {
-		lines_[i] = std::make_unique<Line>();
-		lines_[i]->SetCamera(camera_);
-	}
-
-	lines_[0]->Initialize(Vector3(vertex[0].x, vertex[0].y, vertex[0].z), Vector3(vertex[1].x, vertex[1].y, vertex[1].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[1]->Initialize(Vector3(vertex[0].x, vertex[0].y, vertex[0].z), Vector3(vertex[2].x, vertex[2].y, vertex[2].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[2]->Initialize(Vector3(vertex[0].x, vertex[0].y, vertex[0].z), Vector3(vertex[4].x, vertex[4].y, vertex[4].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[3]->Initialize(Vector3(vertex[1].x, vertex[1].y, vertex[1].z), Vector3(vertex[3].x, vertex[3].y, vertex[3].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[4]->Initialize(Vector3(vertex[1].x, vertex[1].y, vertex[1].z), Vector3(vertex[5].x, vertex[5].y, vertex[5].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[5]->Initialize(Vector3(vertex[2].x, vertex[2].y, vertex[2].z), Vector3(vertex[3].x, vertex[3].y, vertex[3].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[6]->Initialize(Vector3(vertex[2].x, vertex[2].y, vertex[2].z), Vector3(vertex[6].x, vertex[6].y, vertex[6].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[7]->Initialize(Vector3(vertex[3].x, vertex[3].y, vertex[3].z), Vector3(vertex[7].x, vertex[7].y, vertex[7].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[8]->Initialize(Vector3(vertex[4].x, vertex[4].y, vertex[4].z), Vector3(vertex[5].x, vertex[5].y, vertex[5].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[9]->Initialize(Vector3(vertex[4].x, vertex[4].y, vertex[4].z), Vector3(vertex[6].x, vertex[6].y, vertex[6].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[10]->Initialize(Vector3(vertex[5].x, vertex[5].y, vertex[5].z), Vector3(vertex[7].x, vertex[7].y, vertex[7].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[11]->Initialize(Vector3(vertex[6].x, vertex[6].y, vertex[6].z), Vector3(vertex[7].x, vertex[7].y, vertex[7].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-#endif
 }

@@ -7,6 +7,7 @@
 #include "Primitive.h"
 #include "Camera.h"
 #include "LightManager.h"
+#include "Skinning.h"
 
 // 3Dオブジェクト
 class Object3d {
@@ -45,9 +46,6 @@ public: // メンバ関数
 	void SetEnvironmentMapTexture(const std::string& envMapFilePath) { environmentMapFilePath_ = envMapFilePath; }
 
 	Model* GetModel() { return model_; }
-
-	const Model::Skeleton& GetSkeleton() { return skeleton_; }
-	Model::Animation GetAnimation() { return animation_; }
 
 private:
 	// 座標変換用行列
@@ -117,9 +115,10 @@ private:
 
 	bool isModelSet_ = false;
 
-	Model::Skeleton skeleton_;
 	Model::Animation animation_;
-	Model::SkinCluster skinCluster_;
+	std::unique_ptr<Skinning> skinning_;
+	Skinning::Skeleton skeleton_;
+	Skinning::SkinCluster skinCluster_;
 
 	bool hasSkeleton_ = false;
 };

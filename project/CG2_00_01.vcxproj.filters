@@ -103,14 +103,14 @@
     <Filter Include="ソース ファイル\application\enemy">
       <UniqueIdentifier>{77d39336-bcc4-4ebc-bf32-a5c956b3df43}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\application\collider">
-      <UniqueIdentifier>{9832226f-8ba7-49c9-b256-1382836442a8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\application\collider">
-      <UniqueIdentifier>{c0000ca1-5d40-411f-bac3-ae5dd0af6336}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\engine\levelEditor">
       <UniqueIdentifier>{9ae3c7ea-4183-40bf-b8bf-8a3dcf8c8cf7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\application\collision">
+      <UniqueIdentifier>{c0000ca1-5d40-411f-bac3-ae5dd0af6336}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\application\collision">
+      <UniqueIdentifier>{9832226f-8ba7-49c9-b256-1382836442a8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -243,10 +243,16 @@
     <ClCompile Include="engine\2d\LineCommon.cpp">
       <Filter>ソース ファイル\engine\3d</Filter>
     </ClCompile>
-    <ClCompile Include="application\collider\Collider.cpp">
-      <Filter>ソース ファイル\application\collider</Filter>
+    <ClCompile Include="application\collision\Collider.cpp">
+      <Filter>ソース ファイル\application\collision</Filter>
+    </ClCompile>
+    <ClCompile Include="application\collision\HitBox.cpp">
+      <Filter>ソース ファイル\application\collision</Filter>
     </ClCompile>
     <ClCompile Include="engine\3d\Primitive.cpp">
+      <Filter>ソース ファイル\engine\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\3d\Skinning.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -398,13 +404,19 @@
     <ClInclude Include="engine\2d\Line.h">
       <Filter>ヘッダー ファイル\engine\2d</Filter>
     </ClInclude>
-    <ClInclude Include="application\collider\Collider.h">
-      <Filter>ヘッダー ファイル\application\collider</Filter>
+    <ClInclude Include="application\collision\Collider.h">
+      <Filter>ヘッダー ファイル\application\collision</Filter>
+    </ClInclude>
+    <ClInclude Include="application\collision\HitBox.h">
+      <Filter>ヘッダー ファイル\application\collision</Filter>
     </ClInclude>
     <ClInclude Include="engine\math\Quaternion.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\engine\math</Filter>
     </ClInclude>
     <ClInclude Include="engine\3d\Primitive.h">
+      <Filter>ヘッダー ファイル\engine\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\3d\Skinning.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

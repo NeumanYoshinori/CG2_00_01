@@ -40,12 +40,16 @@ void Object3d::Update() {
 
 	if (model_) {
 		if (!animation_.nodeAnimations.empty()) {
+			// アニメーションの時間を進める（設定する）
 			animationTime_ += 1.0f / 60.0f;
 			animationTime_ = fmod(animationTime_, animation_.duration);
-			if (hasSkeleton_) {
-				model_->ApplyAnimation(skeleton_, animation_, animationTime_);
-				model_->Update(skeleton_);
-				model_->Update(skinCluster_, skeleton_);
+			if (skinning_) {
+				// Animationの更新を行って、骨ごとのLocal情報を更新する
+				skinning_->ApplyAnimation(skeleton_, animation_, animationTime_);
+				// 現在の骨ごとのLocal乗っ方を基にSkeletonSpaceの情報を更新する
+				skinning_->Update(skeleton_);
+				// SkeletonSpaceの情報を基に、SKinClusterのMatrixPaletteを更新する
+				skinning_->Update(skinCluster_, skeleton_);
 			}
 			else {
 				Model::NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[model_->GetModelData().rootNode.name];
@@ -88,6 +92,11 @@ void Object3d::Draw() {
 	// 環境マップのCBufferの場所を設定
 	commandList_->SetGraphicsRootConstantBufferView(6, environmentMapResource_->GetGPUVirtualAddress());
 
+	// skinClusterの描画
+	if (skinning_) {
+		skinning_->Draw();
+	}
+
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {
 		model_->Draw();
@@ -129,15 +138,18 @@ void Object3d::SetModel(const std::string& filePath) {
 
 	if (model_) {
 		animation_ = model_->GetAnimation();
-		skeleton_ = model_->GetSkeleton();
-		skinCluster_ = model_->GetSkinCluster();
-		// ジョイントの数が1より上の場合スケルトンがあると判断する
-		if (skeleton_.joints.size() > 1) {
+
+		if (model_->GetModelData().rootNode.children.size() > 1) {
+			skinning_ = make_unique<Skinning>();
+			skinning_->Initialize(model_);
+			skeleton_ = skinning_->GetSkeleton();
+			skinCluster_ = skinning_->GetSkinCluster();
+
 			hasSkeleton_ = true;
 		}
-	}
 
-	isModelSet_ = true;
+		isModelSet_ = true;
+	}
 }
 
 void Object3d::SetPrimitive(const std::string& name) {
@@ -147,7 +159,9 @@ void Object3d::SetPrimitive(const std::string& name) {
 
 	primitive_ = ModelManager::GetInstance()->FindPrimitive(name);
 
-	isModelSet_ = true;
+	if (primitive_) {
+		isModelSet_ = true;
+	}
 }
 
 void Object3d::CreateTransformationMatrixData() {

@@ -76,14 +76,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;USE_IMGUI;CREATE_COLLIDER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;USE_IMGUI;CREATE_HITBOX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir)application\collider;$(ProjectDir)application\enemy;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\levelEditor;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)application\player;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)application\collision;$(ProjectDir)application\enemy;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\levelEditor;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)application\player;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -110,7 +110,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)application\collider;$(ProjectDir)application\enemy;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\levelEditor;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)application\player;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)application\collision;$(ProjectDir)application\enemy;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\levelEditor;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)application\player;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -132,7 +132,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;USE_IMGUI;CREATE_COLLIDER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;USE_IMGUI;CREATE_HITBOX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -140,7 +140,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)application\collider;$(ProjectDir)application\enemy;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\levelEditor;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)application\player;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)application\collision;$(ProjectDir)application\enemy;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\game;$(ProjectDir)engine\imgui;$(ProjectDir)engine\input;$(ProjectDir)engine\levelEditor;$(ProjectDir)engine\math;$(ProjectDir)engine\postEffect;$(ProjectDir)application\scene;$(ProjectDir)application\player;$(ProjectDir)externals\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -158,8 +158,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="application\collider\Collider.cpp" />
+    <ClCompile Include="application\collision\Collider.cpp" />
     <ClCompile Include="application\enemy\Enemy.cpp" />
+    <ClCompile Include="application\collision\HitBox.cpp" />
     <ClCompile Include="application\scene\GamePlayScene.cpp" />
     <ClCompile Include="application\player\Bullet.cpp" />
     <ClCompile Include="engine\2d\Line.cpp" />
@@ -206,10 +207,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\3d\Plane.cpp" />
     <ClCompile Include="engine\3d\Ring.cpp" />
     <ClCompile Include="engine\3d\Primitive.cpp" />
+    <ClCompile Include="engine\3d\Skinning.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\collider\Collider.h" />
+    <ClInclude Include="application\collision\Collider.h" />
     <ClInclude Include="application\enemy\Enemy.h" />
+    <ClInclude Include="application\collision\HitBox.h" />
     <ClInclude Include="application\player\Bullet.h" />
     <ClInclude Include="engine\2d\Line.h" />
     <ClInclude Include="engine\2d\LineCommon.h" />
@@ -260,6 +263,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\levelEditor\LevelDataLoader.h" />
     <ClInclude Include="application\player\Gun.h" />
     <ClInclude Include="engine\3d\Primitive.h" />
+    <ClInclude Include="engine\3d\Skinning.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="logs\resources\shaders\FullScreen.hlsli">

@@ -33,9 +33,11 @@ namespace MathFunction {
 	Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2);
 
 	const Quaternion operator+(const Quaternion& q0, const Quaternion& q1);
+	const Quaternion operator-(const Quaternion& q0, const Quaternion& q1);
 	const Quaternion operator*(const Quaternion& q, const float f);
 
 	Quaternion& operator+=(Quaternion& q0, const Quaternion& q1);
+	Quaternion& operator-=(Quaternion & q0, const Quaternion & q1);
 	Quaternion& operator*=(Quaternion& q, float s);
 
 	const Quaternion operator*(const float f, const Quaternion& q);

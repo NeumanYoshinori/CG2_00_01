@@ -113,11 +113,3 @@ const TexMetadata& TextureManager::GetMetaData(const string& filePath) {
 	TextureData& textureData = textureDatas_[filePath];
 	return textureData.metadata;
 }
-
-uint32_t TextureManager::GetSrvIndex(const std::string& filePath) {
-	// 範囲外指定違反チェック
-	assert(textureDatas_.contains(filePath));
-
-	TextureData& textureData = textureDatas_[filePath];
-	return textureData.srvIndex;
-}

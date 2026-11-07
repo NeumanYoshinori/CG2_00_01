@@ -1,7 +1,7 @@
 #pragma once
 #include "Object3d.h"
-#ifdef CREATE_COLLIDER
-#include "Line.h"
+#ifdef CREATE_HITBOX
+#include "HitBox.h"
 #endif
 
 class Gun;
@@ -21,8 +21,6 @@ public:
 	void StartAttack();
 
 	Vector3 GetTranslate() const { return object3d_->GetTranslate(); }
-
-	void CreateCollider();
 
 	bool IsDead() const { return isDead_; }
 
@@ -45,9 +43,9 @@ private:
 
 	bool isCollision_ = false;
 
-	float width_ = 1.0f;
-	float height_ = 1.0f;
-	float depth_ = 1.0f;
+	float width_ = 0.4f;
+	float height_ = 0.8f;
+	float depth_ = 0.35f;
 	float halfWidth_ = width_ / 2.0f;
 	float halfHeight_ = height_ / 2.0f;
 	float halfDepth_ = depth_ / 2.0f;
@@ -62,8 +60,8 @@ private:
 
 	Camera* camera_ = nullptr;
 
-#ifdef CREATE_COLLIDER
-	std::array<std::unique_ptr<Line>, 12> lines_;
+#ifdef CREATE_HITBOX
+	std::unique_ptr<HitBox> hitBox_;
 #endif
 };
 
