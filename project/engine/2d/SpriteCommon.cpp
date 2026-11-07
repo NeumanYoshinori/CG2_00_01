@@ -22,7 +22,7 @@ void SpriteCommon::Initialize() {
 	dxBase_ = DirectXBase::GetInstance();
 
 	// グラフィックスパイプラインの生成
-	GenerateGraphicsPipeLine();
+	GenerateGraphicsPipeline();
 }
 
 void SpriteCommon::DrawSetting() {
@@ -87,7 +87,7 @@ void SpriteCommon::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
-void SpriteCommon::GenerateGraphicsPipeLine() {
+void SpriteCommon::GenerateGraphicsPipeline() {
 	CreateRootSignature();
 
 	// InputLayout

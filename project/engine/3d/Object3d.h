@@ -7,6 +7,7 @@
 #include "Primitive.h"
 #include "Camera.h"
 #include "LightManager.h"
+#include "Skinning.h"
 
 // 3Dオブジェクト
 class Object3d {
@@ -52,8 +53,6 @@ private:
 		Matrix4x4 WVP;
 		Matrix4x4 World;
 		Matrix4x4 WorldInverseTranspose;
-		int32_t flipX;
-		int32_t flipY;
 	};
 
 	// カメラ
@@ -93,7 +92,7 @@ private:
 	EnvironmentMap* environmentMapData_ = nullptr;
 
 	// Transform
-	Transform transform_{};
+	EulerTransform transform_{};
 
 	// コマンドリスト
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
@@ -115,5 +114,12 @@ private:
 	float animationTime_ = 0.0f;
 
 	bool isModelSet_ = false;
+
+	Model::Animation animation_;
+	std::unique_ptr<Skinning> skinning_;
+	Skinning::Skeleton skeleton_;
+	Skinning::SkinCluster skinCluster_;
+
+	bool hasSkeleton_ = false;
 };
 

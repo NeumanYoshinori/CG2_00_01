@@ -1,7 +1,7 @@
 #include "ParticleEmitter.h"
 #include "ParticleManager.h"
 
-ParticleEmitter::ParticleEmitter(std::string name, Transform transform, Vector3 velocity, Vector4 color, float lifeTime, uint32_t count, float frequency) {
+ParticleEmitter::ParticleEmitter(std::string name, EulerTransform transform, Vector3 velocity, Vector4 color, float lifeTime, uint32_t count, float frequency) {
 	name_ = name;
 	transform_ = transform;
 	velocity_ = velocity;

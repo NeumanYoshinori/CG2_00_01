@@ -51,7 +51,7 @@ void TitleScene::Update() {
 		break;
 	case Phase::kMain:
 		// ENTERキーを押したら
-		if (input_->TriggerKey(DIK_R)) {
+		if (input_->TriggerKey(DIK_SPACE)) {
 			counter_ = 0.0f;
 			phase_ = Phase::KFadeOut;
 		}

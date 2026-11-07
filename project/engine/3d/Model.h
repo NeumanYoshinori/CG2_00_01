@@ -4,9 +4,20 @@
 #include "DirectXBase.h"
 #include "MathFunction.h"
 #include <map>
+#include "Transform.h"
+#include "SrvManager.h"
 
 // 3Dモデル
 class Model {
+public:
+	// ノード
+	struct Node {
+		QuaternionTransform transform{};
+		Matrix4x4 localMatrix{};
+		std::string name{};
+		std::vector<Node> children;
+	};
+
 private:
 	// 頂点データ
 	struct VertexData {
@@ -32,16 +43,21 @@ private:
 		std::string textureFilePath;
 	};
 
-	// ノード
-	struct Node {
-		Matrix4x4 localMatrix{};
-		std::string name;
-		std::vector<Node> children;
+	struct VertexWeightData {
+		float weight;
+		uint32_t vertexIndex;
+	};
+
+	struct JointWeightData {
+		Matrix4x4 inverseBindPoseMatrix{};
+		std::vector<VertexWeightData> vertexWeights;
 	};
 
 	// モデルデータ
 	struct ModelData {
+		std::map<std::string, JointWeightData> skinClusterData;
 		std::vector<VertexData> vertices;
+		std::vector<int32_t> indices;
 		MaterialData material;
 		Node rootNode;
 	};
@@ -59,6 +75,7 @@ private:
 		std::vector<Keyframe<tValue>> keyframes;
 	};
 
+public:
 	struct NodeAnimation {
 		AnimationCurve<Vector3> translate;
 		AnimationCurve<Quaternion> rotate;
@@ -66,29 +83,32 @@ private:
 	};
 
 	struct Animation {
-		float duration; // アニメーション全体の尺（単位は秒）
+		float duration = 0.0f; // アニメーション全体の尺（単位は秒）
 		// NodeAnimationの集合。Node名でひけるようにしておく
 		std::map<std::string, NodeAnimation> nodeAnimations;
 	};
 
-public:
 	// 初期化
 	void Initialize(const std::string& directoryPath, const std::string& filename);
 
 	// 描画
 	void Draw();
 
-	// アニメーション再生
-	void PlayAnimation();
-
-	ModelData GetModelData() const { return modelData_; }
+	const ModelData& GetModelData() { return modelData_; }
 
 	float GetEnvironmentCoefficient() { return materialData_->environmentCoefficient; }
 	void SetEnvironmentCoefficient(float environmentCoefficient) { materialData_->environmentCoefficient = environmentCoefficient; }
 
 	void SetNumInstance(uint32_t numInstance) { numInstance_ = numInstance; }
 
-	Matrix4x4 GetLocalMatrix() { return localMatrix_; }
+	// localMatrixをセット
+	void SetLocalMatrix(Matrix4x4 localMatrix) { modelData_.rootNode.localMatrix = localMatrix; }
+
+	// 任意の時刻の値を取得する
+	Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
+	Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
+
+	Animation GetAnimation() const { return animation_; }
 
 private:
 	// 頂点データ作成
@@ -106,10 +126,6 @@ private:
 	// アニメーションを読み込む
 	Animation LoadAnimationFile(const std::string& directoryPath, const std::string& filename);
 
-	// 任意の時刻の値を取得する
-	Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
-	Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
-
 	// objファイルのデータ
 	ModelData modelData_;
 
@@ -117,8 +133,6 @@ private:
 
 	// アニメーション
 	Animation animation_{};
-	// アニメーション時間
-	float animationTime_ = 0.0f;
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_; // 頂点リソース
@@ -126,6 +140,12 @@ private:
 	VertexData* vertexData_ = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource_; // インデックスリソース
+	// バッファリソース内のデータを指すポインタ
+	uint32_t* indexData_ = nullptr;
+	// バッファリソースの使い道を補足するバッファビュー
+	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_; // マテリアルリソース
@@ -137,6 +157,7 @@ private:
 
 	uint32_t numInstance_ = 1;
 
-	Matrix4x4 localMatrix_{};
+	// SRVマネージャ
+	SrvManager* srvManager_ = nullptr;
 };
 

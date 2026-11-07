@@ -23,7 +23,7 @@ void SkyboxCommon::Initialize() {
 	dxBase_ = DirectXBase::GetInstance();
 
 	// グラフィックスパイプライン生成
-	GenerateGraphicsPipeLine();
+	GenerateGraphicsPipeline();
 }
 
 void SkyboxCommon::DrawSetting() {
@@ -92,7 +92,7 @@ void SkyboxCommon::CreateRootSignature() {
 	assert(SUCCEEDED(hr));
 }
 
-void SkyboxCommon::GenerateGraphicsPipeLine() {
+void SkyboxCommon::GenerateGraphicsPipeline() {
 	CreateRootSignature();
 
 	// InputLayout

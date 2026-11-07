@@ -140,7 +140,7 @@ private:
 	Vector2 textureSize_ = { 100.0f, 100.0f };
 
 	// transform
-	Transform transform_{};
+	EulerTransform transform_{};
 
 	// ファイルパス
 	std::string filePath_;

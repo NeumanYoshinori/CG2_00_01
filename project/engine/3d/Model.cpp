@@ -7,13 +7,14 @@
 using namespace std;
 using namespace MathFunction;
 
-void Model::Initialize(const std::string& directoryPath, const string& filename) {
+void Model::Initialize(const string& directoryPath, const string& filename) {
+	dxBase_ = DirectXBase::GetInstance();
+	srvManager_ = SrvManager::GetInstance();
+
 	// モデル読み込み
 	modelData_ = LoadModelFile(directoryPath, filename);
 	// アニメーション読み込み
-	//animation_ = LoadAnimationFile(directoryPath, filename);
-
-	dxBase_ = DirectXBase::GetInstance();
+	animation_ = LoadAnimationFile(directoryPath, filename);
 
 	// 頂点データ作成
 	CreateVertexData();
@@ -29,8 +30,10 @@ void Model::Draw() {
 	// コマンドリストを作成
 	commandList_ = dxBase_->GetCommandList();
 
-	// vertexBufferView_を設定
+	// 配列を渡す (開始slot番号、使用slot数、VBV配列へのポインタ)である。
 	commandList_->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	// IndexBufferViewを設定
+	commandList_->IASetIndexBuffer(&indexBufferView_);
 	// マテリアルCBufferの場所を設定
 	commandList_->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
@@ -39,17 +42,7 @@ void Model::Draw() {
 		return;
 	}
 	// 描画！（フォローコール）
-	commandList_->DrawInstanced(UINT(modelData_.vertices.size()), numInstance_, 0, 0);
-}
-
-void Model::PlayAnimation() {
-	animationTime_ += 1.0f / 60.0f;
-	animationTime_ = fmod(animationTime_, animation_.duration);
-	NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[modelData_.rootNode.name];
-	Vector3 translate = CalculateValue(rootNodeAnimation.translate.keyframes, animationTime_);
-	Quaternion rotate = CalculateValue(rootNodeAnimation.rotate.keyframes, animationTime_);
-	Vector3 scale = CalculateValue(rootNodeAnimation.scale.keyframes, animationTime_);
-	localMatrix_ = MakeAffineMatrix(scale, rotate, translate);
+	commandList_->DrawIndexedInstanced(UINT(modelData_.indices.size()), numInstance_, 0, 0, 0);
 }
 
 Model::ModelData Model::LoadModelFile(const string& directoryPath, const string& filename) {
@@ -65,6 +58,16 @@ Model::ModelData Model::LoadModelFile(const string& directoryPath, const string&
 		aiMesh* mesh = scene->mMeshes[meshIndex];
 		assert(mesh->HasNormals()); // 法線がないMeshは今回は非対応
 		assert(mesh->HasTextureCoords(0)); // TexcoordがないMeshは今回は非対応
+		modelData.vertices.resize(mesh->mNumVertices); // 最初に頂点数分のメモリを確保しておく
+		for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex) {
+			aiVector3D& position = mesh->mVertices[vertexIndex];
+			aiVector3D& normal = mesh->mNormals[vertexIndex];
+			aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+			// 右手系->左手系への変換を忘れずに
+			modelData.vertices[vertexIndex].position = { -position.x, position.y, position.z, 1.0f };
+			modelData.vertices[vertexIndex].normal = { -normal.x, normal.y, normal.z };
+			modelData.vertices[vertexIndex].texcoord = { texcoord.x, texcoord.y };
+		}
 		// ここからFaceの中身(face)の解析を行っていく
 		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
 			aiFace& face = mesh->mFaces[faceIndex];
@@ -72,17 +75,24 @@ Model::ModelData Model::LoadModelFile(const string& directoryPath, const string&
 			// ここからFaceの中身(Vertex)の解析を行っていく
 			for (uint32_t element = 0; element < face.mNumIndices; ++element) {
 				uint32_t vertexIndex = face.mIndices[element];
-				aiVector3D& position = mesh->mVertices[vertexIndex];
-				aiVector3D& normal = mesh->mNormals[vertexIndex];
-				aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
-				VertexData vertex{};
-				vertex.position = { position.x, position.y, position.z, 1.0f };
-				vertex.normal = { normal.x, normal.y, normal.z };
-				vertex.texcoord = { texcoord.x, texcoord.y };
-				// ai_Process_MakeLeftHandedはz*=-1で、右手->左手に変換するので手動で対処
-				vertex.position.x *= -1.0f;
-				vertex.normal.x *= -1.0f;
-				modelData.vertices.push_back(vertex);
+				modelData.indices.push_back(vertexIndex);
+			}
+		}
+		for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {
+			aiBone* bone = mesh->mBones[boneIndex];
+			string jointName = bone->mName.C_Str();
+			JointWeightData& jointWeightData = modelData.skinClusterData[jointName];
+
+			aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse();
+			aiVector3D scale, translate;
+			aiQuaternion rotate;
+			bindPoseMatrixAssimp.Decompose(scale, rotate, translate);
+			Matrix4x4 bindPoseMatrix = MakeAffineMatrix(
+				{ scale.x, scale.y, scale.z }, { rotate.x, -rotate.y, -rotate.z, rotate.w }, { -translate.x, translate.y, translate.z });
+			jointWeightData.inverseBindPoseMatrix = Inverse(bindPoseMatrix);
+
+			for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex) {
+				jointWeightData.vertexWeights.push_back({ bone->mWeights[weightIndex].mWeight, bone->mWeights[weightIndex].mVertexId });
 			}
 		}
 	}
@@ -103,13 +113,13 @@ Model::ModelData Model::LoadModelFile(const string& directoryPath, const string&
 
 Model::Node Model::ReadNode(aiNode* node) {
 	Node result;
-	aiMatrix4x4 aiLocalMatrix = node->mTransformation; // nodeのlocalMatrixを取得
-	aiLocalMatrix.Transpose(); // 列ベクトル形式を行ベクトルに転置
-	for (uint32_t i = 0; i < 4; i++) {
-		for (uint32_t j = 0; j < 4; j++) {
-			result.localMatrix.m[i][j] = aiLocalMatrix[i][j]; // 他の要素も同様に
-		}
-	}
+	aiVector3D scale, translate;
+	aiQuaternion rotate;
+	node->mTransformation.Decompose(scale, rotate, translate); // assimpの行列からSRTを抽出する関数を利用
+	result.transform.scale = { scale.x, scale.y, scale.z };
+	result.transform.rotate = { rotate.x, -rotate.y, -rotate.z, rotate.w };
+	result.transform.translate = { -translate.x, translate.y, translate.z };
+	result.localMatrix = MakeAffineMatrix(result.transform.scale, result.transform.rotate, result.transform.translate);
 	result.name = node->mName.C_Str(); // Node名を格納
 	result.children.resize(node->mNumChildren); // 子供の数だけ確保
 	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex) {
@@ -119,12 +129,14 @@ Model::Node Model::ReadNode(aiNode* node) {
 	return result;
 }
 
-Model::Animation Model::LoadAnimationFile(const std::string& directoryPath, const std::string& filename) {
+Model::Animation Model::LoadAnimationFile(const string& directoryPath, const string& filename) {
 	Animation animation; // 今回作るアニメーション
 	Assimp::Importer importer;
-	std::string filePath = directoryPath + "/" + filename;
+	string filePath = directoryPath + "/" + filename;
 	const aiScene* scene = importer.ReadFile(filePath.c_str(), 0);
-	assert(scene->mNumAnimations != 0); // アニメーションがない
+	if (scene->mNumAnimations == 0) { // アニメーションがない
+		return animation;
+	}
 	aiAnimation* animationAssimp = scene->mAnimations[0]; // 最初のアニメーションだけ採用。もちろん複数対応するに越したことはない
 	animation.duration = float(animationAssimp->mDuration / animationAssimp->mTicksPerSecond); // 時間の単位を秒に変換
 
@@ -139,6 +151,7 @@ Model::Animation Model::LoadAnimationFile(const std::string& directoryPath, cons
 			keyframe.value = { -keyAssimp.mValue.x, keyAssimp.mValue.y, keyAssimp.mValue.z }; // 右手->左手
 			nodeAnimation.translate.keyframes.push_back(keyframe);
 		}
+
 		// RotateはmNumRotationKeys/mRotationKeys、ScaleはmNumScalingKeysで取得できるので同様に行う。
 		// RotateはQuaternionで、右手->左手に変換するために、yとzを反転させる必要がある。Scaleはそのままで良い。
 		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumRotationKeys; ++keyIndex) {
@@ -148,6 +161,7 @@ Model::Animation Model::LoadAnimationFile(const std::string& directoryPath, cons
 			keyframe.value = { keyAssimp.mValue.x, -keyAssimp.mValue.y, -keyAssimp.mValue.z, keyAssimp.mValue.w }; // 右手->左手
 			nodeAnimation.rotate.keyframes.push_back(keyframe);
 		}
+
 		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumScalingKeys; ++keyIndex) {
 			aiVectorKey keyAssimp = nodeAnimationAssimp->mScalingKeys[keyIndex];
 			KeyframeVector3 keyframe;
@@ -160,7 +174,7 @@ Model::Animation Model::LoadAnimationFile(const std::string& directoryPath, cons
 	return animation;
 }
 
-Vector3 Model::CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time) {
+Vector3 Model::CalculateValue(const vector<KeyframeVector3>& keyframes, float time) {
 	assert(!keyframes.empty()); // キーがないものは返す値がわからないのでダメ
 	if (keyframes.size() == 1 || time <= keyframes[0].time) { // キーが1つか、時刻がキーフレーム前なら最初の値とする
 		return keyframes[0].value;
@@ -171,7 +185,7 @@ Vector3 Model::CalculateValue(const std::vector<KeyframeVector3>& keyframes, flo
 		// indexとnextIndexの2つのkeyframeを取得して範囲内に時刻があるかを判定
 		if (keyframes[index].time <= time && time <= keyframes[nextIndex].time) {
 			// 範囲内を補間する
-			float t = time - keyframes[index].time / (keyframes[nextIndex].time - keyframes[index].time);
+			float t = (time - keyframes[index].time) / (keyframes[nextIndex].time - keyframes[index].time);
 			return Lerp(keyframes[index].value, keyframes[nextIndex].value, t);
 		}
 	}
@@ -179,7 +193,7 @@ Vector3 Model::CalculateValue(const std::vector<KeyframeVector3>& keyframes, flo
 	return (*keyframes.rbegin()).value;
 }
 
-Quaternion Model::CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time) {
+Quaternion Model::CalculateValue(const vector<KeyframeQuaternion>& keyframes, float time) {
 	assert(!keyframes.empty()); // キーがないものは返す値がわからないのでダメ
 	if (keyframes.size() == 1 || time <= keyframes[0].time) { // キーが1つか、時刻がキーフレーム前なら最初の値とする
 		return keyframes[0].value;
@@ -190,7 +204,7 @@ Quaternion Model::CalculateValue(const std::vector<KeyframeQuaternion>& keyframe
 		// indexとnextIndexの2つのkeyframeを取得して範囲内に時刻があるかを判定
 		if (keyframes[index].time <= time && time <= keyframes[nextIndex].time) {
 			// 範囲内を補間する
-			float t = time - keyframes[index].time / (keyframes[nextIndex].time - keyframes[index].time);
+			float t = (time - keyframes[index].time) / (keyframes[nextIndex].time - keyframes[index].time);
 			return Slerp(keyframes[index].value, keyframes[nextIndex].value, t);
 		}
 	}
@@ -204,7 +218,7 @@ void Model::CreateVertexData() {
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ
+	// 使用するリソースのサイズはモデルの頂点のサイズ
 	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
 	// 1頂点あたりのサイズ
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
@@ -212,6 +226,20 @@ void Model::CreateVertexData() {
 	// 書き込むためのアドレスを取得
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
 	memcpy(vertexData_, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
+
+	// インデックスリソースを作る
+	indexResource_ = dxBase_->CreateBufferResource(sizeof(uint32_t) * modelData_.indices.size());
+
+	// リソースの先頭のアドレスから使う
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはモデルの頂点のサイズ
+	indexBufferView_.SizeInBytes = UINT(sizeof(uint32_t) * modelData_.indices.size());
+	// 1頂点あたりのサイズ
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+	// 書き込むためのアドレスを取得
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
+	memcpy(indexData_, modelData_.indices.data(), sizeof(uint32_t) * modelData_.indices.size());
 }
 
 void Model::CreateMaterialData() {
@@ -225,7 +253,7 @@ void Model::CreateMaterialData() {
 	// マテリアルデータの初期値を書き込む
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData_->enableLighting = true;
-	materialData_->uvTransform = MathFunction::MakeIdentity4x4();
+	materialData_->uvTransform = MakeIdentity4x4();
 	materialData_->shininess = 10.0f;
 	materialData_->environmentCoefficient = 1.0f;
 	materialData_->alphaReference = 0.0f;

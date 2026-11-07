@@ -39,13 +39,35 @@ void Object3d::Update() {
 	}
 
 	if (model_) {
-		//model_->PlayAnimation();
-		transformationMatrixData_->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
-		transformationMatrixData_->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
-	} else {
-		transformationMatrixData_->WVP = worldViewProjectionMatrix;
-		transformationMatrixData_->World = worldMatrix;
+		if (!animation_.nodeAnimations.empty()) {
+			// アニメーションの時間を進める（設定する）
+			animationTime_ += 1.0f / 60.0f;
+			animationTime_ = fmod(animationTime_, animation_.duration);
+			if (skinning_) {
+				// Animationの更新を行って、骨ごとのLocal情報を更新する
+				skinning_->ApplyAnimation(skeleton_, animation_, animationTime_);
+				// 現在の骨ごとのLocal乗っ方を基にSkeletonSpaceの情報を更新する
+				skinning_->Update(skeleton_);
+				// SkeletonSpaceの情報を基に、SKinClusterのMatrixPaletteを更新する
+				skinning_->Update(skinCluster_, skeleton_);
+			}
+			else {
+				Model::NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[model_->GetModelData().rootNode.name];
+				Vector3 translate = model_->CalculateValue(rootNodeAnimation.translate.keyframes, animationTime_);
+				Quaternion rotate = model_->CalculateValue(rootNodeAnimation.rotate.keyframes, animationTime_);
+				Vector3 scale = model_->CalculateValue(rootNodeAnimation.scale.keyframes, animationTime_);
+				model_->SetLocalMatrix(MakeAffineMatrix(scale, rotate, translate));
+			}
+		}
+
+		if (!hasSkeleton_) {
+			worldViewProjectionMatrix = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
+			worldMatrix = model_->GetModelData().rootNode.localMatrix * worldMatrix;
+		}
 	}
+
+	transformationMatrixData_->WVP = worldViewProjectionMatrix;
+	transformationMatrixData_->World = worldMatrix;
 
 	Matrix4x4 worldInverseMatrix = Inverse(worldMatrix);
 	transformationMatrixData_->WorldInverseTranspose = Transpose(worldInverseMatrix);
@@ -69,6 +91,11 @@ void Object3d::Draw() {
 
 	// 環境マップのCBufferの場所を設定
 	commandList_->SetGraphicsRootConstantBufferView(6, environmentMapResource_->GetGPUVirtualAddress());
+
+	// skinClusterの描画
+	if (skinning_) {
+		skinning_->Draw();
+	}
 
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {
@@ -98,14 +125,6 @@ void Object3d::DebugUpdate() {
 		ImGui::DragFloat("EnvironmentCoefficient", &environmentCoeffcient, 0.01f);
 		primitive_->SetEnvironmentCoefficient(environmentCoeffcient);
 	}
-	bool flipX = transformationMatrixData_->flipX;
-	if (ImGui::Checkbox("FlipX", &flipX)) {
-		transformationMatrixData_->flipX = flipX;
-	}
-	bool flipY = transformationMatrixData_->flipY;
-	if (ImGui::Checkbox("FlipY", &flipY)) {
-		transformationMatrixData_->flipY = flipY;
-	}
 #endif
 }
 
@@ -117,7 +136,20 @@ void Object3d::SetModel(const std::string& filePath) {
 	// モデルを検索
 	model_ = ModelManager::GetInstance()->FindModel(filePath);
 
-	isModelSet_ = true;
+	if (model_) {
+		animation_ = model_->GetAnimation();
+
+		if (model_->GetModelData().rootNode.children.size() > 1) {
+			skinning_ = make_unique<Skinning>();
+			skinning_->Initialize(model_);
+			skeleton_ = skinning_->GetSkeleton();
+			skinCluster_ = skinning_->GetSkinCluster();
+
+			hasSkeleton_ = true;
+		}
+
+		isModelSet_ = true;
+	}
 }
 
 void Object3d::SetPrimitive(const std::string& name) {
@@ -127,7 +159,9 @@ void Object3d::SetPrimitive(const std::string& name) {
 
 	primitive_ = ModelManager::GetInstance()->FindPrimitive(name);
 
-	isModelSet_ = true;
+	if (primitive_) {
+		isModelSet_ = true;
+	}
 }
 
 void Object3d::CreateTransformationMatrixData() {
@@ -141,8 +175,6 @@ void Object3d::CreateTransformationMatrixData() {
 	transformationMatrixData_->WVP = MakeIdentity4x4();
 	transformationMatrixData_->World = MakeIdentity4x4();
 	transformationMatrixData_->WorldInverseTranspose = MakeIdentity4x4();
-	transformationMatrixData_->flipX = false;
-	transformationMatrixData_->flipY = false;
 }
 
 void Object3d::CreateCameraData() {

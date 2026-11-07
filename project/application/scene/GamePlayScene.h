@@ -34,6 +34,7 @@ public:
 private:
 	enum class Phase {
 		kFadeIn,
+		kStart,
 		kMain,
 		KFadeOut
 	};
@@ -99,5 +100,12 @@ private:
 	float counter_ = 0.0f;
 
 	PostEffect* postEffect_ = nullptr;
+
+	uint32_t shootTimer_ = 120;
+
+	std::unique_ptr<Sprite> shoot_;
+
+	const uint32_t kMaxEnemyCount = 10;
+	uint32_t enemyCount = 0;
 };
 

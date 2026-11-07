@@ -1,7 +1,7 @@
 #pragma once
 #include "Object3d.h"
-#ifdef CREATE_COLLIDER
-#include "Line.h"
+#ifdef CREATE_HITBOX
+#include "HitBox.h"
 #endif
 
 class Bullet {
@@ -21,12 +21,9 @@ public:
 	// 衝突時
 	void OnCollision();
 
-	// コライダー作成
-	void CreateCollider();
-
 private:
-#ifdef CREATE_COLLIDER
-	std::array<std::unique_ptr<Line>, 12> lines_;
+#ifdef CREATE_HITBOX
+	std::unique_ptr<HitBox> hitBox_;
 #endif
 
 	// Object3d

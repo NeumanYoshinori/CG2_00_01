@@ -31,7 +31,7 @@ public: // メンバ関数
 	const Vector3& GetTranslate() const { return transform_.translate; }
 
 private:
-	Transform transform_;
+	EulerTransform transform_;
 	Matrix4x4 worldMatrix_;
 	Matrix4x4 viewMatrix_;
 
