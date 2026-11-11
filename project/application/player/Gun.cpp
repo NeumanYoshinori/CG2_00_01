@@ -3,21 +3,20 @@
 #include "ImGuiManager.h"
 #include "Input.h"
 #include "Object3dCommon.h"
+#include "PostEffect.h"
+#include "Enemy.h"
 
 using namespace std;
 using namespace MathFunction;
 
-void Gun::Initialize(Camera* camera, const std::string& filePath, Vector3 position) {
+void Gun::Initialize(Camera* camera, Vector3 position) {
 	object3d_ = make_unique<Object3d>();
 	object3d_->Initialize();
-	object3d_->SetEnvironmentMapTexture(filePath);
 	object3d_->SetTranslate(position);
 
 	audio_ = Audio::GetInstance();
 
 	camera_ = camera;
-
-	filePath_ = filePath;
 }
 
 Gun::~Gun() {
@@ -30,6 +29,8 @@ Gun::~Gun() {
 }
 
 void Gun::Update(POINT mousePosition) {
+	Damaged();
+
 	object3d_->SetTranslate(camera_->GetTranslate());
 	object3d_->Update();
 
@@ -63,7 +64,7 @@ void Gun::Update(POINT mousePosition) {
 
 	if (Input::GetInstance()->IsTriggerMouse(0)) {
 		Bullet* bullet = new Bullet();
-		bullet->Initialize(camera_, filePath_, object3d_->GetTranslate(), bulletVelocity_);
+		bullet->Initialize(camera_, object3d_->GetTranslate(), bulletVelocity_);
 		bullets_.push_back(bullet);
 
 		gunSound_ = audio_->SoundPlayWave("gunShoot.mp3", false, 1.0f);
@@ -71,6 +72,12 @@ void Gun::Update(POINT mousePosition) {
 
 	for (Bullet* bullet : bullets_) {
 		bullet->Update();
+	}
+
+	for (Enemy* enemy : enemy_) {
+		if (enemy->IsDead()) {
+			score_++;
+		}
 	}
 }
 
@@ -90,5 +97,27 @@ void Gun::Draw() {
 
 	for (Bullet* bullet : bullets_) {
 		bullet->Draw();
+	}
+}
+
+void Gun::OnCollision() {
+	hp_--;
+	isHit_ = true;
+	PostEffect::GetInstance()->SetPostEffect(PostEffect::PostEffectType::Vignette);
+	PostEffect::GetInstance()->SetColor({ 0.25f, 0.0f, 0.0f });
+}
+
+void Gun::Damaged() {
+	if (!isHit_) {
+		return;
+	}
+
+	if (damageTimer_ > 0) {
+		damageTimer_--;
+	} else {
+		PostEffect::GetInstance()->SetPostEffect(PostEffect::PostEffectType::FullScreen);
+		PostEffect::GetInstance()->SetColor({ 1.0f, 1.0f, 1.0f });
+		damageTimer_ = 5;
+		isHit_ = false;
 	}
 }

@@ -29,13 +29,13 @@ private:
 	// マテリアルデータ
 	struct Material {
 		Vector4 color;
-		int32_t enableLighting;
-		float padding[3];
 		Matrix4x4 uvTransform;
+		int32_t enableLighting;
 		float shininess;
 		float environmentCoefficient;
 		float alphaReference;
-		float padding2;
+		int32_t useEnvironmentMap;
+		float padding[3];
 	};
 
 	// マテリアルデータ

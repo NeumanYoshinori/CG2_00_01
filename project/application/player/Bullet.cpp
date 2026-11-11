@@ -8,11 +8,11 @@
 using namespace std;
 using namespace MathFunction;
 
-void Bullet::Initialize(Camera* camera, const std::string& envFilePath, Vector3 position, Vector3 velocity) {
+void Bullet::Initialize(Camera* camera, Vector3 position, Vector3 velocity) {
 	object3d_ = make_unique<Object3d>();
 	object3d_->Initialize();
-	object3d_->SetEnvironmentMapTexture(envFilePath);
 	object3d_->SetPrimitive("monsterBall");
+	object3d_->SetScale({ 0.2f, 0.2f, 0.2f });
 
 	position_ = position;
 	object3d_->SetTranslate(position_);

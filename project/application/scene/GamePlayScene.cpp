@@ -16,6 +16,9 @@ void GamePlayScene::Initialize() {
 	textureManager_->LoadTexture("crosshair138.png");
 	textureManager_->LoadTexture("Shoot.png");
 	textureManager_->LoadTexture("uvChecker.png");
+	textureManager_->LoadTexture("circle.png");
+	textureManager_->LoadTexture("GameOver.png");
+	textureManager_->LoadTexture("GameClear.png");
 
 	// カメラの初期化
 	camera_ = make_unique<Camera>();
@@ -33,6 +36,8 @@ void GamePlayScene::Initialize() {
 	modelManager_->LoadModel("sneakWalk.gltf");
 	modelManager_->LoadModel("walk.gltf");
 	modelManager_->CreatePrimitive("monsterBall", "Sphere", "monsterBall.png");
+	modelManager_->CreatePrimitive("shot", "Plane", "circle.png");
+	modelManager_->LoadModel("SkyDome.obj");
 
 	// 3Dオブジェクト基盤部分のインスタンス取得
 	object3dCommon_ = Object3dCommon::GetInstance();
@@ -44,11 +49,10 @@ void GamePlayScene::Initialize() {
 	terrain_ = make_unique<Object3d>();
 	terrain_->Initialize();
 	terrain_->SetModel("terrain.obj");
-	terrain_->SetEnvironmentMapTexture("rostock_laage_airport_4k.dds");
 
 	// 銃の初期化
 	gun_ = make_unique<Gun>();
-	gun_->Initialize(camera_.get(), "rostock_laage_airport_4k.dds", camera_->GetTranslate());
+	gun_->Initialize(camera_.get(), camera_->GetTranslate());
 
 	// レティクルの初期化
 	crosshair_ = make_unique<Sprite>();
@@ -70,6 +74,21 @@ void GamePlayScene::Initialize() {
 
 	shoot_ = make_unique<Sprite>();
 	shoot_->Initialize("Shoot.png");
+
+	particleManager_ = ParticleManager::GetInstance();
+	particleManager_->SetCamera(camera_.get());
+	particleManager_->CreateParticleGroup("Primitive", "shotEffect", "shot", false, false);
+
+	skydome_ = make_unique<Object3d>();
+	skydome_->Initialize();
+	skydome_->SetModel("SkyDome.obj");
+
+
+	gameOver_ = make_unique<Sprite>();
+	gameOver_->Initialize("GameOver.png");
+
+	gameClear_ = make_unique<Sprite>();
+	gameClear_->Initialize("GameClear.png");
 }
 
 void GamePlayScene::Finalize() {
@@ -87,6 +106,8 @@ void GamePlayScene::Finalize() {
 void GamePlayScene::Update() {
 	// カメラの更新
 	camera_->Update();
+
+	skydome_->Update();
 
 	terrain_->Update();
 
@@ -125,14 +146,15 @@ void GamePlayScene::Update() {
 
 		break;
 	case Phase::kMain:
-		// Rキーを押したら
-		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-			counter_ = 0.0f;
-			phase_ = Phase::KFadeOut;
-		}
-
 		// 銃の更新
 		gun_->Update(mousePosition_);
+		gun_->GetEnemys(enemies_);
+
+		if (gun_->GetHP() == 0) {
+			phase_ = Phase::kGameOver;
+		}
+
+		particleManager_->Update();
 
 		for (Enemy* enemy : enemies_) {
 			if (enemy->IsDead()) {
@@ -154,7 +176,7 @@ void GamePlayScene::Update() {
 		} else if (enemySpawnTimer_ <= 0 && enemyCount < kMaxEnemyCount) {
 			uniform_real_distribution<float> distribution(-4.0f, 4.0f);
 			Enemy* enemy = new Enemy();
-			enemy->Initialize(gun_.get(), camera_.get(), "rostock_laage_airport_4k.dds", Vector3(distribution(randomEngine_), 0.0f, 20.0f));
+			enemy->Initialize(gun_.get(), camera_.get(), Vector3(distribution(randomEngine_), 0.0f, 20.0f));
 			enemies_.push_back(enemy);
 			enemySpawnTimer_ = enemySpawnFrequency_;
 			enemyCount++;
@@ -170,6 +192,40 @@ void GamePlayScene::Update() {
 				Collider::CheckBulletEnemyCollision(bullet, enemy);
 			}
 		}
+
+		score_ = gun_->GetScore();
+
+		if (score_ >= 20) {
+			phase_ = Phase::kGameClear;
+		}
+
+		if (gun_->GetHP() == 0) {
+			phase_ = Phase::kGameOver;
+		}
+
+		break;
+	case Phase::kGameClear:
+		// SPACEキーを押したら
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			counter_ = 0.0f;
+			phase_ = Phase::KFadeOut;
+			PostEffect::GetInstance()->SetPostEffect(PostEffect::PostEffectType::FullScreen);
+			PostEffect::GetInstance()->SetColor({ 1.0f, 1.0f, 1.0f });
+		}
+
+		gameClear_->Update();
+
+		break;
+	case Phase::kGameOver:
+		// SPACEキーを押したら
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			counter_ = 0.0f;
+			phase_ = Phase::KFadeOut;
+			PostEffect::GetInstance()->SetPostEffect(PostEffect::PostEffectType::FullScreen);
+			PostEffect::GetInstance()->SetColor({ 1.0f, 1.0f, 1.0f });
+		}
+
+		gameOver_->Update();
 
 		break;
 	case Phase::KFadeOut:
@@ -225,6 +281,10 @@ void GamePlayScene::Draw() {
 	// SRVマネージャの描画前処理
 	SrvManager::GetInstance()->PreDraw();
 
+	object3dCommon_->DrawSetting();
+
+	skydome_->Draw();
+
 	switch (phase_) {
 	case Phase::kFadeIn:
 		break;
@@ -242,11 +302,23 @@ void GamePlayScene::Draw() {
 		// 銃の描画
 		gun_->Draw();
 
+		particleManager_->Draw();
+
 		// スプライト描画前処理
 		spriteCommon_->GetInstance()->DrawSetting();
 
 		// スプライトの描画
 		crosshair_->Draw();
+
+		break;
+	case Phase::kGameClear:
+		spriteCommon_->GetInstance()->DrawSetting();
+		gameClear_->Draw();
+
+		break;
+	case Phase::kGameOver:
+		spriteCommon_->GetInstance()->DrawSetting();
+		gameOver_->Draw();
 
 		break;
 	case Phase::KFadeOut:

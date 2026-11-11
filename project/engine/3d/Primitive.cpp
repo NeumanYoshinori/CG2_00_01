@@ -28,4 +28,5 @@ void Primitive::CreateMaterialData() {
 	materialData_->shininess = 10.0f;
 	materialData_->environmentCoefficient = 0.0f;
 	materialData_->alphaReference = 0.0f;
+	materialData_->useEnvironmentMap = false;
 }

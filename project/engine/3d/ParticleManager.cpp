@@ -43,10 +43,8 @@ void ParticleManager::Update() {
 	billboardMatrix.m[3][1] = 0.0f;
 	billboardMatrix.m[3][2] = 0.0f;
 
-	// ビュー行列
-	Matrix4x4 viewMatrix = camera_->GetViewMatrix();
-	// プロジェクション行列
-	Matrix4x4 projectionMatrix = camera_->GetProjectionMatrix();
+	// ビュープロジェクション行列
+	Matrix4x4 viewProjectionMatrix = camera_->GetViewProjectionMatrix();
 
 	// Δtを設定
 	const float kDeltaTime = 1.0f / 60.0f;
@@ -71,7 +69,7 @@ void ParticleManager::Update() {
 			Matrix4x4 translateMatrix = MakeTranslateMatrix((*particleIterator).transform.translate);
 			Matrix4x4 worldMatrix = scaleMatrix * rotateMatrix * billboardMatrix * translateMatrix;
 
-			Matrix4x4 worldViewProjectionMatrix = worldMatrix * viewMatrix * projectionMatrix;
+			Matrix4x4 worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
 
 			float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifeTime);
 

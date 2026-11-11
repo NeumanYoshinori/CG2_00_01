@@ -2,11 +2,12 @@
 
 struct Material {
     float32_t4 color;
-    int32_t enableLighting;
     float32_t4x4 uvTransform;
+    int32_t enableLighting;
     float32_t shininess;
     float32_t environmentCoefficient;
     float32_t alphaReference;
+    int32_t useEnvironmentMap;
 };
 
 static const int kNumDirectionalLight = 1;
@@ -44,10 +45,6 @@ struct Camera {
     float32_t3 worldPosition;
 };
 
-struct EnvironmentMap {
-    int32_t useEnvironmentMap;
-};
-
 struct PixelShaderOutput {
     float32_t4 color : SV_TARGET0;
 };
@@ -62,7 +59,6 @@ cbuffer lightGroup : register(b1) {
 }
 ConstantBuffer<Camera> gCamera : register(b2);
 TextureCube<float32_t4> gEnvironmentTexture : register(t1);
-ConstantBuffer<EnvironmentMap> gEnvironmentMap : register(b3);
 
 PixelShaderOutput main(VertexShaderOutput input) {
     PixelShaderOutput output;
@@ -85,7 +81,7 @@ PixelShaderOutput main(VertexShaderOutput input) {
         float32_t3 cameraToPosition = normalize(input.worldPosition - gCamera.worldPosition);
         float32_t3 reflectedVector = reflect(cameraToPosition, normalize(input.normal));
         
-        if (gEnvironmentMap.useEnvironmentMap != 0) {
+        if (gMaterial.useEnvironmentMap != 0) {
             float32_t4 environmentColor = gEnvironmentTexture.Sample(gSampler, reflectedVector);
             color += environmentColor.rgb * gMaterial.environmentCoefficient;
         }

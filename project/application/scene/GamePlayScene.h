@@ -36,6 +36,8 @@ private:
 		kFadeIn,
 		kStart,
 		kMain,
+		kGameClear,
+		kGameOver,
 		KFadeOut
 	};
 
@@ -79,7 +81,7 @@ private:
 	std::list<Enemy*> enemies_;
 
 	// 敵発生頻度
-	const float enemySpawnFrequency_ = 120.0f;
+	const float enemySpawnFrequency_ = 90.0f;
 
 	// 敵発生タイマー
 	float enemySpawnTimer_ = 0;
@@ -107,5 +109,12 @@ private:
 
 	const uint32_t kMaxEnemyCount = 10;
 	uint32_t enemyCount = 0;
+
+	std::unique_ptr<Object3d> skydome_;
+
+	std::unique_ptr<Sprite> gameOver_;
+	std::unique_ptr<Sprite> gameClear_;
+
+	int32_t score_ = 0;
 };
 

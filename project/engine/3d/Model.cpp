@@ -252,10 +252,11 @@ void Model::CreateMaterialData() {
 
 	// マテリアルデータの初期値を書き込む
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData_->enableLighting = true;
 	materialData_->uvTransform = MakeIdentity4x4();
+	materialData_->enableLighting = true;
 	materialData_->shininess = 10.0f;
 	materialData_->environmentCoefficient = 1.0f;
 	materialData_->alphaReference = 0.0f;
+	materialData_->useEnvironmentMap = false;
 }
 

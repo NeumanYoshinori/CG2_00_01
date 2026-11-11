@@ -8,20 +8,19 @@
 
 using namespace MathFunction;
 
-void Enemy::Initialize(Gun* gun, Camera* camera, const std::string& filePath, Vector3 position) {
+void Enemy::Initialize(Gun* gun, Camera* camera, Vector3 position) {
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Initialize();
-	object3d_->SetEnvironmentMapTexture(filePath);
 	object3d_->SetTranslate(position);
 	object3d_->SetRotate({ 0.0f, 3.14f, 0.0f });
-	object3d_->SetModel("sneakWalk.gltf");
+	object3d_->SetModel("AnimatedCube.gltf");
 	position_ = position;
 
 	gun_ = gun;
 	camera_ = camera;
 
 	aabb_.min = { object3d_->GetTranslate().x - halfWidth_, object3d_->GetTranslate().y - halfHeight_, object3d_->GetTranslate().z - halfDepth_ };
-	aabb_.max = { object3d_->GetTranslate().x + halfWidth_, object3d_->GetTranslate().y + height_ * 2, object3d_->GetTranslate().z + halfDepth_ };
+	aabb_.max = { object3d_->GetTranslate().x + halfWidth_, object3d_->GetTranslate().y + halfHeight_, object3d_->GetTranslate().z + halfDepth_ };
 
 #ifdef CREATE_HITBOX
 	hitBox_ = std::make_unique<HitBox>();
@@ -46,18 +45,18 @@ void Enemy::Update() {
 	}
 
 	aabb_.min = { object3d_->GetTranslate().x - halfWidth_, object3d_->GetTranslate().y - halfHeight_, object3d_->GetTranslate().z - halfDepth_ };
-	aabb_.max = { object3d_->GetTranslate().x + halfWidth_, object3d_->GetTranslate().y + height_ * 2, object3d_->GetTranslate().z + halfDepth_ };
+	aabb_.max = { object3d_->GetTranslate().x + halfWidth_, object3d_->GetTranslate().y + halfHeight_, object3d_->GetTranslate().z + halfDepth_ };
 
 	object3d_->Update();
 
 #ifdef CREATE_HITBOX
-	hitBox_->SetTranslate({ position_.x, position_.y + height_, position_.z });
+	hitBox_->SetTranslate({ position_.x, position_.y, position_.z });
 	hitBox_->Update();
 #endif
 }
 
 void Enemy::Draw() {
-	Object3dCommon::GetInstance()->SkinningDrawSetting();
+	Object3dCommon::GetInstance()->DrawSetting();
 	object3d_->Draw();
 
 #ifdef CREATE_HITBOX
@@ -81,5 +80,12 @@ void Enemy::OnCollision() {
 void Enemy::StartAttack() {
 	if (Length(object3d_->GetTranslate() - gun_->GetTranslate()) <= 10.0f) {
 		state_ = State::kAttack;
+		gun_->OnCollision();
+		isDead_ = true;
 	}
+}
+
+void Enemy::Attack() {
+	gun_->OnCollision();
+	isDead_ = true;
 }
