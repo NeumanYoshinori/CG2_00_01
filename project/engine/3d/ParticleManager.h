@@ -40,6 +40,9 @@ public:
 	// カメラをセット
 	void SetCamera(Camera* camera) { camera_ = camera; }
 
+	// パーティクルをクリア
+	void ClearParticles(const std::string name);
+
 	// namespace省略
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 

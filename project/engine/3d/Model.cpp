@@ -9,7 +9,6 @@ using namespace MathFunction;
 
 void Model::Initialize(const string& directoryPath, const string& filename) {
 	dxBase_ = DirectXBase::GetInstance();
-	srvManager_ = SrvManager::GetInstance();
 
 	// モデル読み込み
 	modelData_ = LoadModelFile(directoryPath, filename);
@@ -29,7 +28,7 @@ void Model::Initialize(const string& directoryPath, const string& filename) {
 void Model::Draw() {
 	// コマンドリストを作成
 	commandList_ = dxBase_->GetCommandList();
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 	// 配列を渡す (開始slot番号、使用slot数、VBV配列へのポインタ)である。
 	commandList_->IASetVertexBuffers(0, 1, &vertexBufferView_);
 	// IndexBufferViewを設定

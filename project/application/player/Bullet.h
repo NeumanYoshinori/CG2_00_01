@@ -3,10 +3,11 @@
 #ifdef CREATE_HITBOX
 #include "HitBox.h"
 #endif
+#include "ParticleEmitter.h"
 
 class Bullet {
 public:
-	void Initialize(Camera* camera, const std::string& envFilePath, Vector3 position, Vector3 velocity);
+	void Initialize(Camera* camera, Vector3 position, Vector3 velocity);
 
 	void Update();
 
@@ -37,12 +38,9 @@ private:
 
 	AABB aabb_{};
 
-	float width_ = 1.0f;
-	float height_ = 1.0f;
-	float depth_ = 1.0f;
-	float halfWidth_ = width_ / 2.0f;
-	float halfHeight_ = height_ / 2.0f;
-	float halfDepth_ = depth_ / 2.0f;
+	float width_ = 0.1f;
+	float height_ = 0.1f;
+	float depth_ = 0.1f;
 
 	// 寿命
 	static const int32_t kLifeTime_ = 60 * 2;
@@ -51,5 +49,9 @@ private:
 	int32_t deathTimer_ = kLifeTime_;
 
 	Camera* camera_ = nullptr;
+
+	/*std::unique_ptr<ParticleEmitter> particleEmitter_;
+
+	EulerTransform emitterTransform_;*/
 };
 

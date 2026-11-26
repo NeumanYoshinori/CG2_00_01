@@ -5,7 +5,6 @@
 #include "MathFunction.h"
 #include <map>
 #include "Transform.h"
-#include "SrvManager.h"
 
 // 3Dモデル
 class Model {
@@ -29,13 +28,11 @@ private:
 	// マテリアルデータ
 	struct Material {
 		Vector4 color;
-		int32_t enableLighting;
-		float padding[3];
 		Matrix4x4 uvTransform;
+		int32_t enableLighting;
 		float shininess;
 		float environmentCoefficient;
 		float alphaReference;
-		float padding2;
 	};
 
 	// マテリアルデータ
@@ -156,8 +153,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	uint32_t numInstance_ = 1;
-
-	// SRVマネージャ
-	SrvManager* srvManager_ = nullptr;
 };
 

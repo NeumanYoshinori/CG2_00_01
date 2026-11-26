@@ -27,7 +27,7 @@ PixelShaderOutput main(VertexShaderOutput input) {
     float vignette = correct.x * correct.y * gMaterial.scale;
     vignette = saturate(pow(vignette, gMaterial.power));
     // 係数として乗算
-    output.color.rgb *= vignette;
+    output.color.rgb = lerp(gMaterial.color, output.color.rgb, vignette);
     
     return output;
 }

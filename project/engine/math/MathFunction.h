@@ -4,11 +4,7 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 #include "Quaternion.h"
-
-struct AABB {
-	Vector3 min; // 最小点
-	Vector3 max; // 最大点
-};
+#include "Aabb.h"
 
 namespace MathFunction {
 	Vector2& operator+=(Vector2& lhv, const Vector2& rhv);

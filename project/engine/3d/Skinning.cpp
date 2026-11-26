@@ -8,8 +8,6 @@ void Skinning::Initialize(Model* model) {
 	srvManager_ = SrvManager::GetInstance();
 
 	model_ = model;
-	skeleton_ = CreateSkeleton(model_->GetModelData().rootNode);
-	skinCluster_ = CreateSkinCluster();
 }
 
 void Skinning::Update(Skeleton& skeleton) {

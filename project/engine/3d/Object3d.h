@@ -60,6 +60,7 @@ private:
 		Vector3 worldPosition;
 	};
 
+	// 環境マップ
 	struct EnvironmentMap {
 		int32_t useEnvironmentMap;
 	};

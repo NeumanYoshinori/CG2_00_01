@@ -21,9 +21,11 @@ public:
 	// カメラをセット
 	void SetCamera(Camera* camera) { camera_ = camera; }
 
+	// 座標をセット
 	void SetTranslate(const Vector3& translate) { transform_.translate = translate; }
-	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
-	void SetScale(const Vector3&scale) { transform_.scale = scale; }
+
+	// 色をセット
+	void SetColor(Vector4 color) { color_ = color; }
 
 private:
 	// 頂点データ

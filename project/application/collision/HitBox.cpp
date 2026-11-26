@@ -1,38 +1,28 @@
 #include "HitBox.h"
 
-void HitBox::Initialize(float width, float height, float depth, Camera* camera) {
-	Vector3 vertex[8] = {};
-	vertex[0] = { -width, -height, -depth };
-	vertex[1] = { width, -height, -depth };
-	vertex[2] = { -width, height, -depth };
-	vertex[3] = { width, height, -depth };
-	vertex[4] = { -width, -height, depth };
-	vertex[5] = { width, -height, depth };
-	vertex[6] = { -width, height, depth };
-	vertex[7] = { width, height, depth };
+using namespace MathFunction;
 
-
-	for (uint32_t i = 0; i < kNumLines; ++i) {
+void HitBox::Initialize(Camera* camera) {
+	for (size_t i = 0; i < kNumLines; ++i) {
 		lines_[i] = std::make_unique<Line>();
 		lines_[i]->SetCamera(camera);
+		lines_[i]->Initialize({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 255.0f, 165.0f, 0.0f, 1.0f });
 	}
-
-	lines_[0]->Initialize(Vector3(vertex[0].x, vertex[0].y, vertex[0].z), Vector3(vertex[1].x, vertex[1].y, vertex[1].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[1]->Initialize(Vector3(vertex[0].x, vertex[0].y, vertex[0].z), Vector3(vertex[2].x, vertex[2].y, vertex[2].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[2]->Initialize(Vector3(vertex[0].x, vertex[0].y, vertex[0].z), Vector3(vertex[4].x, vertex[4].y, vertex[4].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[3]->Initialize(Vector3(vertex[1].x, vertex[1].y, vertex[1].z), Vector3(vertex[3].x, vertex[3].y, vertex[3].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[4]->Initialize(Vector3(vertex[1].x, vertex[1].y, vertex[1].z), Vector3(vertex[5].x, vertex[5].y, vertex[5].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[5]->Initialize(Vector3(vertex[2].x, vertex[2].y, vertex[2].z), Vector3(vertex[3].x, vertex[3].y, vertex[3].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[6]->Initialize(Vector3(vertex[2].x, vertex[2].y, vertex[2].z), Vector3(vertex[6].x, vertex[6].y, vertex[6].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[7]->Initialize(Vector3(vertex[3].x, vertex[3].y, vertex[3].z), Vector3(vertex[7].x, vertex[7].y, vertex[7].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[8]->Initialize(Vector3(vertex[4].x, vertex[4].y, vertex[4].z), Vector3(vertex[5].x, vertex[5].y, vertex[5].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[9]->Initialize(Vector3(vertex[4].x, vertex[4].y, vertex[4].z), Vector3(vertex[6].x, vertex[6].y, vertex[6].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[10]->Initialize(Vector3(vertex[5].x, vertex[5].y, vertex[5].z), Vector3(vertex[7].x, vertex[7].y, vertex[7].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
-	lines_[11]->Initialize(Vector3(vertex[6].x, vertex[6].y, vertex[6].z), Vector3(vertex[7].x, vertex[7].y, vertex[7].z), Vector4(255.0f, 165.0f, 0.0f, 1.0f));
 }
 
-void HitBox::Update() {
+void HitBox::Update(const AABB& aabb) {
+	vertices_[0] = { aabb.min.x, aabb.min.y, aabb.min.z };
+	vertices_[1] = { aabb.max.x, aabb.min.y, aabb.min.z };
+	vertices_[2] = { aabb.min.x, aabb.max.y, aabb.min.z };
+	vertices_[3] = { aabb.max.x, aabb.max.y, aabb.min.z };
+	vertices_[4] = { aabb.min.x, aabb.min.y, aabb.max.z };
+	vertices_[5] = { aabb.max.x, aabb.min.y, aabb.max.z };
+	vertices_[6] = { aabb.min.x, aabb.max.y, aabb.max.z };
+	vertices_[7] = { aabb.max.x, aabb.max.y, aabb.max.z };
+
 	for (size_t i = 0; i < kNumLines; ++i) {
+		lines_[i]->SetStart(vertices_[edges_[i][0]]);
+		lines_[i]->SetEnd(vertices_[edges_[i][1]]);
 		lines_[i]->Update();
 	}
 }
@@ -40,11 +30,5 @@ void HitBox::Update() {
 void HitBox::Draw() {
 	for (size_t i = 0; i < kNumLines; ++i) {
 		lines_[i]->Draw();
-	}
-}
-
-void HitBox::SetTranslate(Vector3 translate) {
-	for (size_t i = 0; i < kNumLines; ++i) {
-		lines_[i]->SetTranslate(translate);
 	}
 }

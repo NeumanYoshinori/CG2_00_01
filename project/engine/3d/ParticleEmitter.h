@@ -15,6 +15,8 @@ public:
 	// パーティクルの発生（Emit）
 	void Emit() const;
 
+	void SetTranslate(Vector3 translate) { transform_.translate = translate; }
+
 private:
 	std::string name_;
 	EulerTransform transform_;
