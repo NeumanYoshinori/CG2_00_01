@@ -118,7 +118,7 @@ void ParticleManager::Draw() {
 }
 
 void ParticleManager::CreateParticleGroup(const string type, const string name, const string modelName, int32_t flipX, int32_t flipY) {
-	// 登録済みの名前かチェックしてreturn
+	// 登録済みなら早期return
 	if (particleGroups_.contains(name)) {
 		return;
 	}
@@ -142,12 +142,11 @@ void ParticleManager::CreateParticleGroup(const string type, const string name, 
 
 // パーティクル生成関数
 ParticleManager::Particle ParticleManager::MakeNewParticle(mt19937& randomEngine, const Vector3& scale, const Vector3& rotate, const Vector3& translate, const Vector3& velocity, const Vector4& color, float lifeTime) {
-	uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+	uniform_real_distribution<float> distribution(-0.1f, 0.1f);
 	ParticleManager::Particle particle{};
 	particle.transform.scale = scale; // 横に潰す
 	particle.transform.rotate = rotate;
-	Vector3 randomTranslate{ distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
-	particle.transform.translate = translate + randomTranslate;
+	particle.transform.translate = translate;
 	particle.velocity = velocity; // 動かない
 	particle.color = color;
 	particle.lifeTime = lifeTime;
@@ -156,12 +155,19 @@ ParticleManager::Particle ParticleManager::MakeNewParticle(mt19937& randomEngine
 }
 
 void ParticleManager::Emit(const std::string name, const Vector3& size, const Vector3& angle, const Vector3& position, const Vector3& velocity, const Vector4& color, float lifeTime, uint32_t count) {
-	assert(particleGroups_.contains(name));
-	ParticleGroup& particleGroup = particleGroups_[name];
+	auto it = particleGroups_.find(name);
+	assert(it != particleGroups_.end());
 
 	for (uint32_t i = 0; i < count; ++i) {
-		particleGroup.particles.push_back(MakeNewParticle(randomEngine_, size, angle, position, velocity, color, lifeTime));
+		it->second.particles.push_back(MakeNewParticle(randomEngine_, size, angle, position, velocity, color, lifeTime));
 	}
+}
+
+void ParticleManager::ClearParticles(const std::string name) {
+	auto it = particleGroups_.find(name);
+	assert(it != particleGroups_.end());
+
+	it->second.particles.clear();
 }
 
 void ParticleManager::CreateRootSignature() {

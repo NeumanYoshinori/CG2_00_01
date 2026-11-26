@@ -17,8 +17,6 @@ public:
 
 	void SetTranslate(Vector3 translate) { transform_.translate = translate; }
 
-	void SetVelocity(Vector3 velocity) { velocity_ = velocity; }
-
 private:
 	std::string name_;
 	EulerTransform transform_;

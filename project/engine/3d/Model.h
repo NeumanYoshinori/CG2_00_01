@@ -5,7 +5,6 @@
 #include "MathFunction.h"
 #include <map>
 #include "Transform.h"
-#include "SrvManager.h"
 
 // 3Dモデル
 class Model {
@@ -34,8 +33,6 @@ private:
 		float shininess;
 		float environmentCoefficient;
 		float alphaReference;
-		int32_t useEnvironmentMap;
-		float padding[3];
 	};
 
 	// マテリアルデータ
@@ -156,8 +153,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 
 	uint32_t numInstance_ = 1;
-
-	// SRVマネージャ
-	SrvManager* srvManager_ = nullptr;
 };
 

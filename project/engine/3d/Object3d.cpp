@@ -24,6 +24,9 @@ void Object3d::Initialize() {
 	// カメラデータ作成
 	CreateCameraData();
 
+	// 環境マップデータ作成
+	CreateEnvironmentMapData();
+
 	environmentMapFilePath_ = "rostock_laage_airport_4k.dds";
 }
 
@@ -87,6 +90,9 @@ void Object3d::Draw() {
 
 	// SRVのDescriptorTableの先頭を設定。5はrootParameter[5]である。
 	commandList_->SetGraphicsRootDescriptorTable(5, TextureManager::GetInstance()->GetSrvHandleGPU(environmentMapFilePath_));
+
+	// 環境マップのcBufferの場所を設定
+	commandList_->SetGraphicsRootConstantBufferView(6, environmentMapResource_->GetGPUVirtualAddress());
 
 	// skinClusterの描画
 	if (skinning_) {
@@ -183,4 +189,13 @@ void Object3d::CreateCameraData() {
 	if (camera_) {
 		cameraData_->worldPosition = camera_->GetTranslate();
 	}
+}
+
+void Object3d::CreateEnvironmentMapData() {
+	environmentMapResource_ = dxBase_->CreateBufferResource(sizeof(EnvironmentMap));
+
+	// 書き込むためのアドレスを作る
+	environmentMapResource_->Map(0, nullptr, reinterpret_cast<void**>(&environmentMapData_));
+	
+	environmentMapData_->useEnvironmentMap = false;
 }

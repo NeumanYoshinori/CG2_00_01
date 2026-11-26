@@ -229,6 +229,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\base\StringUtility.h" />
     <ClInclude Include="engine\base\WinApp.h" />
     <ClInclude Include="engine\input\Input.h" />
+    <ClInclude Include="engine\math\Aabb.h" />
     <ClInclude Include="engine\math\MathFunction.h" />
     <ClInclude Include="engine\math\Matrix4x4.h" />
     <ClInclude Include="engine\2d\Sprite.h" />

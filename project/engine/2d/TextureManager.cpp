@@ -99,17 +99,19 @@ void TextureManager::LoadTexture(const string& filename) {
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(const string& filePath) {
+	auto it = textureDatas_.find(filePath);
 	// 範囲外指定違反チェック
-	assert(textureDatas_.contains(filePath));
+	assert(it != textureDatas_.end());
 
-	TextureData& textureData = textureDatas_[filePath];
+	TextureData& textureData = it->second;
 	return textureData.srvHandleGPU;
 }
 
 const TexMetadata& TextureManager::GetMetaData(const string& filePath) {
+	auto it = textureDatas_.find(filePath);
 	// 範囲外指定違反チェック
-	assert(textureDatas_.contains(filePath));
+	assert(it != textureDatas_.end());
 
-	TextureData& textureData = textureDatas_[filePath];
+	TextureData& textureData = it->second;
 	return textureData.metadata;
 }

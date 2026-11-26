@@ -23,10 +23,9 @@ void Primitive::CreateMaterialData() {
 
 	// マテリアルデータの初期値を書き込む
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData_->enableLighting = false;
 	materialData_->uvTransform = MathFunction::MakeIdentity4x4();
+	materialData_->enableLighting = false;
 	materialData_->shininess = 10.0f;
 	materialData_->environmentCoefficient = 0.0f;
 	materialData_->alphaReference = 0.0f;
-	materialData_->useEnvironmentMap = false;
 }

@@ -3,6 +3,7 @@
 #ifdef CREATE_HITBOX
 #include "HitBox.h"
 #endif
+#include "ParticleEmitter.h"
 
 class Gun;
 
@@ -24,9 +25,7 @@ public:
 
 	bool IsDead() const { return isDead_; }
 
-	void Attack();
-
-
+	bool IsVanished() const { return isVanished_; }
 
 private:
 	enum struct State {
@@ -39,7 +38,7 @@ private:
 
 	Vector3 position_{};
 
-	float speed_ = 5.0f;
+	float speed_ = 1.0f;
 
 	const float kDeltaTime_ = 1.0f / 60.0f;
 
@@ -47,9 +46,9 @@ private:
 
 	bool isCollision_ = false;
 
-	float width_ = 1.0f;
-	float height_ = 1.0f;
-	float depth_ = 1.0f;
+	float width_ = 0.1f;
+	float height_ = 0.1f;
+	float depth_ = 0.1f;
 	float halfWidth_ = width_ / 2.0f;
 	float halfHeight_ = height_ / 2.0f;
 	float halfDepth_ = depth_ / 2.0f;
@@ -62,10 +61,20 @@ private:
 
 	bool isDead_ = false;
 
+	bool isVanished_ = false;
+
 	Camera* camera_ = nullptr;
+
+	bool isHit_ = false;
+
+	uint32_t stopTime_ = 30;
 
 #ifdef CREATE_HITBOX
 	std::unique_ptr<HitBox> hitBox_;
 #endif
+
+	std::unique_ptr<ParticleEmitter> particleEmitter_;
+
+	EulerTransform emitterTransform_{};
 };
 

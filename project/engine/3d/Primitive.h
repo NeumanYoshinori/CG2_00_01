@@ -33,8 +33,6 @@ protected:
 		float shininess;
 		float environmentCoefficient;
 		float alphaReference;
-		int32_t useEnvironmentMap;
-		float padding[3];
 	};
 
 	virtual void CreateVertexData() = 0;

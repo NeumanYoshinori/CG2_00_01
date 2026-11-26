@@ -5,13 +5,13 @@
 #include "ParticleManager.h"
 #include "ImGuiManager.h"
 #include "Audio.h"
-#include "SkyboxCommon.h"
 #include "BaseScene.h"
 #include "SpriteCommon.h"
 #include "Sprite.h"
 #include "Gun.h"
 #include "Enemy.h"
 #include "PostEffect.h"
+#include "ParticleEmitter.h"
 
 // ゲームプレイシーン
 class GamePlayScene : public BaseScene {
@@ -62,15 +62,11 @@ private:
 	// パーティクルマネージャ
 	ParticleManager* particleManager_ = nullptr;
 
-	// スカイボックス共通部
-	SkyboxCommon* skyboxCommon_ = nullptr;
-
 	// ImGuiマネジャー
 	ImGuiManager* imGuiManager_ = nullptr;
 
 	// オーディオ
 	Audio* audio_ = nullptr;
-	IXAudio2SourceVoice* bgm_ = nullptr;
 
 	POINT mousePosition_{};
 
@@ -116,5 +112,9 @@ private:
 	std::unique_ptr<Sprite> gameClear_;
 
 	int32_t score_ = 0;
+
+	std::array<int32_t, 2> scoreArray_;
+
+	std::array<std::unique_ptr<Sprite>, 10> numArray_;
 };
 

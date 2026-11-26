@@ -53,7 +53,7 @@ void Object3dCommon::CreateRootSignature() {
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算
 	
 	D3D12_DESCRIPTOR_RANGE descriptorRangeEnv[1] = {};
-	descriptorRangeEnv[0].BaseShaderRegister = 1; // 0から始まる
+	descriptorRangeEnv[0].BaseShaderRegister = 1; // 1から始まる
 	descriptorRangeEnv[0].NumDescriptors = 1; // 数は1つ
 	descriptorRangeEnv[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
 	descriptorRangeEnv[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算
@@ -154,7 +154,7 @@ void Object3dCommon::GenerateGraphicsPipeline() {
 	// RasterizerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 	// カリングしない（裏面も表示させる）
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 	// 三角形の中を塗りつぶす
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
@@ -208,7 +208,7 @@ void Object3dCommon::CreateSkinningRootSignature() {
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算
 
 	D3D12_DESCRIPTOR_RANGE descriptorRangeEnv[1] = {};
-	descriptorRangeEnv[0].BaseShaderRegister = 1; // 0から始まる
+	descriptorRangeEnv[0].BaseShaderRegister = 1; // 1から始まる
 	descriptorRangeEnv[0].NumDescriptors = 1; // 数は1つ
 	descriptorRangeEnv[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
 	descriptorRangeEnv[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算

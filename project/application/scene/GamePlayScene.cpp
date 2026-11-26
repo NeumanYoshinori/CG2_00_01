@@ -15,29 +15,30 @@ void GamePlayScene::Initialize() {
 	textureManager_->LoadTexture("rostock_laage_airport_4k.dds");
 	textureManager_->LoadTexture("crosshair138.png");
 	textureManager_->LoadTexture("Shoot.png");
-	textureManager_->LoadTexture("uvChecker.png");
-	textureManager_->LoadTexture("circle.png");
 	textureManager_->LoadTexture("GameOver.png");
 	textureManager_->LoadTexture("GameClear.png");
+	textureManager_->LoadTexture("hud_character_0.png");
+	textureManager_->LoadTexture("hud_character_1.png");
+	textureManager_->LoadTexture("hud_character_2.png");
+	textureManager_->LoadTexture("hud_character_3.png");
+	textureManager_->LoadTexture("hud_character_4.png");
+	textureManager_->LoadTexture("hud_character_5.png");
+	textureManager_->LoadTexture("hud_character_6.png");
+	textureManager_->LoadTexture("hud_character_7.png");
+	textureManager_->LoadTexture("hud_character_8.png");
+	textureManager_->LoadTexture("hud_character_9.png");
+	textureManager_->LoadTexture("circle2.png");
 
 	// カメラの初期化
 	camera_ = make_unique<Camera>();
-	camera_->SetTranslate(Vector3(0.0f, 0.2f, 0.0f));
-
-	// スカイボックス共通部の初期化
-	skyboxCommon_ = SkyboxCommon::GetInstance();
-	skyboxCommon_->SetDefaultCamera(camera_.get());
+	camera_->SetTranslate({ 0.0f, 0.2f, 0.0f });
 
 	// モデルマネージャのインスタンス取得
 	modelManager_ = ModelManager::GetInstance();
-	modelManager_->LoadModel("AnimatedCube.gltf");
 	modelManager_->LoadModel("uvCube.obj");
-	modelManager_->LoadModel("simpleSkin.gltf");
-	modelManager_->LoadModel("sneakWalk.gltf");
-	modelManager_->LoadModel("walk.gltf");
-	modelManager_->CreatePrimitive("monsterBall", "Sphere", "monsterBall.png");
-	modelManager_->CreatePrimitive("shot", "Plane", "circle.png");
-	modelManager_->LoadModel("SkyDome.obj");
+	modelManager_->CreatePrimitive("shotEffect", "Plane", "circle2.png");
+	modelManager_->LoadModel("skydomeSpace.obj");
+	modelManager_->LoadModel("rockyTrale.obj");
 
 	// 3Dオブジェクト基盤部分のインスタンス取得
 	object3dCommon_ = Object3dCommon::GetInstance();
@@ -48,7 +49,8 @@ void GamePlayScene::Initialize() {
 	// 地面の初期化
 	terrain_ = make_unique<Object3d>();
 	terrain_->Initialize();
-	terrain_->SetModel("terrain.obj");
+	terrain_->SetTranslate({ 0.0f, 0.0f, 10.0f });
+	terrain_->SetModel("rockyTrale.obj");
 
 	// 銃の初期化
 	gun_ = make_unique<Gun>();
@@ -65,7 +67,6 @@ void GamePlayScene::Initialize() {
 	// オーディオの初期化
 	audio_ = Audio::GetInstance();
 	audio_->SoundLoadFile("gunShoot.mp3");
-	audio_->SoundLoadFile("The_maze_of_aqua.mp3");
 
 	// 乱数生成器の初期化
 	randomEngine_ = mt19937(seedGenerator_());
@@ -77,18 +78,32 @@ void GamePlayScene::Initialize() {
 
 	particleManager_ = ParticleManager::GetInstance();
 	particleManager_->SetCamera(camera_.get());
-	particleManager_->CreateParticleGroup("Primitive", "shotEffect", "shot", false, false);
+	particleManager_->CreateParticleGroup("Primitive", "shotEffect", "shotEffect", false, false);
 
 	skydome_ = make_unique<Object3d>();
 	skydome_->Initialize();
-	skydome_->SetModel("SkyDome.obj");
-
+	skydome_->SetModel("skydomeSpace.obj");
 
 	gameOver_ = make_unique<Sprite>();
 	gameOver_->Initialize("GameOver.png");
 
 	gameClear_ = make_unique<Sprite>();
 	gameClear_->Initialize("GameClear.png");
+
+	for (int32_t i = 0; i < 10; ++i) {
+		numArray_[i] = make_unique<Sprite>();
+	}
+
+	numArray_[0]->Initialize("hud_character_0.png");
+	numArray_[1]->Initialize("hud_character_1.png");
+	numArray_[2]->Initialize("hud_character_2.png");
+	numArray_[3]->Initialize("hud_character_3.png");
+	numArray_[4]->Initialize("hud_character_4.png");
+	numArray_[5]->Initialize("hud_character_5.png");
+	numArray_[6]->Initialize("hud_character_6.png");
+	numArray_[7]->Initialize("hud_character_7.png");
+	numArray_[8]->Initialize("hud_character_8.png");
+	numArray_[9]->Initialize("hud_character_9.png");
 }
 
 void GamePlayScene::Finalize() {
@@ -97,10 +112,9 @@ void GamePlayScene::Finalize() {
 		enemy = nullptr;
 	}
 
-	audio_->SoundUnload("gunShoot.mp3");
+	particleManager_->ClearParticles("shotEffect");
 
-	audio_->SoundStopWave(bgm_);
-	audio_->SoundUnload("The_maze_of_aqua.mp3");
+	audio_->SoundUnload("gunShoot.mp3");
 }
 
 void GamePlayScene::Update() {
@@ -130,7 +144,7 @@ void GamePlayScene::Update() {
 		counter_ += 1.0f / 60.0f;
 		// フェード継続時間に達したら打ち止め
 		counter_ = min(counter_, duration_);
-		PostEffect::GetInstance()->SetColor(Vector3(clamp(counter_ / duration_, 0.0f, 1.0f), clamp(counter_ / duration_, 0.0f, 1.0f), clamp(counter_ / duration_, 0.0f, 1.0f)));
+		PostEffect::GetInstance()->SetColor({ clamp(counter_ / duration_, 0.0f, 1.0f), clamp(counter_ / duration_, 0.0f, 1.0f), clamp(counter_ / duration_, 0.0f, 1.0f) });
 		if (counter_ >= duration_) {
 			phase_ = Phase::kStart;
 		}
@@ -163,7 +177,7 @@ void GamePlayScene::Update() {
 		}
 
 		enemies_.remove_if([](Enemy* enemy) {
-			if (enemy->IsDead()) {
+			if (enemy->IsDead() || enemy->IsVanished()) {
 				delete enemy;
 				enemy = nullptr;
 				return true;
@@ -174,9 +188,9 @@ void GamePlayScene::Update() {
 		if (enemySpawnTimer_ > 0) {
 			enemySpawnTimer_--;
 		} else if (enemySpawnTimer_ <= 0 && enemyCount < kMaxEnemyCount) {
-			uniform_real_distribution<float> distribution(-4.0f, 4.0f);
+			uniform_real_distribution<float> distribution(-0.2f, 0.2f);
 			Enemy* enemy = new Enemy();
-			enemy->Initialize(gun_.get(), camera_.get(), Vector3(distribution(randomEngine_), 0.0f, 20.0f));
+			enemy->Initialize(gun_.get(), camera_.get(), Vector3(distribution(randomEngine_), 0.2f, 5.0f));
 			enemies_.push_back(enemy);
 			enemySpawnTimer_ = enemySpawnFrequency_;
 			enemyCount++;
@@ -197,10 +211,22 @@ void GamePlayScene::Update() {
 
 		if (score_ >= 20) {
 			phase_ = Phase::kGameClear;
+			scoreArray_[0] = score_ / 10;
+			score_ %= 10;
+			scoreArray_[1] = score_ / 1;
+			score_ %= 1;
+			numArray_[scoreArray_[0]]->SetPosition({ 600.0f, 490.0f });
+			numArray_[scoreArray_[1]]->SetPosition({ 640.0f, 490.0f });
 		}
 
 		if (gun_->GetHP() == 0) {
 			phase_ = Phase::kGameOver;
+			scoreArray_[0] = score_ / 10;
+			score_ %= 10;
+			scoreArray_[1] = score_ / 1;
+			score_ %= 1;
+			numArray_[scoreArray_[0]]->SetPosition({ 600.0f, 490.0f });
+			numArray_[scoreArray_[1]]->SetPosition({ 640.0f, 490.0f });
 		}
 
 		break;
@@ -214,6 +240,10 @@ void GamePlayScene::Update() {
 		}
 
 		gameClear_->Update();
+
+		for (int32_t i = 0; i < 2; ++i) {
+			numArray_[scoreArray_[i]]->Update();
+		}
 
 		break;
 	case Phase::kGameOver:
@@ -270,6 +300,10 @@ void GamePlayScene::Update() {
 		crosshair_->DebugUpdate();
 	}
 
+	if (ImGui::CollapsingHeader("Terrain")) {
+		terrain_->DebugUpdate();
+	}
+
 	ImGui::End();
 #endif
 
@@ -284,6 +318,10 @@ void GamePlayScene::Draw() {
 	object3dCommon_->DrawSetting();
 
 	skydome_->Draw();
+
+	terrain_->Draw();
+
+	particleManager_->Draw();
 
 	switch (phase_) {
 	case Phase::kFadeIn:
@@ -302,8 +340,6 @@ void GamePlayScene::Draw() {
 		// 銃の描画
 		gun_->Draw();
 
-		particleManager_->Draw();
-
 		// スプライト描画前処理
 		spriteCommon_->GetInstance()->DrawSetting();
 
@@ -315,10 +351,18 @@ void GamePlayScene::Draw() {
 		spriteCommon_->GetInstance()->DrawSetting();
 		gameClear_->Draw();
 
+		for (int32_t i = 0; i < 2; ++i) {
+			numArray_[scoreArray_[i]]->Draw();
+		}
+
 		break;
 	case Phase::kGameOver:
 		spriteCommon_->GetInstance()->DrawSetting();
 		gameOver_->Draw();
+
+		for (int32_t i = 0; i < 2; ++i) {
+			numArray_[scoreArray_[i]]->Draw();
+		}
 
 		break;
 	case Phase::KFadeOut:

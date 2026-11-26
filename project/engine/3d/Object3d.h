@@ -60,11 +60,19 @@ private:
 		Vector3 worldPosition;
 	};
 
+	// 環境マップ
+	struct EnvironmentMap {
+		int32_t useEnvironmentMap;
+	};
+
 	// 座標変換行列データ作成
 	void CreateTransformationMatrixData();
 
 	// カメラデータ作成
 	void CreateCameraData();
+
+	// 環境マップデータ作成
+	void CreateEnvironmentMapData();
 
 	// DirectXBase
 	DirectXBase* dxBase_ = nullptr;
@@ -78,6 +86,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource_;
 	// バッファリソース内のデータを指すポインタ
 	CameraForGPU* cameraData_ = nullptr;
+
+	// バッファリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> environmentMapResource_;
+	// バッファリソース内のデータを指すポインタ
+	EnvironmentMap* environmentMapData_ = nullptr;
 
 	// Transform
 	EulerTransform transform_{};

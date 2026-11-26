@@ -2,8 +2,6 @@
 #include "Bullet.h"
 #include "Audio.h"
 #include "camera.h"
-#include "ParticleEmitter.h"
-#include <random>
 
 class Enemy;
 
@@ -49,7 +47,7 @@ private:
 
 	Vector3 bulletVelocity_{};
 
-	float bulletSpeed_ = 50.0f;
+	float bulletSpeed_ = 1.0f;
 
 	const float kDeltaTime_ = 1.0f / 60.0f;
 
